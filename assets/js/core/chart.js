@@ -33,8 +33,9 @@ export function setupCanvas(canvas) {
 }
 
 // 값 구간을 캔버스 좌표로 옮기는 매핑 함수 한 쌍
-export function makeScales(w, h, xRange, yRange) {
-  const { left, right, top, bottom } = PLOT_MARGIN;
+// margin은 선 끝 이름표를 그림 밖에 둘 그래프만 바꾼다
+export function makeScales(w, h, xRange, yRange, margin = PLOT_MARGIN) {
+  const { left, right, top, bottom } = margin;
   const [minX, maxX] = xRange;
   const [minY, maxY] = yRange;
   return {
@@ -43,8 +44,8 @@ export function makeScales(w, h, xRange, yRange) {
   };
 }
 
-export function drawAxes(ctx, w, h, xLabel, yLabel, xTicks, yTicks, xMap, yMap) {
-  const { left, right, top, bottom } = PLOT_MARGIN;
+export function drawAxes(ctx, w, h, xLabel, yLabel, xTicks, yTicks, xMap, yMap, margin = PLOT_MARGIN) {
+  const { left, right, top, bottom } = margin;
   ctx.clearRect(0, 0, w, h);
   ctx.font = CHART_FONT;
   ctx.fillStyle = CHART_INK.ink;
@@ -134,10 +135,18 @@ export function labelOnPlot(ctx, text, x, y, color, align = "left") {
 
 // 곡선 오른쪽 끝에 계열 이름을 붙인다. 범례로 눈을 왕복시키지 않기 위해서다.
 // 곡선이 서로 가까우면 이름표끼리 겹치므로 최소 간격을 두고 아래로 밀어낸다.
-export function labelEnds(ctx, items) {
+// outside면 선 끝 오른쪽 여백에 쓴다. 그림 안에 쓰면 이름표가 선 끝을 가린다
+export function labelEnds(ctx, items, { outside = false } = {}) {
   ctx.font = CHART_FONT;
   let lastY = -Infinity;
   [...items].sort((a, b) => a.y - b.y).forEach(item => {
+    if (outside) {
+      const y = Math.max(item.y + 4, lastY + 13);
+      lastY = y;
+      ctx.fillStyle = item.color; ctx.textAlign = "left";
+      ctx.fillText(item.name, item.x + 6, y);
+      return;
+    }
     const y = Math.max(item.y - 5, lastY + 12);
     lastY = y;
     labelOnPlot(ctx, item.name, item.x - 3, y, item.color, "right");

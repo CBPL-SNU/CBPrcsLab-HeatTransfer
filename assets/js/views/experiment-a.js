@@ -1,7 +1,10 @@
 // 실험 A 화면: 정상상태 계산 결과와 그래프
 
 import { $, clamp, numberValue, formatW } from "../core/dom.js";
-import { setupCanvas, drawAxes, drawLine, makeScales, drawVerticalMarker, drawCrossing, labelEnds, SERIES_COLOR, SERIES_DASH } from "../core/chart.js";
+import { setupCanvas, drawAxes, drawLine, makeScales, drawVerticalMarker, drawCrossing, labelEnds, PLOT_MARGIN, SERIES_COLOR, SERIES_DASH } from "../core/chart.js";
+
+// 세 선이 오른쪽 끝에서 모이므로 이름표는 그림 밖 여백에 둔다
+const MARGIN = { ...PLOT_MARGIN, right: 72 };
 import { experimentASteady, cylinderHeat } from "../physics/experiment-a.js";
 
 // 화면 입력값을 물리 모델의 인자 형태로 변환
@@ -39,10 +42,10 @@ export function drawAChart() {
   }
   maxY *= 1.12;
 
-  const { xMap, yMap } = makeScales(w, h, [minX, maxX], [0, maxY]);
+  const { xMap, yMap } = makeScales(w, h, [minX, maxX], [0, maxY], MARGIN);
   drawAxes(ctx, w, h, "Tₛ (°C)", "Q (W)",
     [minX, Math.round((minX + maxX) / 2), maxX],
-    [0, +(maxY / 2).toFixed(1), +maxY.toFixed(1)], xMap, yMap);
+    [0, +(maxY / 2).toFixed(1), +maxY.toFixed(1)], xMap, yMap, MARGIN);
   // 두 상관식은 같은 물리량이라 색이 같다. 선 종류로만 나뉜다.
   drawLine(ctx, values.map(item => [xMap(item.t), yMap(item.qa)]), SERIES_COLOR.conv, 2.2, SERIES_DASH.solid);
   drawLine(ctx, values.map(item => [xMap(item.t), yMap(item.qm)]), SERIES_COLOR.conv, 1.8, SERIES_DASH.dotted);
@@ -62,7 +65,7 @@ export function drawAChart() {
     { name: "McAdams", color: SERIES_COLOR.conv, x: xMap(last.t), y: yMap(last.qa) },
     { name: "Morgan", color: SERIES_COLOR.conv, x: xMap(last.t), y: yMap(last.qm) },
     { name: "Radiation", color: SERIES_COLOR.rad, x: xMap(last.t), y: yMap(last.qr) }
-  ]);
+  ], { outside: true });
 
   drawVerticalMarker(ctx, xMap(clamp(input.tsC, minX, maxX)), h);
 }
