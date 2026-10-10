@@ -1,8 +1,18 @@
 <div class="conditions">
-  <div class="input free"><label>Air speed</label>
+  <!-- 유동 조건과 구 크기를 따로 고른다. 작은 구는 1.6 m/s에서만 계산했다 -->
+  <div class="input free"><label>Air flow</label>
     <div class="btn-row">
-      <button class="btn b-case-pick" data-case="B02L" type="button">0.2 m/s</button>
-      <button class="btn b-case-pick" data-case="B16L" type="button">1.6 m/s</button>
+      <button class="btn b-flow" data-case-large="B00V5L" type="button">Fan off · 5 V</button>
+      <button class="btn b-flow" data-case-large="B00V17L" type="button">Fan off · 17 V</button>
+      <button class="btn b-flow" data-case-large="B02L" type="button">0.2 m/s</button>
+      <button class="btn b-flow" data-case-large="B16L" data-case-small="B16S" type="button">1.6 m/s</button>
+    </div>
+  </div>
+  <span class="divider"></span>
+  <div class="input free"><label>Bead</label>
+    <div class="btn-row">
+      <button class="btn b-bead" data-bead="large" type="button" aria-pressed="false">3.1 mm</button>
+      <button class="btn b-bead" data-bead="small" type="button" aria-pressed="false">0.5 mm</button>
     </div>
   </div>
   <span class="divider"></span>
@@ -63,6 +73,7 @@
       <div class="values">
         <div><span class="k">Bead</span><span class="v" id="bCfdBead">—</span></div>
         <div><span class="k">Inlet air T5</span><span class="v" id="bCfdAir">—</span></div>
+        <div><span class="k">Wall T10</span><span class="v" id="bCfdWall">—</span></div>
         <div><span class="k">Reads high by</span><span class="v" id="bCfdError">—</span></div>
       </div>
       <div class="chart-frame"><canvas class="chart chart--short" id="bTempChart"></canvas></div>

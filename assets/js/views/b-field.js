@@ -13,12 +13,36 @@ let frameIndex = 0;
 let busy = false;
 let loadVersion = 0;
 let player = null;
+let preferredBead = "large";       // 학생이 고른 구. 그 크기가 없는 조건에서는 큰 구를 보이고 선택은 기억한다
+let flowButton = null;
 
 // 왼쪽은 가열 구간 전체(좁고 길다), 오른쪽은 구 주변(정사각형). 각 창 오른쪽에 자기 색 범위.
+const NARROW = 520;                // 이보다 좁으면 두 창을 위아래로 쌓는다
+const STACK = { margin: 8, labelH: 20, gap: 16, side: 68 };
+
+// 좁은 화면: 확대 창을 위에 크게, 가열 구간을 그 아래에. 한 줄에 두면 창이 100 px 남짓으로 줄어든다
+function stackedSize(w) {
+  const { margin, side } = STACK;
+  return Math.min(w - 2 * margin - side, 320);
+}
+function stackedHeight(w) {
+  const { margin, labelH, gap } = STACK;
+  return 2 * stackedSize(w) + 2 * labelH + gap + 2 * margin;
+}
+
 function layout(w, h) {
   const { full, zoom } = data.index.planes;
   const margin = 8, labelH = 20, bar = 10, barText = 52, gap = 36;
   const fullAspect = full.w / full.h, zoomAspect = zoom.w / zoom.h;
+  if (w < NARROW) {
+    const s = stackedSize(w);
+    const zx = (w - s - STACK.side) / 2, fwid = s * fullAspect;
+    const fx = (w - fwid - STACK.side) / 2, fy = margin + s + labelH + STACK.gap;
+    return [
+      { plane: "full", x: fx, y: fy, w: fwid, h: s, bar: { x: fx + fwid + 6, w: bar }, stacked: true },
+      { plane: "zoom", x: zx, y: margin, w: s, h: s * zoom.h / zoom.w, bar: { x: zx + s + 6, w: bar }, stacked: true }
+    ];
+  }
   const side = 2 * (bar + 6 + barText);
   const ph = Math.max(1, Math.min(h - 2 * margin - labelH, (w - 2 * margin - gap - side) / (fullAspect + zoomAspect)));
   const fw = ph * fullAspect, zw = ph * zoomAspect;
@@ -64,20 +88,28 @@ function paintPanel(ctx, panel) {
     const zoom = layout(ctx.canvas.clientWidth, ctx.canvas.clientHeight)[1];
     ctx.strokeStyle = CHART_INK.ink; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
     ctx.beginPath();
-    ctx.moveTo(bx1, by0); ctx.lineTo(zoom.x, zoom.y);
-    ctx.moveTo(bx1, by1); ctx.lineTo(zoom.x, zoom.y + zoom.h);
+    if (panel.stacked) {
+      // 확대 창이 위에 있으므로 상자 위 두 모서리에서 확대 창 아래 두 모서리로
+      ctx.moveTo(bx0, by0); ctx.lineTo(zoom.x, zoom.y + zoom.h);
+      ctx.moveTo(bx1, by0); ctx.lineTo(zoom.x + zoom.w, zoom.y + zoom.h);
+    } else {
+      ctx.moveTo(bx1, by0); ctx.lineTo(zoom.x, zoom.y);
+      ctx.moveTo(bx1, by1); ctx.lineTo(zoom.x, zoom.y + zoom.h);
+    }
     ctx.stroke(); ctx.setLineDash([]);
   } else {
     const [cx, cy] = toPanel(panel, bead.x, bead.z);
     const r = bead.radius / (index.planes.zoom.roi.xHi - index.planes.zoom.roi.xLo) * panel.w;
     outline(ctx, () => { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); });
-    // 1 mm 축척. 구 주변 경계층 두께를 눈으로 잴 수 있게
-    const mm = panel.w / ((index.planes.zoom.roi.xHi - index.planes.zoom.roi.xLo) * 1000);
+    // 축척 막대. 창 폭의 1/5 이하인 가장 큰 깔끔한 길이. 구 주변 경계층 두께를 눈으로 잴 수 있게
+    const widthMm = (index.planes.zoom.roi.xHi - index.planes.zoom.roi.xLo) * 1000;
+    const barMm = [2, 1, 0.5, 0.2, 0.1].find(len => len <= widthMm / 5) ?? 0.1;
+    const mm = panel.w / widthMm * barMm;
     const sx = panel.x + 10, sy = panel.y + panel.h - 12;
     // 온도장은 바탕이 어둡고 속력장은 밝다
     ctx.fillStyle = field === "temperature" ? "rgba(255,255,255,.9)" : CHART_INK.mark;
     ctx.fillRect(sx, sy, mm, 2);
-    ctx.font = CHART_FONT; ctx.textAlign = "left"; ctx.fillText("1 mm", sx + mm + 6, sy + 4);
+    ctx.font = CHART_FONT; ctx.textAlign = "left"; ctx.fillText(`${barMm} mm`, sx + mm + 6, sy + 4);
   }
 
   ctx.strokeStyle = CHART_INK.grid; ctx.lineWidth = 1;
@@ -102,6 +134,9 @@ function paintPanel(ctx, panel) {
 
 export function drawBFieldView() {
   const canvas = $("#bFieldCanvas");
+  if (!canvas) return;
+  const width = canvas.clientWidth;
+  canvas.style.height = width && width < NARROW ? `${stackedHeight(width)}px` : "";
   const setup = setupCanvas(canvas);
   if (!setup || !data || busy) return;
   const { ctx, w, h } = setup;
@@ -155,8 +190,10 @@ function drawBeadHeat() {
   const lo = Math.min(0, ...all), hi = Math.max(0, ...all);
   const pad = (hi - lo) * 0.08, end = t.at(-1);
   const { xMap, yMap } = makeScales(w, h, [0, end], [lo - pad, hi + pad]);
+  // 작은 구는 1 mW 안쪽이라 눈금 자릿수를 범위에 맞춘다
+  const digits = hi - lo < 5 ? 2 : 0;
   drawAxes(ctx, w, h, "t (s)", "Q (mW)", [0, Math.round(end / 2), end],
-    [+lo.toFixed(0), 0, +hi.toFixed(0)], xMap, yMap);
+    [+lo.toFixed(digits), 0, +hi.toFixed(digits)], xMap, yMap);
   drawLine(ctx, [[xMap(0), yMap(0)], [xMap(end), yMap(0)]], CHART_INK.grid, 1);
   paintUpTo(ctx, xMap(data.index.frames[frameIndex]), h, () => {
     drawLine(ctx, series(t, rad, xMap, yMap), SERIES_COLOR.rad, 2);
@@ -169,9 +206,15 @@ function showBalance() {
   const i = historyIndex(), hist = data.history;
   const bead = hist.T_bead_avg_C[i], air = data.index.ambientC;
   $("#bCfdAir").innerHTML = `${air.toFixed(2)} <small>°C</small>`;
+  $("#bCfdWall").innerHTML = `${data.index.jacket.tempC.toFixed(1)} <small>°C</small>`;
   $("#bCfdBead").innerHTML = bead === null ? "—" : `${bead.toFixed(2)} <small>°C</small>`;
   $("#bCfdError").innerHTML = bead === null ? "—" : `${(bead - air).toFixed(2)} <small>K</small>`;
-  const mW = key => (hist[key][i] === null ? "—" : `${(hist[key][i] * 1000).toFixed(1)} <small>mW</small>`);
+  // 큰 구는 수십 mW, 작은 구는 1 mW 안쪽이다
+  const mW = key => {
+    const v = hist[key][i];
+    if (v === null) return "—";
+    return `${(v * 1000).toFixed(Math.abs(v * 1000) < 10 ? 2 : 1)} <small>mW</small>`;
+  };
   $("#bCfdRad").innerHTML = mW("Q_air_to_bead_rad_W");
   $("#bCfdConv").innerHTML = mW("Q_air_to_bead_conv_W");
   $("#bCfdNet").innerHTML = mW("Q_air_to_bead_total_W");
@@ -231,22 +274,38 @@ function setLoading(value, message = "") {
   $$("#bFieldPlay, #bFieldTime, #b-field .b-field-type").forEach(control => { control.disabled = value || !data; });
 }
 
-async function switchCase(button) {
+const caseOf = (flow, bead) => flow.dataset[bead === "small" ? "caseSmall" : "caseLarge"];
+
+// 유동 조건과 구 크기를 case 하나로 바꾼다
+function pick(flow) {
+  flowButton = flow;
+  const bead = caseOf(flow, preferredBead) ? preferredBead : "large";
+  $$(".b-flow").forEach(b => b.classList.toggle("is-active", b === flow));
+  $$(".b-bead").forEach(b => {
+    const on = b.dataset.bead === bead;
+    b.classList.toggle("is-active", on);
+    b.setAttribute("aria-pressed", String(on));
+    b.disabled = !caseOf(flow, b.dataset.bead);
+  });
+  const beadLabel = $(`.b-bead[data-bead="${bead}"]`).textContent;
+  switchCase(caseOf(flow, bead), `${flow.textContent}, ${beadLabel} bead`);
+}
+
+async function switchCase(caseId, label) {
   player.stop();
   const version = ++loadVersion;
   data = null;
-  $$(".b-case-pick").forEach(b => b.classList.toggle("is-active", b === button));
-  setLoading(true, `Loading ${button.textContent}…`);
-  ["bCfdBead", "bCfdAir", "bCfdError", "bCfdRad", "bCfdConv", "bCfdNet", "bFieldTimeValue"]
+  setLoading(true, `Loading ${label}…`);
+  ["bCfdBead", "bCfdAir", "bCfdWall", "bCfdError", "bCfdRad", "bCfdConv", "bCfdNet", "bFieldTimeValue"]
     .forEach(id => { $(`#${id}`).textContent = "—"; });
   ["bFieldCanvas", "bTempChart", "bHeatChart"].forEach(id => {
     const canvas = $(`#${id}`);
     canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
   });
   try {
-    const loaded = await loadCase(button.dataset.case);
+    const loaded = await loadCase(caseId);
     if (version !== loadVersion) return;
-    if (!loaded) { setLoading(false, `${button.textContent} is not available yet.`); return; }
+    if (!loaded) { setLoading(false, `${label} is not available yet.`); return; }
     await ensureField(loaded, field);
     if (version !== loadVersion) return;
     data = loaded;
@@ -269,19 +328,30 @@ export function initBFieldViewer() {
     isActive: () => !busy && $("#b-field").classList.contains("is-active")
   });
 
-  const picks = $$(".b-case-pick");
-  picks.forEach(b => { b.disabled = true; });
-  Promise.all(picks.map(async button => {
-    let ok = false;
-    try { ok = (await fetch(`assets/data/cfd/${button.dataset.case}/index.json`, { method: "HEAD" })).ok; } catch { /* 연결 실패도 선택 불가 */ }
-    button.disabled = !ok;
-    return ok ? button : null;
-  })).then(buttons => {
-    const first = buttons.find(Boolean);
-    if (first) switchCase(first);
+  // 산출물이 있는 조건만 누를 수 있다. 처음에는 두 구를 비교할 수 있는 1.6 m/s를 연다
+  const flows = $$(".b-flow");
+  const available = async id => {
+    try { return (await fetch(`assets/data/cfd/${id}/index.json`, { method: "HEAD" })).ok; } catch { return false; }
+  };
+  flows.forEach(b => { b.disabled = true; });
+  $$(".b-bead").forEach(b => { b.disabled = true; });
+  Promise.all(flows.map(async flow => {
+    for (const key of ["caseLarge", "caseSmall"]) {
+      if (flow.dataset[key] && !(await available(flow.dataset[key]))) delete flow.dataset[key];
+    }
+    flow.disabled = !flow.dataset.caseLarge;
+    return flow.disabled ? null : flow;
+  })).then(ready => {
+    const open = ready.filter(Boolean);
+    const first = open.find(flow => flow.dataset.caseSmall) ?? open[0];
+    if (first) pick(first);
     else setLoading(false, "No computed case could be loaded. Reload to retry.");
   });
-  picks.forEach(button => button.addEventListener("click", () => switchCase(button)));
+  flows.forEach(flow => flow.addEventListener("click", () => pick(flow)));
+  $$(".b-bead").forEach(button => button.addEventListener("click", () => {
+    preferredBead = button.dataset.bead;
+    if (flowButton) pick(flowButton);
+  }));
 
   $$(".b-field-type").forEach(button => button.addEventListener("click", async () => {
     if (!data || busy) return;

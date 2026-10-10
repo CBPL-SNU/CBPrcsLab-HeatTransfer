@@ -7,7 +7,10 @@ export const CFD_CASES = {
   A5:  { kind: "A", mode: "natural", label: "A · 5 V", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Mean cylinder surface temperature" },
   A11: { kind: "A", mode: "natural", label: "A · 11 V", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Mean cylinder surface temperature" },
   A17: { kind: "A", mode: "natural", label: "A · 17 V", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Mean cylinder surface temperature" },
-  // 실험 B는 조교가 계산을 마친 것만 둔다. 나머지 세 case는 들어오는 대로 추가한다
+  // 실험 B는 조교가 계산한 다섯 case. L은 지름 3.1 mm 구, S는 0.5 mm 구
+  B00V5L: { kind: "B", mode: "natural", label: "B · fan off · 5 V · 3.1 mm bead", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Bead temperature" },
+  B00V17L: { kind: "B", mode: "natural", label: "B · fan off · 17 V · 3.1 mm bead", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Bead temperature" },
   B02L: { kind: "B", mode: "forced", label: "B · 0.2 m/s · 3.1 mm bead", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Bead temperature" },
-  B16L: { kind: "B", mode: "forced", label: "B · 1.6 m/s · 3.1 mm bead", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Bead temperature" }
+  B16L: { kind: "B", mode: "forced", label: "B · 1.6 m/s · 3.1 mm bead", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Bead temperature" },
+  B16S: { kind: "B", mode: "forced", label: "B · 1.6 m/s · 0.5 mm bead", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Bead temperature" }
 };

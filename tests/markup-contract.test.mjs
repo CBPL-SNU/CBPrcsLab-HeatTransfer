@@ -205,7 +205,8 @@ describe("마크업 계약 · 입력 요소", () => {
   for (const [viewId, kind] of [["a-field", "A"], ["b-field", "B"]]) {
     test(`${viewId} 화면이 ${kind} 실험의 CFD case를 전부 고를 수 있다`, { skip: !isReady(viewId) }, () => {
       const markup = viewMarkup[viewId] ?? "";
-      const offered = new Set([...markup.matchAll(/data-case="([^"]+)"/g)].map(m => m[1]));
+      // 실험 B는 유동 버튼 하나가 구 크기별 case를 data-case-large/-small로 든다
+      const offered = new Set([...markup.matchAll(/data-case(?:-large|-small)?="([^"]+)"/g)].map(m => m[1]));
       const expected = Object.entries(CFD_CASES).filter(([, c]) => c.kind === kind).map(([id]) => id);
       for (const id of expected) assert.ok(offered.has(id), `CFD_CASES의 "${id}"를 고를 버튼이 없음`);
       for (const id of offered) assert.equal(CFD_CASES[id]?.kind, kind, `"${id}"는 ${kind} 실험의 case가 아님`);
@@ -240,7 +241,7 @@ describe("마크업 계약 · 클래스 이름", () => {
 
   // 이벤트를 걸기 위한 표식일 뿐 모양을 담당하지 않는 클래스
   const hooks = new Set([
-    "b-velocity", "sensor-button", "field-type", "play-rate", "b-case-pick", "b-field-type", "case-pick", "dataset-button",
+    "b-velocity", "sensor-button", "field-type", "play-rate", "b-flow", "b-bead", "b-field-type", "case-pick", "dataset-button",
     "apparatus-mode", "toggle-layer", "selected", "is-hidden", "layer-hidden"
   ]);
 
