@@ -1,6 +1,7 @@
 {
  "case": "B16L",
  "source": "B16_P02_G01_Co050_heatStart30s",
+ "durationS": 30.0,
  "frames": [
   0.0,
   0.1,
@@ -347,11 +348,11 @@
    "cols": 18,
    "rows": 17,
    "roi": {
-    "zLo": 0.692,
-    "zHi": 0.708,
-    "xLo": -0.008,
-    "xHi": 0.008,
-    "pxPerM": 10000
+    "zLo": 0.69202,
+    "zHi": 0.70802,
+    "xLo": -0.00803,
+    "xHi": 0.00797,
+    "pxPerM": 10000.0
    },
    "range": {
     "temperature": {
@@ -360,7 +361,7 @@
     },
     "speed": {
      "min": 0.0,
-     "max": 2.3287
+     "max": 2.3249
     }
    },
    "temperature": "zoom_T.png",

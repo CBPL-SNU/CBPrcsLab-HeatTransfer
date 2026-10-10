@@ -24,9 +24,11 @@ PLANE_AXIS = 0                    # xz 평면(y = 0)은 x가 가로
 VIEWS = {
     # 가열 구간(z ≈ 0.63~0.77 m)과 그 위아래 여유. 그 밖은 균일한 유입 공기다
     "full": {"zLo": 0.58, "zHi": 0.82, "xLo": -0.035, "xHi": 0.035, "pxPerM": 1000},
-    # 구(지름 3.1 mm) 중심 ±8 mm. 구 주변 격자가 0.18 mm라 0.1 mm/px까지는 데이터가 받쳐 준다
-    "zoom": {"zLo": 0.692, "zHi": 0.708, "xLo": -0.008, "xHi": 0.008, "pxPerM": 10000},
 }
+# 구 주변 창은 구 지름에 맞춘다. 큰 구(3.1 mm)는 ±8 mm, 작은 구(0.5 mm)는 ±1.5 mm.
+# 어느 쪽이든 160 px로 그린다. 구 주변 격자가 큰 구 0.09 mm, 작은 구 0.044 mm라 데이터가 받쳐 준다
+ZOOM_DIAMETERS = 2.5              # 창 반폭 = 구 지름 × 이 값, 0.5 mm 단위로 올림
+ZOOM_PX = 160
 SMOOTH_SIGMA = 1.0                # px. 삼각화 흔적만 지운다
 
 
@@ -68,9 +70,16 @@ def convert(raw_dir, case):
     hot = air_T[-1] > info["jacket_K"] - 0.5
     jacket_z = (float(air_pts[hot, 2].min()), float(air_pts[hot, 2].max()))
 
+    half = math.ceil(2 * radius * ZOOM_DIAMETERS / 0.0005 - 1e-9) * 0.0005
+    views = dict(VIEWS, zoom={
+        "zLo": round(float(centre[2]) - half, 5), "zHi": round(float(centre[2]) + half, 5),
+        "xLo": round(float(centre[0]) - half, 5), "xHi": round(float(centre[0]) + half, 5),
+        "pxPerM": round(ZOOM_PX / (2 * half), 3)})
+
     index = {
         "case": case,
         "source": meta["case"],
+        "durationS": round(float(time_s[-1] - time_s[0]), 2),
         "frames": [round(float(t), 2) for t in time_s],
         "ambientC": round(info["ambient_K"] - 273.15, 3),
         "jacket": {"tempC": round(jacket_C, 2), "zLo": round(jacket_z[0], 4), "zHi": round(jacket_z[1], 4)},
@@ -79,7 +88,7 @@ def convert(raw_dir, case):
     }
     print(f"{case}: {len(time_s)} frames, bead D = {2e3 * radius:.2f} mm, jacket {jacket_C:.1f} °C")
 
-    for name, view in VIEWS.items():
+    for name, view in views.items():
         w, h, (glat, gz) = grid(view)
         margin = 4 / view["pxPerM"] + 0.002
         keep = ((pts[:, PLANE_AXIS] >= view["xLo"] - margin) & (pts[:, PLANE_AXIS] <= view["xHi"] + margin)
