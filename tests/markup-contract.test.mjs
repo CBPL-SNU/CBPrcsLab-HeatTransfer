@@ -241,7 +241,7 @@ describe("마크업 계약 · 클래스 이름", () => {
 
   // 이벤트를 걸기 위한 표식일 뿐 모양을 담당하지 않는 클래스
   const hooks = new Set([
-    "b-velocity", "sensor-button", "field-type", "play-rate", "b-flow", "b-bead", "b-field-type", "case-pick", "dataset-button",
+    "b-velocity", "sensor-button", "field-type", "play-rate", "b-flow", "b-bead", "b-field-type", "c-field-type", "case-pick", "dataset-button",
     "apparatus-mode", "toggle-layer", "selected", "is-hidden", "layer-hidden"
   ]);
 

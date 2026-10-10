@@ -35,6 +35,11 @@ export const VIEWS = [
     title: "Experiment B · Air around the thermocouple bead"
   },
   {
+    id: "b-compare", group: "Experiment B", status: "ready",
+    label: "Compare beads", sub: "Two sizes, same flow",
+    title: "Experiment B · Two bead sizes in the same flow"
+  },
+  {
     id: "b-apparatus", group: "Experiment B", status: "planned",
     label: "Apparatus", sub: "HT16 in section",
     title: "Experiment B · The HT16 rig and its sensors",

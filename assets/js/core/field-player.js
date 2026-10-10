@@ -1,6 +1,6 @@
 // CFD 장면을 그리고 재생하는 부분 중 실험 A와 B가 공유하는 것.
 
-import { frameData } from "./cfd-loader.js";
+import { frameData, valueRange } from "./cfd-loader.js";
 
 // 색 램프. 둘 다 밝기가 단조 증가한다. 밝기가 곧 크기라야 색맹인 사람도 읽는다.
 // 온도는 열화상 카메라의 관례(검정→보라→빨강→노랑→흰색)를 따른다. 색상이 함께 바뀌어
@@ -33,13 +33,19 @@ const scratch = document.createElement("canvas");
 const tinted = document.createElement("canvas");
 
 // 스프라이트의 한 프레임을 색칠해서 rect에 늘려 그린다.
-export function paintFrame(ctx, data, plane, field, frameIndex, rect) {
+// range를 주면 그 범위로 다시 칠한다. 두 case를 같은 색 범위로 나란히 놓을 때 쓴다
+export function paintFrame(ctx, data, plane, field, frameIndex, rect, range = null) {
   lut[field] ??= buildLut(RAMP[field]);
   const table = lut[field];
   const image = frameData(data, plane, field, frameIndex, scratch);
+  const remap = new Uint8ClampedArray(256);
+  const own = valueRange(data.index, field, plane);
+  for (let b = 0; b < 256; b += 1) {
+    remap[b] = range ? (own.min + (own.max - own.min) * b / 255 - range.min) / (range.max - range.min) * 255 : b;
+  }
   const out = new ImageData(image.width, image.height);
   for (let i = 0; i < image.data.length; i += 4) {
-    const v = image.data[i] * 3;
+    const v = remap[image.data[i]] * 3;
     out.data[i] = table[v]; out.data[i + 1] = table[v + 1]; out.data[i + 2] = table[v + 2]; out.data[i + 3] = 255;
   }
   tinted.width = image.width; tinted.height = image.height;

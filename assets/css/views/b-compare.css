@@ -1,0 +1,6 @@
+#cCanvas { display: block; width: 100%; height: 380px; }
+.b-viewer { padding: var(--sp-2); border-radius: var(--radius-md); background: var(--well); }
+.fixed-condition { margin: 0; padding: 6px 0; font-family: var(--font-mono); font-size: var(--fs-md); }
+.compare-table td:first-child { color: var(--muted); }
+.compare-table .unit { color: var(--muted-2); font-family: var(--font-mono); font-size: var(--fs-xs); }
+.compare-table th:not(:first-child) { text-align: right; }
