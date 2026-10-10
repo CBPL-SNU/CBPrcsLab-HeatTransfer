@@ -1,51 +1,20 @@
 // 실험 A 관찰 화면: 가열 실린더 주위의 CFD 단면을 시간에 따라 재생한다.
 
 import { $, $$, clamp, numberValue } from "../core/dom.js";
-import { setupCanvas, drawAxes, drawLine, drawArea, makeScales, labelOnPlot, CHART_INK, CHART_FONT, SERIES_COLOR } from "../core/chart.js";
+import { setupCanvas, drawAxes, drawLine, drawArea, makeScales, labelOnPlot, paintUpTo, CHART_INK, CHART_FONT, SERIES_COLOR } from "../core/chart.js";
 import { CFD_CASES } from "../data/cfd-cases.js";
-import { loadCase, ensureField, frameData, physical } from "../core/cfd-loader.js";
+import { loadCase, ensureField, physical } from "../core/cfd-loader.js";
+import { RAMP, paintFrame, sampleFrame, frameImage, createPlayer, showProbe, hideProbe } from "../core/field-player.js";
 
-// 색 램프. 둘 다 밝기가 단조 증가한다. 밝기가 곧 크기라야 색맹인 사람도 읽는다.
-// 온도는 열화상 카메라의 관례(검정→보라→빨강→노랑→흰색)를 따른다. 색상이 함께 바뀌어
-// 한 색상 램프보다 작은 온도차가 훨씬 잘 구분된다. 무지개와 달리 밝기 순서는 지킨다.
-// 속력은 어두운 남색에서 흰색으로, 온도와 겹쳐 보이지 않게 찬 색 쪽을 쓴다.
-const RAMP = {
-  temperature: ["#000004", "#160b39", "#420a68", "#6a176e", "#932667", "#bc3754",
-                "#dd513a", "#f37819", "#fca50a", "#f6d746", "#fcffa4"],
-  speed: ["#0d2035", "#1d4c7f", "#279fc3", "#6bd8c2", "#eefbff"]
-};
 const PLANES = ["yz", "xz"];
 const PLANE_LABEL = { yz: "Side view · x = 0", xz: "Front view · y = 0" };
-const FRAMES_PER_SECOND = 20;     // 프레임 간격이 0.5 s이므로 실시간의 10배. 180 s가 18초에 돈다
-
 let data = null;                  // 현재 case의 산출물
 let field = "temperature";
 let frameIndex = 0;
-let playing = false;
-let playTimer = null;
+let player = null;
 let busy = false;
 let loadVersion = 0;
 let highlighted = null;           // 절개 도식에서 가리키는 평면
-const scratch = document.createElement("canvas");
-const tinted = document.createElement("canvas");
-const lut = {};
-
-function hexToRgb(hex) {
-  return [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
-}
-
-// 정지점을 256단계로 편다. sRGB 선형 보간이지만 램프가 단조라 충분하다.
-function buildLut(stops) {
-  const rgb = stops.map(hexToRgb);
-  const table = new Uint8ClampedArray(256 * 3);
-  for (let i = 0; i < 256; i += 1) {
-    const pos = i / 255 * (stops.length - 1);
-    const a = Math.floor(pos), b = Math.min(a + 1, stops.length - 1), u = pos - a;
-    for (let k = 0; k < 3; k += 1) table[i * 3 + k] = rgb[a][k] + (rgb[b][k] - rgb[a][k]) * u;
-  }
-  return table;
-}
-
 // 단면 비율을 유지하면서 캔버스의 폭과 높이 모두에 맞춘다.
 function layout(w, h) {
   const { w: tw, h: th } = data.index.tile;
@@ -60,17 +29,7 @@ function layout(w, h) {
 
 function paintStrip(ctx, strip) {
   const { index } = data;
-  const image = frameData(data, strip.plane, field, frameIndex, scratch);
-  const table = lut[field];
-  const out = new ImageData(image.width, image.height);
-  for (let i = 0, j = 0; i < image.data.length; i += 4, j += 4) {
-    const v = image.data[i] * 3;
-    out.data[j] = table[v]; out.data[j + 1] = table[v + 1]; out.data[j + 2] = table[v + 2]; out.data[j + 3] = 255;
-  }
-  tinted.width = image.width; tinted.height = image.height;
-  tinted.getContext("2d").putImageData(out, 0, 0);
-  ctx.imageSmoothingEnabled = true;
-  ctx.drawImage(tinted, strip.x, strip.y, strip.w, strip.h);
+  paintFrame(ctx, data, strip.plane, field, frameIndex, strip);
   if (highlighted === strip.plane) {
     ctx.strokeStyle = SERIES_COLOR.marker; ctx.lineWidth = 2.5;
     ctx.strokeRect(strip.x + 1, strip.y + 1, strip.w - 2, strip.h - 2);
@@ -131,12 +90,6 @@ function drawPower() {
   paintUpTo(ctx, xMap(data.index.frames[frameIndex]), h, paint);
 }
 
-// 현재 시각까지는 진하게, 그 뒤는 옅게 그린다. 재생 중 어디까지 왔는지가 면의 경계로 읽힌다.
-function paintUpTo(ctx, x, h, paint) {
-  ctx.save(); ctx.globalAlpha = 0.28; paint(); ctx.restore();
-  ctx.save(); ctx.beginPath(); ctx.rect(0, 0, x, h); ctx.clip(); paint(); ctx.restore();
-}
-
 function drawTemperature() {
   const setup = setupCanvas($("#historyChart"));
   if (!setup) return;
@@ -164,7 +117,7 @@ function describeFrame(canvas) {
     canvas.setAttribute("aria-label", `Air speed around the heater at ${now.toFixed(1)} s, up to ${index.speed.max.toFixed(2)} m/s.`);
     return;
   }
-  const image = frameData(data, "yz", "temperature", frameIndex, scratch);
+  const image = frameImage(data, "yz", "temperature", frameIndex);
   const heaterTopRow = Math.floor((index.roi.zHi - index.heater.centerZ - index.heater.radius) * index.roi.pxPerM);
   let heater = 0, plume = 0;
   for (let row = 0; row < image.height; row += 1) {
@@ -183,6 +136,7 @@ function updateLabels() {
   const now = index.frames[frameIndex];
   $("#fieldTimeValue").textContent = `${now.toFixed(1)} / ${index.frames[index.frames.length - 1].toFixed(0)} s`;
   $("#fieldTime").setAttribute("aria-valuetext", `${now.toFixed(1)} seconds`);
+  player.renderRate();
   const range = field === "temperature" ? index.temperatureC : index.speed;
   const unit = field === "temperature" ? "°C" : "m/s";
   const digits = field === "temperature" ? 0 : 2;
@@ -190,7 +144,7 @@ function updateLabels() {
   $("#colorbarMid").textContent = `${((range.min + range.max) / 2).toFixed(digits)} ${unit}`;
   $("#colorbarMin").textContent = `${range.min.toFixed(digits)} ${unit}`;
   $("#colorbarGradient").style.background = `linear-gradient(to top, ${RAMP[field].join(",")})`;
-  $("#fieldPlay").textContent = playing ? "Pause" : frameIndex === index.frames.length - 1 ? "Replay" : "Play";
+  player.label();
 }
 
 // 이 순간의 열수지. 표시용 픽셀이 아니라 원본 시계열에서 읽는다.
@@ -220,31 +174,26 @@ function handleProbe(event) {
   if (!strip) { hideTip(); return; }
   setHighlight(strip.plane, false);
   const { index } = data;
-  const image = frameData(data, strip.plane, field, frameIndex, scratch);
-  const col = clamp(Math.floor((px - strip.x) / strip.w * image.width), 0, image.width - 1);
-  const row = clamp(Math.floor((py - strip.y) / strip.h * image.height), 0, image.height - 1);
-  const byte = image.data[(row * image.width + col) * 4];
-  const value = physical(index, field, byte);
-  const z = index.roi.zHi - (row + 0.5) / index.roi.pxPerM;
-  const lateral = (col + 0.5) / index.roi.pxPerM - index.roi.halfWidth;
-  const unit = field === "temperature" ? "°C" : "m/s";
-  const reading = `${value.toFixed(field === "temperature" ? 1 : 3)} ${unit}`;
-
-  // 값은 커서 옆에, 십자선은 띠 안에서만. 그림이 아니라 데이터라는 것이 손끝에서 느껴져야 한다.
-  const tip = $("#fieldTip");
-  tip.hidden = false;
-  tip.textContent = reading;
-  tip.style.left = `${px}px`; tip.style.top = `${py}px`;
-  tip.style.transform = px > rect.width - 90 ? "translate(calc(-100% - 10px), -50%)" : "translate(10px, -50%)";
-  const crossH = $("#fieldCrossH"), crossV = $("#fieldCrossV");
-  crossH.hidden = crossV.hidden = false;
-  crossH.style.top = `${py}px`; crossH.style.left = `${strip.x}px`; crossH.style.right = `${rect.width - strip.x - strip.w}px`;
-  crossV.style.left = `${px}px`; crossV.style.top = `${strip.y}px`; crossV.style.bottom = `${rect.height - strip.y - strip.h}px`;
+  const u = (px - strip.x) / strip.w, v = (py - strip.y) / strip.h;
+  const value = physical(index, field, sampleFrame(data, strip.plane, field, frameIndex, u, v));
+  const { roi, heater } = index;
+  const lateral = (2 * u - 1) * roi.halfWidth, z = roi.zHi - v * (roi.zHi - roi.zLo);
+  // yz 평면은 실린더를 축 방향으로 잘라 원이, xz 평면은 축을 따라 잘라 띠가 된다
+  const cylinder = strip.plane === "yz" ? Math.hypot(lateral, z - heater.centerZ) - heater.radius
+    : Math.abs(z - heater.centerZ) - heater.radius;
+  showProbe(probe(), rect, strip, px, py, {
+    reading: field === "temperature" ? `${value.toFixed(1)} °C` : `${value.toFixed(3)} m/s`,
+    surfaces: [{ name: "cylinder", d: cylinder }, { name: "duct wall", d: roi.halfWidth - Math.abs(lateral) }],
+    coords: [[strip.plane === "yz" ? "y" : "x", lateral], ["z", z]],
+    res: 1 / roi.pxPerM
+  });
 }
+
+const probe = () => ({ tip: $("#fieldTip"), coords: $("#fieldCoords"), crossH: $("#fieldCrossH"), crossV: $("#fieldCrossV") });
 
 function hideTip() {
   setHighlight(null, false);
-  ["#fieldTip", "#fieldCrossH", "#fieldCrossV"].forEach(id => { $(id).hidden = true; });
+  hideProbe(probe());
 }
 
 function setFrame(i) {
@@ -252,25 +201,6 @@ function setFrame(i) {
   frameIndex = clamp(Math.round(i), 0, data.index.frames.length - 1);
   $("#fieldTime").value = frameIndex;
   drawFieldView();
-}
-
-function stop() {
-  playing = false;
-  clearInterval(playTimer);
-  $("#fieldPlay").textContent = "Play";
-}
-
-function play() {
-  if (!data || busy) return;
-  playing = true;
-  $("#fieldPlay").textContent = "Pause";
-  if (frameIndex >= data.index.frames.length - 1) setFrame(0);
-  const noLoop = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  playTimer = setInterval(() => {
-    if (document.hidden || !$("#a-field").classList.contains("is-active")) { stop(); return; }
-    if (noLoop && frameIndex >= data.index.frames.length - 1) { stop(); return; }
-    setFrame((frameIndex + 1) % data.index.frames.length);
-  }, 1000 / FRAMES_PER_SECOND);
 }
 
 function setLoading(value, message = "") {
@@ -282,7 +212,7 @@ function setLoading(value, message = "") {
 }
 
 async function switchCase(caseId) {
-  stop();
+  player.stop();
   const version = ++loadVersion;
   data = null;
   $$(".case-pick").forEach(b => b.classList.toggle("is-active", b.dataset.case === caseId));
@@ -301,6 +231,7 @@ async function switchCase(caseId) {
     if (version !== loadVersion) return;
     data = loaded;
     $("#fieldTime").max = data.index.frames.length - 1;
+    player.renderTicks();
     setLoading(false);
     setFrame(data.index.frames.length - 1);     // 처음엔 다 자란 플룸부터. Play는 0부터 다시 돈다
   } catch (error) {
@@ -388,8 +319,14 @@ function initCutaway() {
 }
 
 export function initFieldViewer() {
-  lut.temperature = buildLut(RAMP.temperature);
-  lut.speed = buildLut(RAMP.speed);
+  player = createPlayer({
+    play: $("#fieldPlay"), ticks: $("#fieldTicks"), rateValue: $("#playRateValue"), rateButtons: $$("#a-field .play-rate")
+  }, {
+    frames: () => data?.index.frames ?? null,
+    current: () => frameIndex,
+    setFrame,
+    isActive: () => !busy && $("#a-field").classList.contains("is-active")
+  });
   initCutaway();
 
   // 산출물이 있는 전압만 누를 수 있다. 처음 것을 바로 연다.
@@ -409,7 +346,7 @@ export function initFieldViewer() {
 
   $$(".field-type").forEach(button => button.addEventListener("click", async () => {
     if (!data || busy) return;
-    stop();
+    player.stop();
     const version = ++loadVersion;
     const nextField = button.dataset.field;
     setLoading(true, `Loading ${button.textContent.toLowerCase()}…`);
@@ -428,9 +365,10 @@ export function initFieldViewer() {
     }
   }));
 
-  const step = delta => { stop(); setFrame(frameIndex + delta); };
-  $("#fieldTime").addEventListener("input", () => { stop(); setFrame(numberValue("#fieldTime", 0)); });
-  $("#fieldPlay").addEventListener("click", () => (playing ? stop() : play()));
+  const step = delta => { player.stop(); setFrame(frameIndex + delta); };
+  $("#fieldTime").addEventListener("input", () => { player.stop(); setFrame(numberValue("#fieldTime", 0)); });
+  $("#fieldPlay").addEventListener("click", () => { if (data && !busy) player.toggle(); });
+
   $("#fieldCanvas").addEventListener("pointermove", event => { if (data && !busy) handleProbe(event); });
   $("#fieldCanvas").addEventListener("pointerleave", hideTip);
 
@@ -444,7 +382,7 @@ export function initFieldViewer() {
     // Space는 focus된 버튼이 있으면 그 버튼의 것이다. 화살표는 어디에 focus가 있든 프레임을 옮긴다.
     if (event.key === " ") {
       if (target.tagName === "BUTTON") return;
-      event.preventDefault(); playing ? stop() : play();
+      event.preventDefault(); player.toggle();
     } else if (event.key === "ArrowLeft") { event.preventDefault(); step(-1); }
     else if (event.key === "ArrowRight") { event.preventDefault(); step(1); }
   });

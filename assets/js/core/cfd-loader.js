@@ -79,7 +79,8 @@ export async function ensureField(data, field) {
 // 스프라이트에서 프레임 하나의 회색조 픽셀을 꺼낸다. 값은 0~255, index의 범위로 되돌린다.
 export function frameData(data, plane, field, frameIndex, scratch) {
   const { index, sprites } = data;
-  const { w, h } = index.tile;
+  // 실험 B는 창마다 크기가 다르다. 실험 A는 두 평면이 index.tile을 같이 쓴다
+  const { w, h } = index.planes[plane].w ? index.planes[plane] : index.tile;
   const { cols } = index.planes[plane];
   const row = Math.floor(frameIndex / cols), col = frameIndex % cols;
   scratch.width = w; scratch.height = h;
@@ -89,7 +90,14 @@ export function frameData(data, plane, field, frameIndex, scratch) {
 }
 
 // 회색조 0~255를 물리값으로. 온도는 °C, 속력은 m/s.
-export function physical(index, field, byte) {
-  const range = field === "temperature" ? index.temperatureC : index.speed;
+export function physical(index, field, byte, plane) {
+  const range = valueRange(index, field, plane);
   return range.min + (range.max - range.min) * byte / 255;
+}
+
+// 실험 B는 창마다 색 범위가 다르다
+export function valueRange(index, field, plane) {
+  const own = plane && index.planes[plane].range;
+  if (own) return own[field];
+  return field === "temperature" ? index.temperatureC : index.speed;
 }

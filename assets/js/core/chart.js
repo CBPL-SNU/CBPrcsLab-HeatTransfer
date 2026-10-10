@@ -168,3 +168,9 @@ export function drawHorizontalGuide(ctx, y, w, stroke, dash = [5, 5], width = 1.
   ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(w - right, y); ctx.stroke();
   ctx.setLineDash([]);
 }
+
+// 현재 시각까지는 진하게, 그 뒤는 옅게 그린다. 재생 중 어디까지 왔는지가 면의 경계로 읽힌다.
+export function paintUpTo(ctx, x, h, paint) {
+  ctx.save(); ctx.globalAlpha = 0.28; paint(); ctx.restore();
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 0, x, h); ctx.clip(); paint(); ctx.restore();
+}
