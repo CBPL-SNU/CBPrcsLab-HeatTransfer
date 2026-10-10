@@ -10,6 +10,8 @@ import { fileURLToPath } from "node:url";
 import { componentData, componentOrder } from "../assets/js/data/components.js";
 import { CFD_CASES } from "../assets/js/data/cfd-cases.js";
 import { VIEWS, DEFAULT_VIEW } from "../assets/js/data/views.js";
+import { HT14 } from "../assets/js/data/apparatus.js";
+import { buildDiagram } from "../assets/js/views/a-apparatus.js";
 
 /** status가 "ready"인 화면만 마크업을 갖는다. planned 화면은 router가 자리표시를 그린다. */
 const isReady = id => VIEWS.find(v => v.id === id)?.status === "ready";
@@ -164,37 +166,32 @@ describe("마크업 계약 · 화면 전환", () => {
   });
 });
 
-describe("마크업 계약 · 장치 도식", { skip: !isReady("apparatus") }, () => {
-  test("설명 데이터가 있는 부품이 도식에 전부 그려져 있다", () => {
-    const drawn = attrValues("part");
-    for (const id of Object.keys(componentData)) {
-      assert.ok(drawn.has(id), `componentData에 있는 "${id}"가 SVG에 없음`);
-    }
-  });
-
-  test("도식의 부품에 설명 데이터가 전부 있다", () => {
-    for (const id of attrValues("part")) {
-      assert.ok(componentData[id], `SVG의 data-part="${id}"에 componentData가 없음`);
-    }
-  });
-
+describe("마크업 계약 · 장치 도식", () => {
+  // 도식은 JS가 치수 데이터에서 만든다. 마크업이 아니라 데이터끼리의 계약을 본다.
   test("목록 순서에 빠지거나 없는 부품이 없다", () => {
     const listed = [...componentOrder.A, ...componentOrder.B];
     assert.deepEqual([...listed].sort(), Object.keys(componentData).sort(),
       "componentOrder와 componentData가 어긋남");
   });
 
-  test("실험 A·B 도식과 전환 버튼이 짝을 이룬다", () => {
-    assert.deepEqual([...attrValues("apparatus")].sort(), ["A", "B"]);
-    assert.equal(classCount("apparatus-diagram"), 2);
-    assert.equal(classCount("apparatus-mode"), 2);
+  test("HT14 도식의 부품에 설명이 전부 있고, A 설명은 전부 그려진다", { skip: !isReady("a-apparatus") }, () => {
+    for (const part of HT14.parts) {
+      assert.ok(componentData[part.id], `apparatus.js의 "${part.id}"에 componentData가 없음`);
+      assert.equal(componentData[part.id].mode, "A", `"${part.id}"는 A 장치 부품이 아님`);
+    }
+    const drawn = new Set(HT14.parts.map(p => p.id));
+    for (const id of componentOrder.A) assert.ok(drawn.has(id), `componentData의 "${id}"가 HT14 도식에 없음`);
+    // 생성된 SVG에도 실제로 들어가는지
+    const svg = buildDiagram();
+    for (const id of componentOrder.A) assert.ok(svg.includes(`data-part="${id}"`), `SVG에 "${id}" 없음`);
   });
 
-  test("흐름 레이어 토글과 레이어가 짝을 이룬다", () => {
-    const toggles = attrValues("layer");
-    const groups = new Set([...html.matchAll(/data-layer-group="([^"]+)"/g)].map(m => m[1]));
-    for (const t of toggles) assert.ok(groups.has(t), `토글 "${t}"에 대응하는 레이어가 없음`);
-    for (const g of groups) assert.ok(toggles.has(g), `레이어 "${g}"를 켜고 끌 토글이 없음`);
+  test("HT14 치수가 CFD 격자와 같다", { skip: !isReady("a-apparatus") }, () => {
+    // 좌표계를 공유하기로 했다. 어긋나면 도식과 Watch the flow가 다른 장치를 그린다.
+    assert.equal(HT14.duct.innerD, 0.070);
+    assert.equal(HT14.heater.z, 1.050);
+    assert.equal(HT14.heater.d, 0.010);
+    assert.deepEqual(HT14.window, { zLo: 1.02, zHi: 1.20 });
   });
 });
 

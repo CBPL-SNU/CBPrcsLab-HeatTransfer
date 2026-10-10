@@ -1,0 +1,72 @@
+/* a-apparatus 화면 전용. 이 화면을 맡은 사람만 고친다. */
+
+/* ── 단면도 ─────────────────────────────────────
+   그림은 JS가 치수에서 만든다. 여기는 색과 굵기뿐이다.
+   흐르는 점선은 공기의 방향을, 강조는 어느 부품을 보고 있는지를 나타낸다. 장식이 아니다. */
+.apparatus-stage { display: grid; place-items: center; }
+.apparatus-diagram { width: 100%; height: auto; }
+
+.duct-air { fill: var(--well); }
+.duct-air--squeezed { fill: url(#squeezeHatch); }   /* 줄인 구간은 빗금. 축척 구간과 같은 확신으로 읽히면 안 된다 */
+.squeeze-hatch { stroke: var(--chart-grid); stroke-width: 1; }
+.cfd-cut { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 4 3; }
+.duct-wall { fill: var(--surface-3); stroke: var(--chart-ink); stroke-width: 1; }
+.break-line { fill: none; stroke: var(--chart-ink); stroke-width: 1; }
+.break-label, .window-label, .legend-note { fill: var(--muted-2); font-size: 12px; }
+.window-box { fill: rgba(var(--accent-rgb), .06); stroke: var(--accent); stroke-width: 1; stroke-dasharray: 4 3; }
+.scale-bar path { stroke: var(--chart-ink); stroke-width: 1.5; }
+.scale-bar text { fill: var(--chart-ink); font-size: 12px; }
+
+/* 히터: 관 안쪽 가열 구간만 표면 온도 색을 옅게 띤다. 밖의 조립체는 윤곽뿐이다 */
+.heater-support { fill: var(--surface); stroke: var(--chart-ink); stroke-width: 1; }
+.heater-hot { fill: rgba(var(--series-surface-rgb), .30); stroke: var(--series-surface); stroke-width: 1; }
+.heater-bracket { fill: var(--surface-3); stroke: var(--chart-ink); stroke-width: 1; }
+
+/* 센서: 표면 온도 센서는 채우고, 공기 온도 센서는 비운다 */
+.sensor { stroke-width: 1.6; }
+.sensor--surface { fill: var(--series-surface); stroke: var(--chart-mark); }
+.sensor--air { fill: var(--surface); stroke: var(--chart-mark); }
+.sensor-stem { fill: none; stroke: var(--chart-mark); stroke-width: 1.2; }
+.anemometer { fill: var(--surface-3); stroke: var(--chart-mark); stroke-width: 1; }
+.anemometer-hub { fill: var(--chart-mark); }
+
+/* 송풍기와 throttle. 실험 A에서는 쓰지 않으므로 채움을 옅게 */
+.fan-transition, .fan-box, .fan-motor { fill: var(--surface-3); stroke: var(--chart-ink); stroke-width: 1; }
+.fan-hub { fill: var(--surface); stroke: var(--chart-ink); stroke-width: 1; }
+.fan-blade { fill: none; stroke: var(--chart-mark); stroke-width: 1.2; }
+.fan-base { stroke: var(--chart-ink); stroke-width: 1.5; }
+.throttle-inlet { fill: var(--surface); stroke: var(--chart-ink); stroke-width: 1; }
+.throttle-stem { stroke: var(--chart-mark); stroke-width: 1.2; }
+.throttle-disc { fill: var(--surface-3); stroke: var(--chart-mark); stroke-width: 1.2; }
+
+/* 이름표 */
+.part-leader { stroke: var(--chart-grid); stroke-width: 1; fill: none; pointer-events: none; }
+.part-label { fill: var(--text-2); font-size: 14px; font-weight: var(--fw-medium); pointer-events: none; }
+.part-sub { fill: var(--muted-2); font-size: 12px; font-family: var(--font-mono); pointer-events: none; }
+.part-approx { fill: var(--muted-2); font-weight: 400; }
+/* 줄인 구간의 부품은 리더선을 점선으로. 축척 구간과 같은 확신으로 읽히면 안 된다 */
+.apparatus-part--squeezed .part-leader { stroke-dasharray: 3 3; }
+
+/* 가리킴은 옅게, 선택은 진하게. 둘이 같으면 어느 쪽을 보고 있는지 모른다 */
+.apparatus-part { cursor: pointer; outline: none; }
+.apparatus-part .part-hit { fill: rgba(var(--accent-rgb), 0); stroke: transparent; stroke-width: 6; transition: fill 140ms ease, stroke 140ms ease; }
+.apparatus-part:hover .part-hit { fill: rgba(var(--accent-rgb), .05); }
+.apparatus-part.selected .part-hit,
+.apparatus-part:focus-visible .part-hit { fill: rgba(var(--accent-rgb), .09); stroke: rgba(var(--accent-rgb), .6); }
+.apparatus-part:hover .part-label { fill: var(--accent-ink); }
+.apparatus-part.selected .part-label { fill: var(--accent-ink); font-weight: var(--fw-semi); }
+
+/* 흐름. 대류는 그래프와 같은 파랑, 복사는 같은 빨강, 공기는 매질이라 크롬 색.
+   선은 가늘고 곧게, 화살촉 하나로 방향을 말한다. 움직이지 않는다 */
+.flow-layer { transition: opacity 180ms ease; }
+.flow-layer.layer-hidden { opacity: 0; pointer-events: none; }
+.air-path, .conv-path, .rad-path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.air-path { stroke: var(--chart-ink); stroke-width: 1.2; opacity: .7; }
+.conv-path { stroke: var(--series-conv); stroke-width: 1.6; }
+.rad-path { stroke: var(--series-rad); stroke-width: 1.2; }
+.arrow-air { fill: var(--chart-ink); }
+.arrow-conv { fill: var(--series-conv); }
+.arrow-rad { fill: var(--series-rad); }
+
+/* 설명 카드의 값이 숫자가 아니라 문장이다 */
+.values--text .v { font-family: var(--font-sans); font-size: var(--fs-md); font-weight: 400; }

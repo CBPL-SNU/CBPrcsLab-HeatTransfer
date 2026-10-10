@@ -20,6 +20,11 @@ export const VIEWS = [
     title: "Experiment A · The plume above the heated cylinder"
   },
   {
+    id: "a-apparatus", group: "Experiment A", status: "ready",
+    label: "Apparatus", sub: "HT14 in section",
+    title: "Experiment A · The HT14 rig and its sensors"
+  },
+  {
     id: "experiment-b", group: "Experiment B", status: "ready",
     label: "Calculate", sub: "Thermocouple error",
     title: "Experiment B · Radiation error in temperature measurement"
@@ -31,10 +36,10 @@ export const VIEWS = [
     plan: "Temperature and velocity around the three beads in the heated tube, for the fan-off and the four fan-speed conditions. The lab has not run these cases yet. The frames arrive in the same format as Experiment A and the screen will read the local air temperature and velocity at each bead position."
   },
   {
-    id: "apparatus", status: "planned",
-    label: "Apparatus", sub: "Sensors and heat paths",
-    title: "Apparatus",
-    plan: "An interactive schematic of both rigs. Click a sensor or component to read what it measures, where it sits, and what it does. Air flow, convection and radiation paths can be toggled. The diagram is drawn and the descriptions are written; it needs the measured sensor coordinates before it goes live."
+    id: "b-apparatus", group: "Experiment B", status: "planned",
+    label: "Apparatus", sub: "HT16 in section",
+    title: "Experiment B · The HT16 rig and its sensors",
+    plan: "A section through the heated tube with T5 at the inlet, the three test beads T6, T7 and T8, the band heater and T10 on the wall, drawn to scale from the rig's dimensions the way the HT14 drawing is. The part descriptions are written; the drawing waits for the HT16 dimensions, which the Experiment B CFD will bring."
   },
   {
     id: "data", status: "planned",
