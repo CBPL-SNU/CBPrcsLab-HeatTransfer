@@ -37,7 +37,8 @@
 .nav-item span { display: block; margin-top: 1px; font-size: var(--fs-xs); opacity: .8; }
 /* 실험별 묶음. 머리글은 누르는 것이 아니라 읽는 것이다. */
 .nav-group { margin: var(--sp-3) var(--sp-3) 2px; color: var(--frame-ink); font-size: var(--fs-xs); font-weight: var(--fw-semi); letter-spacing: 0; }
-.nav-group:first-child { margin-top: 0; }
+.nav-section:first-child .nav-group { margin-top: 0; }
+.nav-items { display: flex; flex-direction: column; gap: 2px; }
 .nav-item--sub { padding-left: var(--sp-5); }
 .nav-item--sub > span { display: none; }   /* 하위 항목은 이름 한 줄이면 충분하다. planned 표지는 남는다 */
 
@@ -99,12 +100,22 @@
   .split { grid-template-columns: 1fr; }
 }
 @media (max-width: 860px) {
-  .app { grid-template-columns: 1fr; }
-  .sidebar { position: static; height: auto; }
-  .nav { flex-direction: row; overflow-x: auto; }
-  .nav-item { width: auto; white-space: nowrap; }
-  .nav-item span, .nav-group { display: none; }
-  .nav-item--sub { padding-left: var(--sp-3); }
+  /* 1fr는 내용 폭 아래로 줄지 않아 메뉴 줄이 페이지 전체를 넓힌다. minmax(0, 1fr)이어야 한다 */
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { position: static; height: auto; min-width: 0; }
+  /* 실험마다 한 줄. 머리글이 왼쪽에 붙어 A와 B의 같은 이름 화면이 구분된다 */
+  .nav { gap: var(--sp-1); }
+  .nav-section { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+  .nav-group { flex: none; width: 92px; margin: 0; }
+  .nav-items { flex-direction: row; overflow-x: auto; min-width: 0; }
+  .nav-item { width: auto; white-space: nowrap; padding: var(--sp-1) var(--sp-2); }
+  .nav-item span { display: none; }
+  .nav-item--sub { padding-left: var(--sp-2); }
+  .nav-item.is-active { box-shadow: inset 0 -2px 0 var(--frame-accent); }
+  .sidebar { gap: var(--sp-3); padding: var(--sp-3); }
+  /* 화면 제목이 길어 버튼을 밀어내므로 제목을 한 줄 따로 둔다 */
+  .topbar { flex-wrap: wrap; row-gap: var(--sp-1); padding-block: var(--sp-2); }
+  .topbar h1 { flex: 1 1 100%; }
   .conditions { padding: var(--sp-3); gap: var(--sp-3); }
   .content { padding: var(--sp-4) var(--sp-3) var(--sp-6); }
 }

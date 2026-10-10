@@ -9,20 +9,27 @@ import { VIEWS, DEFAULT_VIEW } from "../data/views.js";
 let onActivate = {};
 const loaded = new Set();
 
-// 같은 group의 화면은 한 머리글 아래 묶인다. group이 없으면 그냥 놓는다.
+// 같은 group의 화면은 한 묶음(머리글 + 항목)으로 감싼다. 좁은 화면에서 묶음이 한 줄씩 되어
+// 실험 A와 B의 같은 이름 화면이 구분된다. group이 없으면 머리글 없는 묶음이 된다.
 function renderNav() {
   const list = $("#navList");
   if (!list) return;
-  let lastGroup = null;
-  list.innerHTML = VIEWS.map(view => {
-    const head = view.group && view.group !== lastGroup ? `<h2 class="nav-group">${view.group}</h2>` : "";
-    lastGroup = view.group ?? null;
-    return `${head}
-    <button class="nav-item${view.group ? " nav-item--sub" : ""}" type="button" data-view="${view.id}">
-      <strong>${view.label}${view.status === "planned" ? '<span class="nav-flag">planned</span>' : ""}</strong>
-      <span>${view.sub}</span>
-    </button>`;
-  }).join("");
+  const sections = [];
+  VIEWS.forEach(view => {
+    const last = sections.at(-1);
+    if (last && view.group && last.group === view.group) last.views.push(view);
+    else sections.push({ group: view.group ?? null, views: [view] });
+  });
+  list.innerHTML = sections.map(({ group, views }) => `
+    <div class="nav-section">
+      ${group ? `<h2 class="nav-group">${group}</h2>` : ""}
+      <div class="nav-items">${views.map(view => `
+        <button class="nav-item${group ? " nav-item--sub" : ""}" type="button" data-view="${view.id}">
+          <strong>${view.label}${view.status === "planned" ? '<span class="nav-flag">planned</span>' : ""}</strong>
+          <span>${view.sub}</span>
+        </button>`).join("")}
+      </div>
+    </div>`).join("");
 }
 
 /**
