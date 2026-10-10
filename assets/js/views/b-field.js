@@ -1,7 +1,7 @@
 // 실험 B 관찰 화면: 가열된 관과 그 가운데 열전대 구의 CFD 단면을 재생한다.
 
 import { $, $$, clamp, numberValue } from "../core/dom.js";
-import { setupCanvas, drawAxes, drawLine, makeScales, paintUpTo, CHART_INK, CHART_FONT, SERIES_COLOR, SENSOR_COLOR } from "../core/chart.js";
+import { setupCanvas, drawAxes, drawLine, drawArea, makeScales, paintUpTo, CHART_INK, CHART_FONT, SERIES_COLOR, SENSOR_COLOR } from "../core/chart.js";
 import { loadCase, ensureField, physical, valueRange } from "../core/cfd-loader.js";
 import { RAMP, paintFrame, sampleFrame, createPlayer, showProbe, hideProbe } from "../core/field-player.js";
 
@@ -169,8 +169,10 @@ function drawBeadTemperature() {
   const lo = Math.min(air, ...present(bead)), hi = Math.max(...present(bead));
   const pad = (hi - lo) * 0.1 || 1, end = t.at(-1);
   const { xMap, yMap } = makeScales(w, h, [0, end], [lo - pad, hi + pad]);
+  // 팬이 꺼진 5 V는 1 K 안에서 움직인다. 정수로 반올림하면 눈금이 한 점으로 겹친다
+  const digits = hi - lo < 5 ? 1 : 0;
   drawAxes(ctx, w, h, "t (s)", "T (°C)", [0, Math.round(end / 2), end],
-    [+lo.toFixed(0), +((lo + hi) / 2).toFixed(0), +hi.toFixed(0)], xMap, yMap);
+    [+lo.toFixed(digits), +((lo + hi) / 2).toFixed(digits), +hi.toFixed(digits)], xMap, yMap);
   const x = xMap(data.index.frames[frameIndex]);
   paintUpTo(ctx, x, h, () => {
     drawLine(ctx, [[xMap(0), yMap(air)], [xMap(end), yMap(air)]], SERIES_COLOR.residual, 1.6, [7, 4]);
@@ -178,27 +180,28 @@ function drawBeadTemperature() {
   });
 }
 
+// 들어오는 복사와 나가는 대류를 둘 다 양수로 그린다. 두 선 사이가 구를 데우는 몫이고,
+// 두 선이 만나면 구가 평형에 이른 것이다. 실험 A의 "Warming the heater"와 같은 읽기다.
 function drawBeadHeat() {
   const setup = setupCanvas($("#bHeatChart"));
   if (!setup) return;
   const { ctx, w, h } = setup;
-  const { time_s: t } = data.history;
-  // W는 너무 작아 mW로 그린다
-  const mW = key => data.history[key].map(v => (v === null ? null : v * 1000));
-  const rad = mW("Q_air_to_bead_rad_W"), conv = mW("Q_air_to_bead_conv_W"), net = mW("Q_air_to_bead_total_W");
-  const all = present([...rad, ...conv, ...net]);
-  const lo = Math.min(0, ...all), hi = Math.max(0, ...all);
-  const pad = (hi - lo) * 0.08, end = t.at(-1);
-  const { xMap, yMap } = makeScales(w, h, [0, end], [lo - pad, hi + pad]);
+  const { time_s: t, Q_air_to_bead_rad_W: radW, Q_air_to_bead_conv_W: convW } = data.history;
+  // W는 너무 작아 mW로 그린다. 첫 시각과 재시작 경계는 값이 없다
+  const rows = t.flatMap((s, i) => (radW[i] === null || convW[i] === null ? []
+    : [{ t: s, inn: radW[i] * 1000, out: -convW[i] * 1000 }]));
+  const values = rows.flatMap(r => [r.inn, r.out]);
+  const lo = Math.min(0, ...values), hi = Math.max(...values) * 1.1, end = t.at(-1);
+  const { xMap, yMap } = makeScales(w, h, [0, end], [lo, hi]);
   // 작은 구는 1 mW 안쪽이라 눈금 자릿수를 범위에 맞춘다
   const digits = hi - lo < 5 ? 2 : 0;
   drawAxes(ctx, w, h, "t (s)", "Q (mW)", [0, Math.round(end / 2), end],
-    [+lo.toFixed(digits), 0, +hi.toFixed(digits)], xMap, yMap);
-  drawLine(ctx, [[xMap(0), yMap(0)], [xMap(end), yMap(0)]], CHART_INK.grid, 1);
+    [0, +(hi / 2).toFixed(digits), +hi.toFixed(digits)], xMap, yMap);
+  const inn = rows.map(r => [xMap(r.t), yMap(r.inn)]), out = rows.map(r => [xMap(r.t), yMap(r.out)]);
   paintUpTo(ctx, xMap(data.index.frames[frameIndex]), h, () => {
-    drawLine(ctx, series(t, rad, xMap, yMap), SERIES_COLOR.rad, 2);
-    drawLine(ctx, series(t, conv, xMap, yMap), SERIES_COLOR.conv, 2);
-    drawLine(ctx, series(t, net, xMap, yMap), SERIES_COLOR.residual, 2);
+    drawArea(ctx, inn, out, SERIES_COLOR.residual);
+    drawLine(ctx, inn, SERIES_COLOR.rad, 2);
+    drawLine(ctx, out, SERIES_COLOR.conv, 2);
   });
 }
 
@@ -210,14 +213,14 @@ function showBalance() {
   $("#bCfdBead").innerHTML = bead === null ? "—" : `${bead.toFixed(2)} <small>°C</small>`;
   $("#bCfdError").innerHTML = bead === null ? "—" : `${(bead - air).toFixed(2)} <small>K</small>`;
   // 큰 구는 수십 mW, 작은 구는 1 mW 안쪽이다
-  const mW = key => {
-    const v = hist[key][i];
+  const mW = (key, sign) => {
+    const v = hist[key][i] === null ? null : sign * hist[key][i];
     if (v === null) return "—";
     return `${(v * 1000).toFixed(Math.abs(v * 1000) < 10 ? 2 : 1)} <small>mW</small>`;
   };
-  $("#bCfdRad").innerHTML = mW("Q_air_to_bead_rad_W");
-  $("#bCfdConv").innerHTML = mW("Q_air_to_bead_conv_W");
-  $("#bCfdNet").innerHTML = mW("Q_air_to_bead_total_W");
+  $("#bCfdRad").innerHTML = mW("Q_air_to_bead_rad_W", 1);
+  $("#bCfdConv").innerHTML = mW("Q_air_to_bead_conv_W", -1);
+  $("#bCfdNet").innerHTML = mW("Q_air_to_bead_total_W", 1);
 }
 
 function updateLabels() {

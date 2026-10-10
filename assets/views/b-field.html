@@ -23,23 +23,22 @@
     </div>
   </div>
   <span class="divider"></span>
-  <div class="input free transport"><label for="bFieldTime">Time <span class="unit num" id="bFieldTimeValue">0 / 0 s</span></label>
+  <!-- 재생 배속은 재생 버튼·슬라이더와 한 줄. 따로 두면 조작부가 두 줄로 늘어난다 -->
+  <div class="input free transport">
+    <div class="transport-head"><label for="bFieldTime">Time <span class="unit num" id="bFieldTimeValue">0 / 0 s</span></label><span class="unit num" id="bPlayRateValue"></span></div>
     <div class="transport-row">
       <button class="btn btn--primary" id="bFieldPlay" type="button" title="Space">Play</button>
       <div class="scrubber">
         <input id="bFieldTime" type="range" min="0" max="300" step="1" value="0" aria-label="Simulation time" title="← / → one frame">
         <div class="scrubber-ticks" id="bFieldTicks" aria-hidden="true"></div>
       </div>
-    </div>
-  </div>
-  <span class="divider"></span>
-  <div class="input free"><label>Playback <span class="unit num" id="bPlayRateValue"></span></label>
-    <div class="btn-row" role="group" aria-label="Playback speed relative to real time">
+      <div class="btn-row rate-row" role="group" aria-label="Playback speed relative to real time">
       <button class="btn play-rate" data-rate="1" type="button" aria-pressed="false">1×</button>
       <button class="btn play-rate" data-rate="2" type="button" aria-pressed="false">2×</button>
       <button class="btn play-rate" data-rate="5" type="button" aria-pressed="false">5×</button>
       <button class="btn play-rate" data-rate="10" type="button" aria-pressed="false">10×</button>
       <button class="btn play-rate" data-rate="25" type="button" aria-pressed="false">25×</button>
+      </div>
     </div>
   </div>
 </div>
@@ -85,18 +84,18 @@
   </div>
 
   <div class="card">
-    <header><h2>Heat into the bead</h2></header>
+    <header><h2>Radiation in, convection out</h2></header>
     <div class="card-body">
       <div class="values">
-        <div><span class="k">Radiation</span><span class="v rad" id="bCfdRad">—</span></div>
-        <div><span class="k">Convection</span><span class="v conv" id="bCfdConv">—</span></div>
-        <div><span class="k">Net</span><span class="v" id="bCfdNet">—</span></div>
+        <div><span class="k">Radiation in</span><span class="v rad" id="bCfdRad">—</span></div>
+        <div><span class="k">Convection out</span><span class="v conv" id="bCfdConv">—</span></div>
+        <div><span class="k">Warming the bead</span><span class="v" id="bCfdNet">—</span></div>
       </div>
       <div class="chart-frame"><canvas class="chart chart--short" id="bHeatChart"></canvas></div>
       <div class="legend">
         <span><i class="rad"></i>Radiation from the wall</span>
         <span><i class="conv"></i>Convection to the air</span>
-        <span><i class="residual"></i>Net</span>
+        <span><i class="residual"></i>Warming the bead</span>
       </div>
     </div>
   </div>
