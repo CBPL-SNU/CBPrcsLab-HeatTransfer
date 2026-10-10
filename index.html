@@ -30,7 +30,6 @@
 
     <nav class="nav" id="navList" aria-label="Screens"></nav>
 
-    <p class="sidebar-foot">Everything is computed in your browser. Nothing you type is sent to a server.</p>
   </aside>
 
   <main>
@@ -59,8 +58,7 @@
     <div style="padding: var(--sp-4); overflow: auto; display: flex; flex-direction: column; gap: var(--sp-4);">
       <div><h3>Experiment A</h3><p class="assumption">Steady-state balance on the heated cylinder. Radiation uses a linearised coefficient with emissivity and view factor as inputs. Convection is either the McAdams simple form or Morgan's correlation with the air properties you enter. The residual is not "experimental error" — it is heat the two terms do not describe.</p></div>
       <div><h3>Experiment B</h3><p class="assumption">The bead balance solves radiation gained against convection lost. Conduction along the thermocouple wire is not included, so the predicted error is an upper bound on what the real sensor shows.</p></div>
-      <div><h3>Transient</h3><p class="assumption">One lumped node per body. Effective heat capacity and extra loss are not in the course notes and have not been fitted to a recorded run, so absolute times are not trustworthy.</p></div>
-      <div><h3>Field</h3><p class="assumption">The field is generated for illustration. Pre-computed CFD cases will replace it, and surface integrals will come from the original grid rather than the display grid.</p></div>
+      <div><h3>CFD</h3><p class="assumption">The pictures are OpenFOAM results resampled to a 1 mm grid, 0.1 mm around the Experiment B bead, in 256 levels per window, so a pointer reading carries that rounding. Heat rates and sensor temperatures come from the solver, not from the pictures.</p></div>
       <div><h3>Verification</h3><p class="assumption">Every model here is cross-checked against an independent SciPy implementation that uses different algorithms — Brent root finding and adaptive Runge–Kutta instead of bisection and fixed-step RK4 — so a mistake in one cannot hide in the other.</p></div>
     </div>
   </dialog>

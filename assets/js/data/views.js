@@ -30,10 +30,9 @@ export const VIEWS = [
     title: "Experiment B · Radiation error in temperature measurement"
   },
   {
-    id: "b-field", group: "Experiment B", status: "planned",
-    label: "Watch the flow", sub: "CFD around the beads",
-    title: "Experiment B · Air around the thermocouple beads",
-    plan: "Temperature and velocity around the three beads in the heated tube, for the fan-off and the four fan-speed conditions. The lab has not run these cases yet. The frames arrive in the same format as Experiment A and the screen will read the local air temperature and velocity at each bead position."
+    id: "b-field", group: "Experiment B", status: "ready",
+    label: "Watch the flow", sub: "CFD around the bead",
+    title: "Experiment B · Air around the thermocouple bead"
   },
   {
     id: "b-apparatus", group: "Experiment B", status: "planned",

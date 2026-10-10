@@ -41,32 +41,11 @@
 .cut--xz { transform: translateZ(0); }
 .cut--yz { transform: rotateY(-90deg); }
 .cut:hover, .cut.is-highlighted { background: rgba(var(--accent-rgb), .34); }
-.cutaway-hint { color: var(--muted-2); font-size: var(--fs-xs); text-align: center; }
 @media (max-width: 960px) { #a-field .viewer { grid-template-columns: minmax(0, 1fr) 76px; } .cutaway { display: none; } }
 #fieldCanvas { display: block; width: 100%; min-width: 0; height: 440px; }
 .colorbar { display: flex; gap: var(--sp-2); }
 
-/* 포인터를 따라다니는 판독값. 캔버스 위에 얹히므로 캔버스와 같은 상자 안에 둔다. */
-.viewer-stage { position: relative; min-width: 0; }
-.viewer-cross { position: absolute; pointer-events: none; background: rgba(255, 255, 255, .55); }
-.viewer-cross--h { left: 0; right: 0; height: 1px; }
-.viewer-cross--v { top: 0; bottom: 0; width: 1px; }
-.viewer-tip {
-  position: absolute; pointer-events: none; transform: translate(10px, -50%);
-  padding: 2px var(--sp-2); border-radius: var(--radius-sm);
-  background: var(--surface); color: var(--text); border: 1px solid var(--border);
-  box-shadow: var(--shadow-card); font-size: var(--fs-xs); white-space: nowrap;
-}
 .colorbar-scale { width: 10px; height: 160px; border: 1px solid var(--border); border-radius: var(--radius-sm); }
 .colorbar-labels { display: flex; flex-direction: column; justify-content: space-between; color: var(--chart-ink); font-family: var(--font-mono); font-size: var(--fs-xs); }
 
-/* 재생 조작부. 슬라이더가 남는 폭을 다 쓴다. */
-.transport { flex: 1 1 320px; }
-.transport-row { display: flex; align-items: center; gap: var(--sp-2); }
-.transport-row input[type="range"] { flex: 1; min-width: 160px; }
-@media (max-width: 600px) {
-  #fieldCanvas { height: 340px; }
-  .transport { min-width: 0; width: 100%; }
-  .transport-row { flex-wrap: wrap; }
-  .transport-row input[type="range"] { order: 1; flex-basis: 100%; min-width: 0; }
-}
+@media (max-width: 600px) { #fieldCanvas { height: 340px; } }

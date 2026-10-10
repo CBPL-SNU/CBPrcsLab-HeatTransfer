@@ -13,12 +13,14 @@ import { initExperimentAView, drawAChart } from "./views/experiment-a.js";
 import { initExperimentBView, drawBChart } from "./views/experiment-b.js";
 import { initFieldViewer, drawFieldView } from "./views/a-field.js";
 import { initApparatusView } from "./views/a-apparatus.js";
+import { initBFieldViewer, drawBFieldView } from "./views/b-field.js";
 
 const SCREENS = {
   "experiment-a": { mount: initExperimentAView, redraw: drawAChart },
   "a-field": { mount: initFieldViewer, redraw: drawFieldView },
   "a-apparatus": { mount: initApparatusView },
-  "experiment-b": { mount: initExperimentBView, redraw: drawBChart }
+  "experiment-b": { mount: initExperimentBView, redraw: drawBChart },
+  "b-field": { mount: initBFieldViewer, redraw: drawBFieldView }
 };
 
 const ready = id => VIEWS.find(view => view.id === id)?.status === "ready";

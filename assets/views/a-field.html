@@ -16,8 +16,21 @@
   <span class="divider"></span>
   <div class="input free transport"><label for="fieldTime">Time <span class="unit num" id="fieldTimeValue">0 / 0 s</span></label>
     <div class="transport-row">
-      <button class="btn btn--primary" id="fieldPlay" type="button" title="Space · plays at 10× real time">Play</button>
-      <input id="fieldTime" type="range" min="0" max="360" step="1" value="0" aria-label="Simulation time" title="← / → one frame">
+      <button class="btn btn--primary" id="fieldPlay" type="button" title="Space">Play</button>
+      <div class="scrubber">
+        <input id="fieldTime" type="range" min="0" max="360" step="1" value="0" aria-label="Simulation time" title="← / → one frame">
+        <div class="scrubber-ticks" id="fieldTicks" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
+  <span class="divider"></span>
+  <div class="input free"><label>Playback <span class="unit num" id="playRateValue"></span></label>
+    <div class="btn-row" role="group" aria-label="Playback speed relative to real time">
+      <button class="btn play-rate" data-rate="1" type="button" aria-pressed="false">1×</button>
+      <button class="btn play-rate" data-rate="2" type="button" aria-pressed="false">2×</button>
+      <button class="btn play-rate" data-rate="5" type="button" aria-pressed="false">5×</button>
+      <button class="btn play-rate" data-rate="10" type="button" aria-pressed="false">10×</button>
+      <button class="btn play-rate" data-rate="25" type="button" aria-pressed="false">25×</button>
     </div>
   </div>
 </div>
@@ -42,13 +55,13 @@
               <div class="cut cut--xz" data-plane="xz"></div>
             </div>
           </div>
-          <p class="cutaway-hint">Drag to turn · click a plane to face it</p>
         </div>
         <div class="viewer-stage">
           <canvas id="fieldCanvas" role="img" aria-label="Two CFD slices around the heater; approximate point values are available with the pointer."></canvas>
           <div class="viewer-cross viewer-cross--h" id="fieldCrossH" hidden></div>
           <div class="viewer-cross viewer-cross--v" id="fieldCrossV" hidden></div>
           <div class="viewer-tip num" id="fieldTip" hidden></div>
+          <p class="viewer-coords num" id="fieldCoords" aria-live="off"></p>
         </div>
         <div class="colorbar">
           <div class="colorbar-scale" id="colorbarGradient"></div>
