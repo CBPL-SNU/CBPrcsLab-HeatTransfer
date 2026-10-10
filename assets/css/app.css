@@ -142,7 +142,12 @@
   color: var(--chart-ink); font-size: var(--fs-xs); white-space: pre;
 }
 /* 재생 조작부. 슬라이더가 남는 폭을 다 쓴다. */
-.transport { flex: 1 1 320px; }
+.transport { flex: 1 1 420px; }
+.transport-head { display: flex; align-items: baseline; gap: var(--sp-3); }
+.transport-head label { color: var(--muted); font-size: var(--fs-xs); font-weight: var(--fw-semi); white-space: nowrap; }
+.transport-head > .unit { margin-left: auto; white-space: nowrap; }
+.rate-row { flex: none; gap: 2px; }
+.rate-row .btn { padding-inline: var(--sp-2); }
 .transport-row { display: flex; align-items: center; gap: var(--sp-2); }
 .scrubber { flex: 1; min-width: 160px; display: flex; flex-direction: column; }
 .scrubber input[type="range"] { width: 100%; margin: 0; }
@@ -159,4 +164,6 @@
   .transport { min-width: 0; width: 100%; }
   .transport-row { flex-wrap: wrap; }
   .transport-row .scrubber { order: 1; flex-basis: 100%; min-width: 0; }
+  .transport-head { flex-wrap: wrap; }
+  .transport-head > .unit { margin-left: 0; }
 }

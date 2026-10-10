@@ -106,7 +106,7 @@ export function createPlayer(el, { frames, current, setFrame, isActive }) {
       button.setAttribute("aria-pressed", String(on));
     });
     const wall = duration() / r, step = duration() / (frames().length - 1);
-    el.rateValue.textContent = `${duration().toFixed(0)} s plays in ${wall < 10 ? wall.toFixed(1) : wall.toFixed(0)} s · ${step.toFixed(1)} s/frame`;
+    el.rateValue.textContent = `plays in ${wall < 10 ? wall.toFixed(1) : wall.toFixed(0)} s · ${step.toFixed(1)} s/frame`;
   }
 
   // 슬라이더 아래 눈금. 프레임 번호가 아니라 시뮬레이션 시각 [s]. 이름표끼리 56 px 이상 떨어지게 고른다

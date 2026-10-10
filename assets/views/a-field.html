@@ -14,23 +14,22 @@
     </div>
   </div>
   <span class="divider"></span>
-  <div class="input free transport"><label for="fieldTime">Time <span class="unit num" id="fieldTimeValue">0 / 0 s</span></label>
+  <!-- 재생 배속은 재생 버튼·슬라이더와 한 줄. 따로 두면 조작부가 두 줄로 늘어난다 -->
+  <div class="input free transport">
+    <div class="transport-head"><label for="fieldTime">Time <span class="unit num" id="fieldTimeValue">0 / 0 s</span></label><span class="unit num" id="playRateValue"></span></div>
     <div class="transport-row">
       <button class="btn btn--primary" id="fieldPlay" type="button" title="Space">Play</button>
       <div class="scrubber">
         <input id="fieldTime" type="range" min="0" max="360" step="1" value="0" aria-label="Simulation time" title="← / → one frame">
         <div class="scrubber-ticks" id="fieldTicks" aria-hidden="true"></div>
       </div>
-    </div>
-  </div>
-  <span class="divider"></span>
-  <div class="input free"><label>Playback <span class="unit num" id="playRateValue"></span></label>
-    <div class="btn-row" role="group" aria-label="Playback speed relative to real time">
+      <div class="btn-row rate-row" role="group" aria-label="Playback speed relative to real time">
       <button class="btn play-rate" data-rate="1" type="button" aria-pressed="false">1×</button>
       <button class="btn play-rate" data-rate="2" type="button" aria-pressed="false">2×</button>
       <button class="btn play-rate" data-rate="5" type="button" aria-pressed="false">5×</button>
       <button class="btn play-rate" data-rate="10" type="button" aria-pressed="false">10×</button>
       <button class="btn play-rate" data-rate="25" type="button" aria-pressed="false">25×</button>
+      </div>
     </div>
   </div>
 </div>
