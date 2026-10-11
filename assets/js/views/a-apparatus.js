@@ -212,7 +212,7 @@ function selectPart(partId) {
   const data = componentData[partId];
   if (!data) return;
   selectedPart = partId;
-  $$(".apparatus-part").forEach(part => part.classList.toggle("selected", part.dataset.part === partId));
+  $$("#a-apparatus .apparatus-part").forEach(part => part.classList.toggle("selected", part.dataset.part === partId));
   $("#componentBadge").textContent = data.badge;
   $("#componentTitle").textContent = data.label;
   $("#componentSummary").textContent = data.summary;
@@ -230,10 +230,10 @@ function selectPart(partId) {
 }
 
 function updateFlowLayers() {
-  $$(".toggle-layer").forEach(button => {
+  $$("#a-apparatus .toggle-layer").forEach(button => {
     const visible = button.classList.contains("is-active");
     button.setAttribute("aria-pressed", String(visible));
-    $$(`[data-layer-group="${button.dataset.layer}"]`).forEach(layer => layer.classList.toggle("layer-hidden", !visible));
+    $$(`#a-apparatus [data-layer-group="${button.dataset.layer}"]`).forEach(layer => layer.classList.toggle("layer-hidden", !visible));
   });
 }
 
@@ -245,14 +245,14 @@ export function initApparatusView() {
     .join("");
   $$("#componentList .btn").forEach(button => button.addEventListener("click", () => selectPart(button.dataset.part)));
 
-  $$(".apparatus-part").forEach(part => {
+  $$("#a-apparatus .apparatus-part").forEach(part => {
     part.addEventListener("click", () => selectPart(part.dataset.part));
     part.addEventListener("keydown", event => {
       if (event.key === "Enter" || event.key === " ") { event.preventDefault(); selectPart(part.dataset.part); }
     });
   });
 
-  $$(".toggle-layer").forEach(button =>
+  $$("#a-apparatus .toggle-layer").forEach(button =>
     button.addEventListener("click", () => { button.classList.toggle("is-active"); updateFlowLayers(); }));
 
   selectPart("a-t10");

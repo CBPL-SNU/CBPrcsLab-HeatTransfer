@@ -1,0 +1,18 @@
+/* b-apparatus 화면 전용. 관, 센서, 송풍기, 흐름 표시는 실험 A 도식과 같은 규칙을 쓴다 */
+@import url("a-apparatus.css");
+
+/* 밴드 히터: 표면 온도 색을 옅게. 안쪽 벽의 가열 구간은 진하게 */
+.heater-band { fill: rgba(var(--series-surface-rgb), .22); stroke: var(--series-surface); stroke-width: 1; }
+.heater-coil { fill: none; stroke: var(--series-surface); stroke-width: 1; }
+.heater-hot-wall { fill: var(--series-surface); }
+
+/* 차폐통과 열전대 */
+.shield-body { fill: var(--surface); stroke: var(--chart-ink); stroke-width: 1.2; }
+.shield-rod { fill: none; stroke: var(--chart-ink); stroke-width: 1.5; }
+.shield-handle { fill: var(--surface-3); stroke: var(--chart-ink); stroke-width: 1; }
+.tc-sheath { fill: none; stroke: var(--chart-mark); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.tc-lead { fill: none; stroke: var(--chart-mark); stroke-width: .8; }
+/* 구의 색은 계산 화면의 범례와 같다. 회색체와 흑체 */
+.bead { stroke: var(--surface); stroke-width: .6; }
+.bead--black { fill: var(--sensor-black); }
+.bead--grey { fill: var(--sensor-grey); }

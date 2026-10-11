@@ -45,3 +45,49 @@ export const HT14 = {
       approximate: "shape, from the manual's figure 3" }
   ]
 };
+
+// 실험 B 장치. 좌표계는 실험 B CFD와 같다 (z 위, 단위 m). 관·가열 구간·구 위치는 CFD에서,
+// 나머지는 교안 10쪽 HT16 그림을 비례로 환산했다. 그림은 축척도가 아니라서 환산한 것은 전부 어림값이다.
+export const PX_PER_MM_B = 1.2;   // 그려야 할 관 길이가 실험 A보다 길어 조금 작게 그린다
+
+export const HT16 = {
+  name: "HT16 · Radiation errors in temperature measurement",
+  duct: {
+    innerD: 0.070,          // 내경 [m]. CFD 격자와 같다
+    wall: 0.004,            // 벽 두께 [m]. 어림값
+    inletZ: 0.200,          // 관 아래 끝 [m]. 그림에서 환산한 어림값
+    outletZ: 0.900          // 관 위 끝 [m]. CFD 계산 영역의 위 끝
+  },
+  heater: {
+    zLo: 0.6275, zHi: 0.7725,   // 가열 벽면 [m]. CFD에서 벽 온도에 닿은 범위. 조교가 크기를 가정했다
+    band: 0.012                 // 관 밖 밴드 히터 두께 [m]. 어림값
+  },
+  shield: { zLo: 0.734, zHi: 0.818, d: 0.042 },   // 비드 위 차폐통 [m]. 그림에서 환산한 어림값
+  leadZ: 0.870,             // 열전대 리드가 오른쪽에서 들어와 아래로 꺾이는 높이 [m]. 어림값
+  cfd: { zLo: 0.400, zHi: 0.900 },                // 실험 B CFD 계산 영역
+  window: { zLo: 0.580, zHi: 0.820 },             // Watch the flow의 전체 창. tools/cfd_b_to_frames.py와 같다
+  parts: [
+    { id: "b-t8", kind: "bead", name: "T8", x: 0.000, z: 0.700, d: 0.00312, side: "right",
+      approximate: "the bead sits on the axis in the CFD; the real bead may hang slightly off it" },
+    { id: "b-t6", kind: "bead", name: "T6", x: -0.012, z: 0.700, d: 0.00052, side: "left",
+      approximate: "sideways spacing, from the manual's figure", approximatePosition: true },
+    { id: "b-t7", kind: "bead", name: "T7", x: 0.012, z: 0.700, d: 0.00052, side: "right",
+      approximate: "sideways spacing, from the manual's figure", approximatePosition: true },
+    { id: "b-t10", kind: "wall-sensor", name: "T10", z: 0.760, side: "right",
+      approximate: "height on the heated wall", approximatePosition: true },
+    { id: "b-heater-wall", kind: "heater", name: "Band heater", side: "left",
+      approximate: "the heated length was assumed for the CFD; the real band has not been measured" },
+    { id: "b-shield", kind: "shield", name: "Shield", side: "left",
+      approximate: "size and height, from the manual's figure" },
+    { id: "b-duct", kind: "duct", name: "Duct", side: "left",
+      approximate: "wall thickness and the length below the CFD region" },
+    { id: "b-anemometer", kind: "sensor", name: "Anemometer", x: 0.000, z: 0.530, side: "right",
+      approximate: "height, scaled from the manual's figure", approximatePosition: true },
+    { id: "b-t5", kind: "air-sensor", name: "T5", x: 0.000, z: 0.320, side: "right",
+      approximate: "height, scaled from the manual's figure", approximatePosition: true },
+    { id: "b-throttle", kind: "throttle", name: "Throttle plate", side: "right",
+      approximate: "shape, from the manual's figure" },
+    { id: "b-fan", kind: "fan", name: "Fan", side: "left",
+      approximate: "shape, from the manual's figure" }
+  ]
+};
