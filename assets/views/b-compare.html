@@ -2,31 +2,6 @@
   <!-- 두 구를 모두 계산한 조건은 이것 하나라 고를 것이 없다 -->
   <div class="input free"><label>Air flow</label><p class="fixed-condition">1.6 m/s</p></div>
   <div class="input free"><label>Wall T10</label><p class="fixed-condition" id="cWall">—</p></div>
-  <span class="divider"></span>
-  <div class="input free"><label>Field</label>
-    <div class="btn-row">
-      <button class="btn c-field-type is-active" data-field="temperature" type="button" aria-pressed="true">Temperature</button>
-      <button class="btn c-field-type" data-field="speed" type="button" aria-pressed="false">Speed</button>
-    </div>
-  </div>
-  <span class="divider"></span>
-  <div class="input free transport">
-    <div class="transport-head"><label for="cTime">Time <span class="unit num" id="cTimeValue">0 / 0 s</span></label><span class="unit num" id="cPlayRateValue"></span></div>
-    <div class="transport-row">
-      <button class="btn btn--primary" id="cPlay" type="button" title="Space">Play</button>
-      <div class="scrubber">
-        <input id="cTime" type="range" min="0" max="300" step="1" value="0" aria-label="Simulation time" title="← / → one frame">
-        <div class="scrubber-ticks" id="cTicks" aria-hidden="true"></div>
-      </div>
-      <div class="btn-row rate-row" role="group" aria-label="Playback speed relative to real time">
-        <button class="btn play-rate" data-rate="1" type="button" aria-pressed="false">1×</button>
-        <button class="btn play-rate" data-rate="2" type="button" aria-pressed="false">2×</button>
-        <button class="btn play-rate" data-rate="5" type="button" aria-pressed="false">5×</button>
-        <button class="btn play-rate" data-rate="10" type="button" aria-pressed="false">10×</button>
-        <button class="btn play-rate" data-rate="25" type="button" aria-pressed="false">25×</button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <div class="content">
@@ -35,7 +10,7 @@
 
   <div class="card-grid wide-left">
   <div class="card">
-    <header><h2>Each window is five bead diameters wide</h2><span class="badge">OpenFOAM</span></header>
+    <header><h2>Each window is five bead diameters wide</h2><div class="btn-row field-switch" role="group" aria-label="Field"><button class="btn c-field-type is-active" data-field="temperature" type="button" aria-pressed="true">Temperature</button><button class="btn c-field-type" data-field="speed" type="button" aria-pressed="false">Speed</button></div><span class="badge">OpenFOAM</span></header>
     <div class="card-body">
       <!-- 두 창은 같은 색 범위다. 같은 색이면 같은 온도다 -->
       <div class="b-viewer">
@@ -46,6 +21,27 @@
           <div class="viewer-tip num" id="cTip" hidden></div>
         </div>
         <p class="viewer-coords num" id="cCoords" aria-live="off"></p>
+      </div>
+      <!-- 재생은 그림 바로 아래. 오른쪽 그래프도 같은 시각을 따라간다 -->
+      <div class="transport">
+        <div class="transport-row">
+          <button class="btn btn--primary" id="cPlay" type="button" title="Space">Play</button>
+          <div class="scrubber">
+            <input id="cTime" type="range" min="0" max="300" step="1" value="0" aria-label="Simulation time" title="← / → one frame">
+            <div class="scrubber-ticks" id="cTicks" aria-hidden="true"></div>
+          </div>
+          <span class="unit num transport-time" id="cTimeValue">0 / 0 s</span>
+        </div>
+        <div class="transport-foot">
+          <div class="btn-row rate-row" role="group" aria-label="Playback speed relative to real time">
+          <button class="btn play-rate" data-rate="1" type="button" aria-pressed="false">1×</button>
+          <button class="btn play-rate" data-rate="2" type="button" aria-pressed="false">2×</button>
+          <button class="btn play-rate" data-rate="5" type="button" aria-pressed="false">5×</button>
+          <button class="btn play-rate" data-rate="10" type="button" aria-pressed="false">10×</button>
+          <button class="btn play-rate" data-rate="25" type="button" aria-pressed="false">25×</button>
+          </div>
+          <span class="unit num" id="cPlayRateValue"></span>
+        </div>
       </div>
     </div>
   </div>

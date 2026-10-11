@@ -141,14 +141,16 @@
   height: 16px; margin: var(--sp-1) 0 0; text-align: right;
   color: var(--chart-ink); font-size: var(--fs-xs); white-space: pre;
 }
-/* 재생 조작부. 슬라이더가 남는 폭을 다 쓴다. */
-.transport { flex: 1 1 420px; }
-.transport-head { display: flex; align-items: baseline; gap: var(--sp-3); }
-.transport-head label { color: var(--muted); font-size: var(--fs-xs); font-weight: var(--fw-semi); white-space: nowrap; }
-.transport-head > .unit { margin-left: auto; white-space: nowrap; }
+/* 재생 조작부. 그림 바로 아래에 카드 폭 전체로 놓이고, 슬라이더가 남는 폭을 다 쓴다. */
+.transport { display: flex; flex-direction: column; gap: var(--sp-1); }
+.transport-row { display: flex; align-items: center; gap: var(--sp-3); }
+.transport .unit { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--muted-2); white-space: nowrap; }
+.transport .transport-time { flex: none; min-width: 11ch; text-align: right; font-size: var(--fs-sm); color: var(--text-2); }
+.transport-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; }
 .rate-row { flex: none; gap: 2px; }
 .rate-row .btn { padding-inline: var(--sp-2); }
-.transport-row { display: flex; align-items: center; gap: var(--sp-2); }
+/* 그림을 칠할 값은 그 그림의 카드 머리에 둔다. 화면 전체의 조건과 섞지 않는다 */
+.card > header .field-switch { flex: none; align-self: center; }
 .scrubber { flex: 1; min-width: 160px; display: flex; flex-direction: column; }
 .scrubber input[type="range"] { width: 100%; margin: 0; }
 /* 눈금은 thumb 중심이 닿는 범위에 맞춘다. thumb 반지름만큼 양끝을 들인다 */
@@ -161,9 +163,6 @@
   content: ""; position: absolute; left: 50%; top: -3px; width: 1px; height: 3px; background: var(--chart-grid);
 }
 @media (max-width: 600px) {
-  .transport { min-width: 0; width: 100%; }
-  .transport-row { flex-wrap: wrap; }
-  .transport-row .scrubber { order: 1; flex-basis: 100%; min-width: 0; }
-  .transport-head { flex-wrap: wrap; }
-  .transport-head > .unit { margin-left: 0; }
+  .card > header { flex-wrap: wrap; }
+  .conditions .divider { display: none; }   /* 줄이 바뀌면 구분선이 줄 끝에 홀로 남는다 */
 }
