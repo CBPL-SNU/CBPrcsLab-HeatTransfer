@@ -6,20 +6,6 @@
       <button class="btn case-pick" data-case="A17" type="button">17 V</button>
     </div>
   </div>
-  <span class="divider"></span>
-  <div class="input free"><label>Field</label>
-    <div class="btn-row">
-      <button class="btn field-type is-active" data-field="temperature" type="button" aria-pressed="true">Temperature</button>
-      <button class="btn field-type" data-field="speed" type="button" aria-pressed="false">Speed</button>
-    </div>
-  </div>
-  <span class="divider"></span>
-  <div class="input free transport"><label for="fieldTime">Time <span class="unit num" id="fieldTimeValue">0 / 0 s</span></label>
-    <div class="transport-row">
-      <button class="btn btn--primary" id="fieldPlay" type="button" title="Space · plays at 10× real time">Play</button>
-      <input id="fieldTime" type="range" min="0" max="360" step="1" value="0" aria-label="Simulation time" title="← / → one frame">
-    </div>
-  </div>
 </div>
 
 <div class="content">
@@ -29,7 +15,7 @@
   <!-- 애니메이션과 두 그래프가 한 화면에 들어와야 같은 시각을 따라간다는 것이 보인다. -->
   <div class="card-grid wide-left">
   <div class="card">
-    <header><h2>The 18 cm around the heater, cut along two planes</h2><span class="badge">OpenFOAM</span></header>
+    <header><h2>The 18 cm around the heater, cut along two planes</h2><div class="btn-row field-switch" role="group" aria-label="Field"><button class="btn field-type is-active" data-field="temperature" type="button" aria-pressed="true">Temperature</button><button class="btn field-type" data-field="speed" type="button" aria-pressed="false">Speed</button></div><span class="badge">OpenFOAM</span></header>
     <div class="card-body">
       <div class="viewer well">
         <!-- 두 단면이 관의 어디를 자르는지. 값은 옆의 띠에서 읽고, 여기서는 위치만 본다. -->
@@ -42,13 +28,13 @@
               <div class="cut cut--xz" data-plane="xz"></div>
             </div>
           </div>
-          <p class="cutaway-hint">Drag to turn · click a plane to face it</p>
         </div>
         <div class="viewer-stage">
           <canvas id="fieldCanvas" role="img" aria-label="Two CFD slices around the heater; approximate point values are available with the pointer."></canvas>
           <div class="viewer-cross viewer-cross--h" id="fieldCrossH" hidden></div>
           <div class="viewer-cross viewer-cross--v" id="fieldCrossV" hidden></div>
           <div class="viewer-tip num" id="fieldTip" hidden></div>
+          <p class="viewer-coords num" id="fieldCoords" aria-live="off"></p>
         </div>
         <div class="colorbar">
           <div class="colorbar-scale" id="colorbarGradient"></div>
@@ -56,6 +42,27 @@
         </div>
       </div>
 
+      <!-- 재생은 그림 바로 아래. 오른쪽 그래프도 같은 시각을 따라간다 -->
+      <div class="transport">
+        <div class="transport-row">
+          <button class="btn btn--primary" id="fieldPlay" type="button" title="Space">Play</button>
+          <div class="scrubber">
+            <input id="fieldTime" type="range" min="0" max="360" step="1" value="0" aria-label="Simulation time" title="← / → one frame">
+            <div class="scrubber-ticks" id="fieldTicks" aria-hidden="true"></div>
+          </div>
+          <span class="unit num transport-time" id="fieldTimeValue">0 / 0 s</span>
+        </div>
+        <div class="transport-foot">
+          <div class="btn-row rate-row" role="group" aria-label="Playback speed relative to real time">
+          <button class="btn play-rate" data-rate="1" type="button" aria-pressed="false">1×</button>
+          <button class="btn play-rate" data-rate="2" type="button" aria-pressed="false">2×</button>
+          <button class="btn play-rate" data-rate="5" type="button" aria-pressed="false">5×</button>
+          <button class="btn play-rate" data-rate="10" type="button" aria-pressed="false">10×</button>
+          <button class="btn play-rate" data-rate="25" type="button" aria-pressed="false">25×</button>
+          </div>
+          <span class="unit num" id="playRateValue"></span>
+        </div>
+      </div>
     </div>
   </div>
 

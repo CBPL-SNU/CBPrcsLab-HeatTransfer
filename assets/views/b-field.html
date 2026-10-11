@@ -1,0 +1,100 @@
+<div class="conditions">
+  <!-- 유동 조건과 구 크기를 따로 고른다. 작은 구는 1.6 m/s에서만 계산했다 -->
+  <div class="input free"><label>Air flow</label>
+    <div class="btn-row">
+      <button class="btn b-flow" data-case-large="B00V5L" type="button">Fan off · 5 V</button>
+      <button class="btn b-flow" data-case-large="B00V17L" type="button">Fan off · 17 V</button>
+      <button class="btn b-flow" data-case-large="B02L" type="button">0.2 m/s</button>
+      <button class="btn b-flow" data-case-large="B16L" data-case-small="B16S" type="button">1.6 m/s</button>
+    </div>
+  </div>
+  <span class="divider"></span>
+  <div class="input free"><label>Bead</label>
+    <div class="btn-row">
+      <button class="btn b-bead" data-bead="large" type="button" aria-pressed="false">3.1 mm</button>
+      <button class="btn b-bead" data-bead="small" type="button" aria-pressed="false">0.5 mm</button>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <p class="caution" id="bFieldPending" role="status" hidden></p>
+
+  <div class="card-grid wide-left">
+  <div class="card">
+    <header><h2>The heated section and the bead</h2><div class="btn-row field-switch" role="group" aria-label="Field"><button class="btn b-field-type is-active" data-field="temperature" type="button" aria-pressed="true">Temperature</button><button class="btn b-field-type" data-field="speed" type="button" aria-pressed="false">Speed</button></div><span class="badge">OpenFOAM</span></header>
+    <div class="card-body">
+      <!-- 같은 xz 단면을 두 창으로. 창마다 색 범위가 따로라 구 주변의 수 K도 보인다 -->
+      <div class="b-viewer">
+        <!-- 판독값과 십자선은 캔버스 좌표로 놓이므로 이 상자에는 여백을 주지 않는다 -->
+        <div class="viewer-stage">
+          <canvas id="bFieldCanvas" role="img" aria-label="The heated section of the tube and a close-up of the bead."></canvas>
+          <div class="viewer-cross viewer-cross--h" id="bFieldCrossH" hidden></div>
+          <div class="viewer-cross viewer-cross--v" id="bFieldCrossV" hidden></div>
+          <div class="viewer-tip num" id="bFieldTip" hidden></div>
+        </div>
+        <p class="viewer-coords num" id="bFieldCoords" aria-live="off"></p>
+      </div>
+      <!-- 재생은 그림 바로 아래. 오른쪽 그래프도 같은 시각을 따라간다 -->
+      <div class="transport">
+        <div class="transport-row">
+          <button class="btn btn--primary" id="bFieldPlay" type="button" title="Space">Play</button>
+          <div class="scrubber">
+            <input id="bFieldTime" type="range" min="0" max="300" step="1" value="0" aria-label="Simulation time" title="← / → one frame">
+            <div class="scrubber-ticks" id="bFieldTicks" aria-hidden="true"></div>
+          </div>
+          <span class="unit num transport-time" id="bFieldTimeValue">0 / 0 s</span>
+        </div>
+        <div class="transport-foot">
+          <div class="btn-row rate-row" role="group" aria-label="Playback speed relative to real time">
+          <button class="btn play-rate" data-rate="1" type="button" aria-pressed="false">1×</button>
+          <button class="btn play-rate" data-rate="2" type="button" aria-pressed="false">2×</button>
+          <button class="btn play-rate" data-rate="5" type="button" aria-pressed="false">5×</button>
+          <button class="btn play-rate" data-rate="10" type="button" aria-pressed="false">10×</button>
+          <button class="btn play-rate" data-rate="25" type="button" aria-pressed="false">25×</button>
+          </div>
+          <span class="unit num" id="bPlayRateValue"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-stack">
+  <div class="card">
+    <header><h2>What the bead reads</h2></header>
+    <div class="card-body">
+      <div class="values">
+        <div><span class="k">Bead</span><span class="v" id="bCfdBead">—</span></div>
+        <div><span class="k">Inlet air T5</span><span class="v" id="bCfdAir">—</span></div>
+        <div><span class="k">Wall T10</span><span class="v" id="bCfdWall">—</span></div>
+        <div><span class="k">Reads high by</span><span class="v" id="bCfdError">—</span></div>
+      </div>
+      <div class="chart-frame"><canvas class="chart chart--short" id="bTempChart"></canvas></div>
+      <div class="legend">
+        <span><i class="black-body"></i>Bead</span>
+        <span><i class="residual dashed"></i>Inlet air</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <header><h2>Radiation in, convection out</h2></header>
+    <div class="card-body">
+      <div class="values">
+        <div><span class="k">Radiation in</span><span class="v rad" id="bCfdRad">—</span></div>
+        <div><span class="k">Convection out</span><span class="v conv" id="bCfdConv">—</span></div>
+        <div><span class="k">Warming the bead</span><span class="v" id="bCfdNet">—</span></div>
+      </div>
+      <div class="chart-frame"><canvas class="chart chart--short" id="bHeatChart"></canvas></div>
+      <div class="legend">
+        <span><i class="rad"></i>Radiation from the wall</span>
+        <span><i class="conv"></i>Convection to the air</span>
+        <span><i class="residual"></i>Warming the bead</span>
+      </div>
+    </div>
+  </div>
+  </div>
+  </div>
+
+</div>

@@ -40,6 +40,7 @@
   --series-conv: #2f6fed;      /* 대류 */
   --series-rad: #d94f5c;       /* 복사 */
   --series-surface: #e66b37;   /* 표면 온도 */
+  --series-surface-rgb: 230, 107, 55;   /* 위와 같은 색. 옅게 채울 때 rgba()에 쓴다 */
   --series-marker: #ad7b14;    /* 현재 조건 */
   --series-residual: #7d8b98;  /* 모델 밖 열량 — 오류가 아니므로 중립색 */
 

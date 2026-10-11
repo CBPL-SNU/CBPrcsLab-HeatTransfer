@@ -7,11 +7,10 @@ export const CFD_CASES = {
   A5:  { kind: "A", mode: "natural", label: "A · 5 V", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Mean cylinder surface temperature" },
   A11: { kind: "A", mode: "natural", label: "A · 11 V", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Mean cylinder surface temperature" },
   A17: { kind: "A", mode: "natural", label: "A · 17 V", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Mean cylinder surface temperature" },
-  BN5:  { kind: "B", mode: "natural", label: "B · fan off · 5 V", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Mean heated wall temperature" },
-  BN11: { kind: "B", mode: "natural", label: "B · fan off · 11 V", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Mean heated wall temperature" },
-  BN17: { kind: "B", mode: "natural", label: "B · fan off · 17 V", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Mean heated wall temperature" },
-  B02: { kind: "B", mode: "forced", label: "B · 17 V · 0.2 m/s", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Mean heated wall temperature" },
-  B04: { kind: "B", mode: "forced", label: "B · 17 V · 0.4 m/s", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Mean heated wall temperature" },
-  B08: { kind: "B", mode: "forced", label: "B · 17 V · 0.8 m/s", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Mean heated wall temperature" },
-  B16: { kind: "B", mode: "forced", label: "B · 17 V · 1.6 m/s", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Mean heated wall temperature" }
+  // 실험 B는 조교가 계산한 다섯 case. L은 지름 3.1 mm 구, S는 0.5 mm 구
+  B00V5L: { kind: "B", mode: "natural", label: "B · fan off · 5 V · 3.1 mm bead", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Bead temperature" },
+  B00V17L: { kind: "B", mode: "natural", label: "B · fan off · 17 V · 3.1 mm bead", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Bead temperature" },
+  B02L: { kind: "B", mode: "forced", label: "B · 0.2 m/s · 3.1 mm bead", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Bead temperature" },
+  B16L: { kind: "B", mode: "forced", label: "B · 1.6 m/s · 3.1 mm bead", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Bead temperature" },
+  B16S: { kind: "B", mode: "forced", label: "B · 1.6 m/s · 0.5 mm bead", status: "pending", radMethod: "CFD field + radiation post-processing", quantity: "Bead temperature" }
 };

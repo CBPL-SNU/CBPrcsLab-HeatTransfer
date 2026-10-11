@@ -12,11 +12,17 @@ import { VIEWS } from "./data/views.js";
 import { initExperimentAView, drawAChart } from "./views/experiment-a.js";
 import { initExperimentBView, drawBChart } from "./views/experiment-b.js";
 import { initFieldViewer, drawFieldView } from "./views/a-field.js";
+import { initApparatusView } from "./views/a-apparatus.js";
+import { initBFieldViewer, drawBFieldView } from "./views/b-field.js";
+import { initBCompare, drawBCompare } from "./views/b-compare.js";
 
 const SCREENS = {
   "experiment-a": { mount: initExperimentAView, redraw: drawAChart },
   "a-field": { mount: initFieldViewer, redraw: drawFieldView },
-  "experiment-b": { mount: initExperimentBView, redraw: drawBChart }
+  "a-apparatus": { mount: initApparatusView },
+  "experiment-b": { mount: initExperimentBView, redraw: drawBChart },
+  "b-field": { mount: initBFieldViewer, redraw: drawBFieldView },
+  "b-compare": { mount: initBCompare, redraw: drawBCompare }
 };
 
 const ready = id => VIEWS.find(view => view.id === id)?.status === "ready";

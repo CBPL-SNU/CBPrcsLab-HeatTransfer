@@ -37,15 +37,10 @@
 .nav-item span { display: block; margin-top: 1px; font-size: var(--fs-xs); opacity: .8; }
 /* 실험별 묶음. 머리글은 누르는 것이 아니라 읽는 것이다. */
 .nav-group { margin: var(--sp-3) var(--sp-3) 2px; color: var(--frame-ink); font-size: var(--fs-xs); font-weight: var(--fw-semi); letter-spacing: 0; }
-.nav-group:first-child { margin-top: 0; }
+.nav-section:first-child .nav-group { margin-top: 0; }
+.nav-items { display: flex; flex-direction: column; gap: 2px; }
 .nav-item--sub { padding-left: var(--sp-5); }
 .nav-item--sub > span { display: none; }   /* 하위 항목은 이름 한 줄이면 충분하다. planned 표지는 남는다 */
-
-.sidebar-foot {
-  margin-top: auto; padding: var(--sp-3) var(--sp-2) 0;
-  border-top: 1px solid var(--frame-line);
-  color: var(--frame-ink-2); font-size: var(--fs-xs); line-height: 1.5;
-}
 
 /* ── 헤더 ─────────────────────────────────────── */
 .topbar {
@@ -105,12 +100,69 @@
   .split { grid-template-columns: 1fr; }
 }
 @media (max-width: 860px) {
-  .app { grid-template-columns: 1fr; }
-  .sidebar { position: static; height: auto; }
-  .nav { flex-direction: row; overflow-x: auto; }
-  .nav-item { width: auto; white-space: nowrap; }
-  .nav-item span, .nav-group, .sidebar-foot { display: none; }
-  .nav-item--sub { padding-left: var(--sp-3); }
+  /* 1fr는 내용 폭 아래로 줄지 않아 메뉴 줄이 페이지 전체를 넓힌다. minmax(0, 1fr)이어야 한다 */
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { position: static; height: auto; min-width: 0; }
+  /* 실험마다 한 줄. 머리글이 왼쪽에 붙어 A와 B의 같은 이름 화면이 구분된다 */
+  .nav { gap: var(--sp-1); }
+  .nav-section { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+  .nav-group { flex: none; width: 92px; margin: 0; }
+  .nav-items { flex-direction: row; overflow-x: auto; min-width: 0; }
+  .nav-item { width: auto; white-space: nowrap; padding: var(--sp-1) var(--sp-2); }
+  .nav-item span { display: none; }
+  .nav-item--sub { padding-left: var(--sp-2); }
+  .nav-item.is-active { box-shadow: inset 0 -2px 0 var(--frame-accent); }
+  .sidebar { gap: var(--sp-3); padding: var(--sp-3); }
+  /* 화면 제목이 길어 버튼을 밀어내므로 제목을 한 줄 따로 둔다 */
+  .topbar { flex-wrap: wrap; row-gap: var(--sp-1); padding-block: var(--sp-2); }
+  .topbar h1 { flex: 1 1 100%; }
   .conditions { padding: var(--sp-3); gap: var(--sp-3); }
   .content { padding: var(--sp-4) var(--sp-3) var(--sp-6); }
+}
+
+/* ── CFD 재생 화면 공용 (실험 A, B) ───────────── */
+/* 포인터를 따라다니는 판독값. 캔버스 위에 얹히므로 캔버스와 같은 상자 안에 둔다. */
+.viewer-stage { position: relative; min-width: 0; }
+.viewer-cross { position: absolute; pointer-events: none; background: rgba(255, 255, 255, .55); }
+.viewer-cross--h { left: 0; right: 0; height: 1px; }
+.viewer-cross--v { top: 0; bottom: 0; width: 1px; }
+.viewer-tip {
+  position: absolute; pointer-events: none; transform: translate(12px, -50%);
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 3px var(--sp-2); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  box-shadow: var(--shadow-card); font-size: var(--fs-xs); white-space: nowrap;
+}
+.viewer-tip[hidden] { display: none; }   /* display: flex가 hidden 속성을 이기지 않게 */
+.viewer-tip b { font-weight: var(--fw-semi); }
+.viewer-tip span { color: var(--muted); }
+/* CFD 좌표. 그림 아래 한 줄을 늘 비워 두어 포인터가 들어와도 화면이 움직이지 않는다 */
+.viewer-coords {
+  height: 16px; margin: var(--sp-1) 0 0; text-align: right;
+  color: var(--chart-ink); font-size: var(--fs-xs); white-space: pre;
+}
+/* 재생 조작부. 그림 바로 아래에 카드 폭 전체로 놓이고, 슬라이더가 남는 폭을 다 쓴다. */
+.transport { display: flex; flex-direction: column; gap: var(--sp-1); }
+.transport-row { display: flex; align-items: center; gap: var(--sp-3); }
+.transport .unit { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--muted-2); white-space: nowrap; }
+.transport .transport-time { flex: none; min-width: 11ch; text-align: right; font-size: var(--fs-sm); color: var(--text-2); }
+.transport-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; }
+.rate-row { flex: none; gap: 2px; }
+.rate-row .btn { padding-inline: var(--sp-2); }
+/* 그림을 칠할 값은 그 그림의 카드 머리에 둔다. 화면 전체의 조건과 섞지 않는다 */
+.card > header .field-switch { flex: none; align-self: center; }
+.scrubber { flex: 1; min-width: 160px; display: flex; flex-direction: column; }
+.scrubber input[type="range"] { width: 100%; margin: 0; }
+/* 눈금은 thumb 중심이 닿는 범위에 맞춘다. thumb 반지름만큼 양끝을 들인다 */
+.scrubber-ticks { position: relative; height: 14px; margin: 0 var(--thumb-r, 8px); }
+.scrubber-ticks span {
+  position: absolute; left: calc(var(--at) * 100%); transform: translateX(-50%);
+  color: var(--chart-ink); font-family: var(--font-mono); font-size: 10.5px; line-height: 14px; white-space: nowrap;
+}
+.scrubber-ticks span::before {
+  content: ""; position: absolute; left: 50%; top: -3px; width: 1px; height: 3px; background: var(--chart-grid);
+}
+@media (max-width: 600px) {
+  .card > header { flex-wrap: wrap; }
+  .conditions .divider { display: none; }   /* 줄이 바뀌면 구분선이 줄 끝에 홀로 남는다 */
 }

@@ -2,12 +2,41 @@
 // 센서 좌표가 확정되면 좌표 항목 추가 (CFD probe 위치와 공유)
 
 export const componentData = {
-  "a-duct": { mode: "A", label: "Vertical duct and duct wall", badge: "Exp. A · Apparatus", summary: "Air rises by natural convection along the flow path inside the thick duct wall.", measure: "Air flow inside the duct", location: "Vertical duct between the heated cylinder and the fan", role: "Separates the duct wall from the inner air region and fixes the rising path of the heated air and the sensor positions." },
-  "a-heater": { mode: "A", label: "Heated cylinder", badge: "Exp. A · Heat source", summary: "The orange section inside the duct is heated, while the grey section is the plain support tube that continues outside the duct wall.", measure: "Supplied power V·I, surface temperature T10", location: "Cylinder passing horizontally through the vertical duct", role: "Natural convection and radiation occur together in the heated zone inside the duct." },
-  "a-t10": { mode: "A", label: "T10 surface temperature sensor", badge: "Exp. A · Sensor", summary: "Measures the surface temperature at the middle of the heated cylinder.", measure: "T10 = Tₛ", location: "Middle of the heated cylinder surface", role: "Used to calculate the radiative and natural convective heat transfer." },
-  "a-t8": { mode: "A", label: "T8 air temperature sensor", badge: "Exp. A · Sensor", summary: "Measures the duct air temperature below the heated cylinder.", measure: "T8 = Tₐ", location: "Inside the duct, below the heated cylinder", role: "Reference temperature for the difference between the cylinder and the surrounding air." },
-  "a-throttle": { mode: "A", label: "Throttle plate", badge: "Exp. A · Flow path", summary: "Plate in front of the fan that sets the air inlet opening.", measure: "Open position", location: "Near the fan inlet", role: "Left open in Experiment A so that air can enter the duct." },
-  "a-fan": { mode: "A", label: "Fan", badge: "Exp. A · Apparatus", summary: "Fan that can drive a forced flow through the duct.", measure: "OFF in Experiment A", location: "Bottom of the vertical duct", role: "Left disconnected from power and from the anemometer under the natural convection condition of Experiment A." },
+  // 실험 A · HT14. measure는 센서에만 있다. 관이나 팬은 아무것도 재지 않는다.
+  // inExpA는 이 실험에서 그 부품이 어떤 상태인지. 안 쓰는 부품을 한눈에 가르기 위해서다.
+  "a-t10": { mode: "A", label: "T10 · cylinder surface temperature", badge: "Exp. A · Sensor",
+    summary: "A thermocouple on the surface of the heated cylinder, at the middle of the heated zone. This is Tₛ, the hot side of every term in the balance.",
+    measure: "T10 = Tₛ", location: "Middle of the heated zone, on the cylinder surface; the lead comes in through the right-hand end of the cylinder",
+    role: "Both terms grow with how far T10 sits above T8, so an error in this one reading moves every number on the Calculate screen." },
+  "a-t8": { mode: "A", label: "T8 · duct air temperature", badge: "Exp. A · Sensor",
+    summary: "A thermocouple in the air near the duct inlet, well below the heater. It reads the air before the heater has touched it, so it stands for the surroundings, Tₐ.",
+    measure: "T8 = Tₐ", location: "Duct centre-line near the inlet, entering through the right-hand wall and bending down to the axis",
+    role: "It sits near the duct inlet, well below the heater, so it reads the air before the cylinder has warmed it." },
+  "a-anemometer": { mode: "A", label: "Anemometer", badge: "Exp. A · Not used",
+    summary: "A propeller anemometer in the middle of the duct with its lead brought out through the right-hand wall. It measures air velocity for Experiment B.",
+    measure: "Uₐ", location: "Duct centre-line, between the heater and T8; below the region the CFD computed",
+    inExpA: "Present in the duct but its lead is left unplugged from the controller",
+    role: "Not part of the Experiment A calculation. It is drawn because it is physically there and you will see it on the rig." },
+  "a-heater": { mode: "A", label: "Heated cylinder", badge: "Exp. A · Heat source",
+    summary: "A 10 mm cylinder crossing the duct horizontally. Only the 70 mm inside the duct is heated; the assembly continues out through the right-hand wall to the terminals.",
+    location: "Crossing the duct 150 mm below the outlet, axis at z = 1.05 m in the CFD frame",
+    inExpA: "Supplied with V·I from the controller: 5, 11 and 17 V in turn",
+    role: "The source of everything: natural convection and radiation both leave from this surface, and Q_in = V·I is what the balance has to account for." },
+  "a-duct": { mode: "A", label: "Duct", badge: "Exp. A · Apparatus",
+    summary: "A vertical tube of 70 mm inner diameter, about 1.2 m long, open at the top. Air enters at the bottom, passes T8 and the anemometer, is warmed as it passes the cylinder and leaves at the top.",
+    location: "The whole rig; the heater sits 150 mm below its top",
+    inExpA: "Open at both ends; nothing drives the flow but the heater itself",
+    role: "It confines the rising plume and gives the radiation from the cylinder a surface to land on. The balance assumes that surface is at T8." },
+  "a-throttle": { mode: "A", label: "Throttle plate", badge: "Exp. A · Not used",
+    summary: "A disc over the side inlet of the fan casing. Turning it sets how much air the fan can draw.",
+    location: "On the fan casing at the bottom of the rig, not inside the duct",
+    inExpA: "Opened, so that air can reach the duct; the fan behind it stays off",
+    role: "Sets the air velocity in Experiment B. In Experiment A it is simply left open." },
+  "a-fan": { mode: "A", label: "Fan", badge: "Exp. A · Not used",
+    summary: "A centrifugal blower under the duct that can force air up through it.",
+    location: "Bottom of the rig, feeding the duct through a transition piece",
+    inExpA: "Off: its power lead is left unplugged from the controller",
+    role: "Forces convection in Experiment B. Experiment A is natural convection, so the fan must stay off." },
 
   "b-duct": { mode: "B", label: "Duct", badge: "Exp. B · Apparatus", summary: "Vertical duct in which air flows inside a heated outer wall with several thermocouples placed along it.", measure: "Air temperature and velocity", location: "Vertical duct holding the heater and the sensors", role: "Test space where wall radiation and air convection act on the sensors at the same time." },
   "b-heater-wall": { mode: "B", label: "Heated outer wall", badge: "Exp. B · Heat source", summary: "Heated by an electric band heater and radiates onto the thermocouples inside.", measure: "Outer wall temperature T10", location: "Duct wall surrounding T6, T7 and T8", role: "Hot surrounding surface that produces the radiation error of the sensors." },
@@ -23,6 +52,6 @@ export const componentData = {
 
 // 목록 패널 표시 순서
 export const componentOrder = {
-  A: ["a-t10", "a-t8", "a-heater", "a-duct", "a-throttle", "a-fan"],
+  A: ["a-t10", "a-t8", "a-heater", "a-duct", "a-anemometer", "a-throttle", "a-fan"],
   B: ["b-t5", "b-t6", "b-t7", "b-t8", "b-t10", "b-heater-wall", "b-anemometer", "b-fan", "b-shield", "b-duct"]
 };

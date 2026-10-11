@@ -1,0 +1,3 @@
+#bFieldCanvas { display: block; width: 100%; height: 420px; }
+.b-viewer { padding: var(--sp-2); border-radius: var(--radius-md); background: var(--well); }
+@media (max-width: 600px) { #bFieldCanvas { height: 360px; } }
