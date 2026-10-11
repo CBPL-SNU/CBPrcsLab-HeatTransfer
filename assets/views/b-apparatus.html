@@ -1,0 +1,55 @@
+<div class="conditions">
+  <div class="input free"><label>Show</label>
+    <div class="btn-row">
+      <button class="btn toggle-layer is-active" data-layer="air" type="button" aria-pressed="true">Air up the duct</button>
+      <button class="btn toggle-layer is-active" data-layer="radiation" type="button" aria-pressed="true">Radiation</button>
+      <button class="btn toggle-layer is-active" data-layer="convection" type="button" aria-pressed="true">Convection</button>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="card-grid wide-left">
+  <div class="card">
+    <header><h2>HT16 in section · the heated section to scale</h2></header>
+    <div class="card-body">
+      <div class="apparatus-stage" id="bApparatusStage"></div>
+    </div>
+  </div>
+
+  <div class="card-stack">
+  <div class="card">
+    <header><h2 id="bComponentTitle">—</h2><span class="badge" id="bComponentBadge">—</span></header>
+    <div class="card-body">
+      <p id="bComponentSummary">—</p>
+      <div class="values values--text">
+        <div id="bComponentMeasureRow"><span class="k">Measures</span><span class="v" id="bComponentMeasure">—</span></div>
+        <div><span class="k">Where</span><span class="v" id="bComponentLocation">—</span></div>
+      </div>
+      <p class="assumption" id="bComponentRole">—</p>
+      <p class="assumption" id="bComponentApprox" hidden>—</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <header><h2>Parts</h2></header>
+    <div class="card-body"><div class="btn-row" id="bComponentList"></div></div>
+  </div>
+
+  <!-- 세 온도가 계산에 들어가는 자리. 계산 화면의 식과 같다 -->
+  <div class="card">
+    <header><h2>How T5, T10 and a bead enter the balance</h2></header>
+    <div class="card-body">
+      <p class="formula">
+        <math><mrow><msub><mi>T</mi><mtext>bead</mtext></msub><mo>−</mo><msub><mi>T</mi><mn>5</mn></msub><mo>=</mo>
+        <mfrac><msub><mi>h</mi><mi>r</mi></msub><msub><mi>h</mi><mi>c</mi></msub></mfrac>
+        <mo>(</mo><msub><mi>T</mi><mn>10</mn></msub><mo>−</mo><msub><mi>T</mi><mtext>bead</mtext></msub><mo>)</mo></mrow></math>
+      </p>
+      <p class="assumption">T10 is the hot wall, T5 the air before it is heated, T6–T8 the beads between them. A bead settles where the radiation it takes from the wall equals what convection carries off, so it reads above T5 by the ratio of the two coefficients.</p>
+    </div>
+  </div>
+  </div>
+  </div>
+
+</div>

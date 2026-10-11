@@ -10,8 +10,9 @@ import { fileURLToPath } from "node:url";
 import { componentData, componentOrder } from "../assets/js/data/components.js";
 import { CFD_CASES } from "../assets/js/data/cfd-cases.js";
 import { VIEWS, DEFAULT_VIEW } from "../assets/js/data/views.js";
-import { HT14 } from "../assets/js/data/apparatus.js";
+import { HT14, HT16 } from "../assets/js/data/apparatus.js";
 import { buildDiagram } from "../assets/js/views/a-apparatus.js";
+import { buildDiagramB } from "../assets/js/views/b-apparatus.js";
 
 /** status가 "ready"인 화면만 마크업을 갖는다. planned 화면은 router가 자리표시를 그린다. */
 const isReady = id => VIEWS.find(v => v.id === id)?.status === "ready";
@@ -184,6 +185,25 @@ describe("마크업 계약 · 장치 도식", () => {
     // 생성된 SVG에도 실제로 들어가는지
     const svg = buildDiagram();
     for (const id of componentOrder.A) assert.ok(svg.includes(`data-part="${id}"`), `SVG에 "${id}" 없음`);
+  });
+
+  test("HT16 도식의 부품에 설명이 전부 있고, B 설명은 전부 그려진다", { skip: !isReady("b-apparatus") }, () => {
+    for (const part of HT16.parts) assert.ok(componentData[part.id], `HT16의 "${part.id}"에 설명이 없음`);
+    const drawn = new Set(HT16.parts.map(p => p.id));
+    for (const id of componentOrder.B) assert.ok(drawn.has(id), `componentData의 "${id}"가 HT16 도식에 없음`);
+    const svg = buildDiagramB();
+    for (const part of HT16.parts) assert.ok(svg.includes(`data-part="${part.id}"`), `"${part.id}"가 SVG에 없음`);
+    // 두 도식이 한 문서에 있으므로 SVG 안의 id가 겹치면 안 된다
+    const ids = svg => new Set([...svg.matchAll(/ id="([^"]+)"/g)].map(m => m[1]));
+    const shared = [...ids(svg)].filter(id => ids(buildDiagram()).has(id));
+    assert.deepEqual(shared, [], `두 도식의 id가 겹침: ${shared.join(", ")}`);
+  });
+
+  test("HT16 치수가 실험 B CFD와 같다", { skip: !isReady("b-apparatus") }, () => {
+    assert.equal(HT16.duct.innerD, 0.070);
+    assert.deepEqual([HT16.heater.zLo, HT16.heater.zHi], [0.6275, 0.7725]);
+    assert.equal(HT16.parts.find(p => p.id === "b-t8").z, 0.700);
+    assert.deepEqual(HT16.window, { zLo: 0.580, zHi: 0.820 });
   });
 
   test("HT14 치수가 CFD 격자와 같다", { skip: !isReady("a-apparatus") }, () => {

@@ -47,11 +47,12 @@ export const componentData = {
   "b-t8": { mode: "B", label: "T8 · large black bead", badge: "Exp. B · Test sensor", summary: "3 mm thermocouple close to a black body, with a larger bead than T7.", measure: "T8 = T_c", location: "Test sensor position inside the heated outer wall", role: "Shows the effect of bead size on the measured temperature and on the convective cooling." },
   "b-shield": { mode: "B", label: "Shield", badge: "Exp. B · Apparatus", summary: "Shield drawn at the top of the apparatus diagram in the course manual.", measure: "Shielding state", location: "Top of the heated section", role: "Forms the upper boundary of the apparatus and its radiation environment." },
   "b-anemometer": { mode: "B", label: "Anemometer", badge: "Exp. B · Sensor", summary: "Anemometer that reads the air velocity inside the duct.", measure: "Uₐ", location: "Inside the duct, below the test thermocouples", role: "Used to set the forced convection conditions of 0.2, 0.4, 0.8 and 1.6 m/s." },
-  "b-fan": { mode: "B", label: "Fan", badge: "Exp. B · Apparatus", summary: "Fan that drives forced convection through the duct.", measure: "ON/OFF and air velocity", location: "Bottom of the vertical duct", role: "Switched on for the forced convection steps and used with the throttle plate to set the air velocity." }
+  "b-fan": { mode: "B", label: "Fan", badge: "Exp. B · Apparatus", summary: "Fan that drives forced convection through the duct.", measure: "ON/OFF and air velocity", location: "Bottom of the vertical duct", role: "Switched on for the forced convection steps and used with the throttle plate to set the air velocity." },
+  "b-throttle": { mode: "B", label: "Throttle plate", badge: "Exp. B · Apparatus", summary: "A disc on the fan's side inlet. Turning its handle opens or closes the inlet and so sets how much air the fan can draw.", measure: "", location: "Side inlet of the fan casing, at the bottom of the rig", role: "With the fan on, it sets the air velocity for the 0.2, 0.4, 0.8 and 1.6 m/s steps. With the fan off it does nothing." }
 };
 
 // 목록 패널 표시 순서
 export const componentOrder = {
   A: ["a-t10", "a-t8", "a-heater", "a-duct", "a-anemometer", "a-throttle", "a-fan"],
-  B: ["b-t5", "b-t6", "b-t7", "b-t8", "b-t10", "b-heater-wall", "b-anemometer", "b-fan", "b-shield", "b-duct"]
+  B: ["b-t8", "b-t6", "b-t7", "b-t10", "b-t5", "b-heater-wall", "b-shield", "b-duct", "b-anemometer", "b-throttle", "b-fan"]
 };

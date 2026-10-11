@@ -40,10 +40,9 @@ export const VIEWS = [
     title: "Experiment B · Two cases side by side"
   },
   {
-    id: "b-apparatus", group: "Experiment B", status: "planned",
+    id: "b-apparatus", group: "Experiment B", status: "ready",
     label: "Apparatus", sub: "HT16 in section",
-    title: "Experiment B · The HT16 rig and its sensors",
-    plan: "A section through the heated tube with T5 at the inlet, the three test beads T6, T7 and T8, the band heater and T10 on the wall, drawn to scale from the rig's dimensions the way the HT14 drawing is. The part descriptions are written; the drawing waits for the HT16 dimensions, which the Experiment B CFD will bring."
+    title: "Experiment B · The HT16 rig and its sensors"
   },
   {
     id: "data", status: "planned",
