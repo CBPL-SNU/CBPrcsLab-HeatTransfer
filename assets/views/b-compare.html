@@ -1,7 +1,14 @@
 <div class="conditions">
-  <!-- 두 구를 모두 계산한 조건은 이것 하나라 고를 것이 없다 -->
-  <div class="input free"><label>Air flow</label><p class="fixed-condition">1.6 m/s</p></div>
-  <div class="input free"><label>Wall T10</label><p class="fixed-condition" id="cWall">—</p></div>
+  <!-- 아무 두 case나 고른다. 처음에는 같은 흐름 속의 두 구 크기 -->
+  <div class="input free"><label for="cLeft">Left</label><select id="cLeft" class="case-select"></select></div>
+  <div class="input free"><label for="cRight">Right</label><select id="cRight" class="case-select"></select></div>
+  <span class="divider"></span>
+  <div class="input free"><label>Colour scale</label>
+    <div class="btn-row" role="group" aria-label="Colour scale">
+      <button class="btn c-scale is-active" data-scale="shared" type="button" aria-pressed="true">Shared</button>
+      <button class="btn c-scale" data-scale="own" type="button" aria-pressed="false">Each its own</button>
+    </div>
+  </div>
 </div>
 
 <div class="content">
@@ -51,30 +58,27 @@
     <header><h2>What each bead reads</h2></header>
     <div class="card-body">
       <div class="values">
-        <div><span class="k">3.1 mm bead</span><span class="v" id="cLarge">—</span></div>
-        <div><span class="k">0.5 mm bead</span><span class="v" id="cSmall">—</span></div>
-        <div><span class="k">Inlet air T5</span><span class="v" id="cAir">—</span></div>
+        <div><span class="k">Left reads high by</span><span class="v" id="cErrLeft">—</span></div>
+        <div><span class="k">Right reads high by</span><span class="v" id="cErrRight">—</span></div>
       </div>
       <div class="chart-frame"><canvas class="chart chart--short" id="cTempChart"></canvas></div>
-      <div class="legend">
-        <span><i class="black-body thick"></i>3.1 mm</span>
-        <span><i class="black-body"></i>0.5 mm</span>
-        <span><i class="residual dashed"></i>Inlet air</span>
-      </div>
+      <div class="legend" id="cLegend"></div>
     </div>
   </div>
 
   <div class="card">
-    <header><h2>Per square metre of bead surface</h2></header>
+    <header><h2>Side by side, per square metre of bead</h2></header>
     <div class="card-body">
       <!-- 크기가 다른 두 구를 같은 저울에 올린다. 받는 복사는 거의 같고 h가 다르다 -->
       <div class="table-wrap">
         <table class="compare-table">
-          <thead><tr><th></th><th>3.1 mm</th><th>0.5 mm</th></tr></thead>
+          <thead><tr><th></th><th id="cHeadL">Left</th><th id="cHeadR">Right</th></tr></thead>
           <tbody>
-            <tr><td>Radiation in <span class="unit">W/m²</span></td><td class="num-cell" id="cRadL">—</td><td class="num-cell" id="cRadS">—</td></tr>
-            <tr><td>Convection coefficient h <span class="unit">W/m²K</span></td><td class="num-cell" id="cHL">—</td><td class="num-cell" id="cHS">—</td></tr>
-            <tr><td>Reads high by <span class="unit">K</span></td><td class="num-cell" id="cErrL">—</td><td class="num-cell" id="cErrS">—</td></tr>
+            <tr><td>Wall T10 <span class="unit">°C</span></td><td class="num-cell" id="cWallL">—</td><td class="num-cell" id="cWallR">—</td></tr>
+            <tr><td>Inlet air T5 <span class="unit">°C</span></td><td class="num-cell" id="cAirL">—</td><td class="num-cell" id="cAirR">—</td></tr>
+            <tr><td>Bead <span class="unit">°C</span></td><td class="num-cell" id="cBeadL">—</td><td class="num-cell" id="cBeadR">—</td></tr>
+            <tr><td>Radiation in <span class="unit">W/m²</span></td><td class="num-cell" id="cRadL">—</td><td class="num-cell" id="cRadR">—</td></tr>
+            <tr><td>Convection coefficient h <span class="unit">W/m²K</span></td><td class="num-cell" id="cHL">—</td><td class="num-cell" id="cHR">—</td></tr>
           </tbody>
         </table>
       </div>

@@ -36,8 +36,8 @@ export const VIEWS = [
   },
   {
     id: "b-compare", group: "Experiment B", status: "ready",
-    label: "Compare beads", sub: "Two sizes, same flow",
-    title: "Experiment B · Two bead sizes in the same flow"
+    label: "Compare", sub: "Any two cases side by side",
+    title: "Experiment B · Two cases side by side"
   },
   {
     id: "b-apparatus", group: "Experiment B", status: "planned",
