@@ -11,7 +11,12 @@ const BREAK_H = 22;
 const TOP = 44;
 const CX = 250;
 const W = 580;
-const MIN_BEAD_R = 1.6;         // 0.5 mm 구는 이 축척에서 1 px도 안 된다. 보이도록 키운다 [px]
+const MIN_BEAD_R = 1.6;         // 단면의 구는 위치 표시일 뿐이다. 크기는 확대 그림에서 본다 [px]
+// 비드 확대 그림. 세 비드를 한 칸씩 따로, 같은 배율로 그린다. 크기 차이가 이 화면의 핵심이다.
+// 좌우 간격은 그림에서 어림한 값이라 칸을 나누면 간격을 주장하지 않아도 된다
+const ZOOM = 10;
+const CELL = 74, CELL_GAP = 10, CLOSE_X = 360;   // 칸 한 변, 칸 사이, 칸들의 왼쪽 [px]
+const CELL_ORDER = ["b-t8", "b-t7", "b-t6"];     // 위에서부터. T8–T7은 크기, T7–T6은 방사율이 다르다
 
 const rig = HT16;
 const rIn = rig.duct.innerD / 2 * PX_PER_M;
@@ -78,6 +83,37 @@ function coil(x, y0, y1, w) {
   return `<path class="heater-coil" d="${d}"/>`;
 }
 
+// 비드 확대 칸. 칸 안에서는 축척대로다 (단면의 ×10)
+function closeup(parts, y0) {
+  const k = ZOOM * PX_PER_M, body = { "b-t6": "grey body", "b-t7": "black body", "b-t8": "black body" };
+  const cells = CELL_ORDER.map((id, n) => {
+    const p = parts[id], x = CLOSE_X, y = y0 + n * (CELL + CELL_GAP), cx = x + CELL / 2, cy = y + CELL / 2 + 6;
+    const r = Math.max(p.d / 2 * k, 1.5), tx = x + CELL + 10;
+    return `<g class="apparatus-part closeup-cell" data-part="${id}" tabindex="0" role="button" aria-labelledby="blabel-${id}">
+      <rect class="part-hit" x="${f(x - 3)}" y="${f(y - 3)}" width="${f(CELL + 120)}" height="${f(CELL + 6)}"/>
+      <rect class="closeup-box" x="${f(x)}" y="${f(y)}" width="${CELL}" height="${CELL}" rx="5"/>
+      <path class="tc-lead tc-lead--close" d="M${f(cx)} ${f(y)} V${f(cy - r)}" aria-hidden="true"/>
+      <g class="flow-layer" data-layer-group="radiation" aria-hidden="true">
+        ${wavyArrow(x + 4, cy, cx - r - 4, cy)}${wavyArrow(x + CELL - 4, cy, cx + r + 4, cy)}
+      </g>
+      <g class="flow-layer" data-layer-group="convection" aria-hidden="true">
+        ${arrow("conv-path", `M${f(cx + r * 0.7 + 2)} ${f(cy - r * 0.7 - 2)} C${f(cx + r + 8)} ${f(cy - r - 8)} ${f(cx + r + 4)} ${f(y + 16)} ${f(cx + r + 8)} ${f(y + 6)}`, "bArrowConv")}
+      </g>
+      <circle class="bead ${id === "b-t6" ? "bead--grey" : "bead--black"}" cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}"/>
+      <text class="part-label" id="blabel-${id}" x="${f(tx)}" y="${f(cy - 4)}">${p.name}</text>
+      <text class="part-sub" x="${f(tx)}" y="${f(cy + 10)}">${(p.d * 1000).toFixed(1)} mm · ${body[id]}</text>
+    </g>`;
+  }).join("");
+  return `
+  <!-- 세 비드를 한 칸씩. 리드는 위에서 내려온다 -->
+  <text class="closeup-title" x="${f(CLOSE_X)}" y="${f(y0 - 8)}" aria-hidden="true">Beads, ×${ZOOM}</text>
+  <g class="scale-bar" aria-hidden="true">
+    <path d="M${f(CLOSE_X)} ${f(y0 + 3 * CELL + 2 * CELL_GAP + 12)} h${f(0.002 * k)}"/>
+    <text x="${f(CLOSE_X + 0.002 * k + 6)}" y="${f(y0 + 3 * CELL + 2 * CELL_GAP + 16)}">2 mm</text>
+  </g>
+  ${cells}`;
+}
+
 export function buildDiagramB() {
   const parts = Object.fromEntries(rig.parts.map(p => [p.id, p]));
   const yTop = yOf(rig.duct.outletZ), yInlet = yOf(rig.duct.inletZ);
@@ -94,7 +130,9 @@ export function buildDiagramB() {
   const win = rig.window;
   const yTrans = yInlet + 14, yCase = yTrans + 4, caseH = 56, yCaseMid = yCase + caseH / 2;
   const height = yCase + caseH + 26;
-  const beadR = p => Math.max(p.d / 2 * PX_PER_M, MIN_BEAD_R);
+  // 확대 칸 묶음은 비드 높이에 가운데를 맞춘다. 단면에는 세 비드를 둘러싼 표시만 둔다
+  const stackH = 3 * CELL + 2 * CELL_GAP, cy0 = yB - stackH / 2;
+  const cw = 34, ch = 12;
 
   return `
 <svg class="apparatus-diagram" viewBox="0 0 ${W} ${f(height)}" role="group" aria-label="Section through the HT16 duct. Parts are buttons; press one to read about it.">
@@ -111,10 +149,10 @@ export function buildDiagramB() {
     <path d="M${f(W - 8 - 0.05 * PX_PER_M)} ${f(TOP - 22)} h${f(0.05 * PX_PER_M)}"/>
     <text x="${f(W - 8)}" y="${f(TOP - 27)}" text-anchor="end">50 mm</text>
   </g>
-  <text class="legend-note" x="${f(W - 8)}" y="${f(height - 8)}" text-anchor="end" aria-hidden="true">≈ position estimated from the manual's figure · 0.5 mm beads drawn larger than scale</text>
+  <text class="legend-note" x="${f(W - 8)}" y="${f(height - 8)}" text-anchor="end" aria-hidden="true">≈ position estimated from the manual's figure · beads to scale only in the close-up</text>
 
   <rect class="window-box" x="${f(xLo - band - 6)}" y="${f(yOf(win.zHi) - 4)}" width="${f(xRo - xLo + 2 * band + 12)}" height="${f(yOf(win.zLo) - yOf(win.zHi) + 8)}" rx="4" aria-hidden="true"/>
-  <text class="window-label" x="${f(xRo + band + 12)}" y="${f(yOf(win.zHi) + 8)}" aria-hidden="true">${((win.zHi - win.zLo) * 100).toFixed(0)} cm shown in Watch the flow</text>
+  <text class="window-label" x="${f(xLo - band - 10)}" y="${f(yOf(win.zHi) + 14)}" text-anchor="end" aria-hidden="true">${((win.zHi - win.zLo) * 100).toFixed(0)} cm shown in Watch the flow</text>
 
   ${group(parts["b-duct"], `
     <rect class="part-hit" x="${f(xLo - 3)}" y="${f(yTop)}" width="${f(xRo - xLo + 6)}" height="${f(yInlet - yTop)}"/>
@@ -138,11 +176,7 @@ export function buildDiagramB() {
       + arrow("air-path", `M${f(CX + dx)} ${f(yBreakTop - 6)} V${f(yTop + 10)}`, "bArrowAir")).join("")}
   </g>
   <g class="flow-layer" data-layer-group="radiation" aria-hidden="true">
-    ${[[-1, -16], [-1, 14], [1, -16], [1, 14]].map(([sx, dy]) =>
-      wavyArrow(sx < 0 ? xL + 3 : xR - 3, yB + dy, CX + sx * 22, yB + dy * 0.25)).join("")}
-  </g>
-  <g class="flow-layer" data-layer-group="convection" aria-hidden="true">
-    ${beads.map(p => arrow("conv-path", `M${f(xOf(p.x) + 4)} ${f(yB - 3)} C${f(xOf(p.x) + 7)} ${f(yB - 10)} ${f(xOf(p.x) + 5)} ${f(yB - 16)} ${f(xOf(p.x) + 7)} ${f(yB - 24)}`, "bArrowConv")).join("")}
+    ${[-1, 1].map(sx => wavyArrow(sx < 0 ? xL + 3 : xR - 3, yB + 22, CX + sx * 22, yB + 22)).join("")}
   </g>
 
   <!-- 밴드 히터: 관 바깥을 감싼다. 단면에서는 양쪽 벽 밖의 두 띠로 보인다 -->
@@ -165,22 +199,20 @@ export function buildDiagramB() {
     ${label(parts["b-shield"], CX - shW / 2, yOf(0.79), leftAnchor, "left")}`)}
   <path class="tc-sheath" d="M${f(xRo + band + 46)} ${f(yLead)} H${f(CX + 10)} q-10 0 -10 10 V${f(ySL)}" aria-hidden="true"/>
 
-  ${beads.map(p => {
-    const x = xOf(p.x), r = beadR(p), black = p.id !== "b-t6";
-    return group(p, `
-    <circle class="part-hit" cx="${f(x)}" cy="${f(yB)}" r="7"/>
-    <path class="tc-lead" d="M${f(CX)} ${f(ySL)} L${f(x)} ${f(yB - r)}"/>
-    <circle class="bead ${black ? "bead--black" : "bead--grey"}" cx="${f(x)}" cy="${f(yB)}" r="${f(r)}"/>
-    ${p.id === "b-t8" ? label(p, x, yB, rightAnchor, "right", 34)
-      : p.id === "b-t7" ? label(p, x, yB, rightAnchor, "right")
-      : label(p, x, yB, leftAnchor, "left")}`);
-  }).join("")}
+  <!-- 단면의 비드는 자리만 표시한다. 확대 그림과 점선으로 잇는다 -->
+  <g aria-hidden="true">
+    ${beads.map(p => `<path class="tc-lead" d="M${f(CX)} ${f(ySL)} L${f(xOf(p.x))} ${f(yB)}"/>
+    <circle class="bead ${p.id === "b-t6" ? "bead--grey" : "bead--black"}" cx="${f(xOf(p.x))}" cy="${f(yB)}" r="${f(MIN_BEAD_R)}"/>`).join("")}
+    <rect class="closeup-mark" x="${f(CX - cw / 2)}" y="${f(yB - ch / 2)}" width="${f(cw)}" height="${f(ch)}"/>
+    <path class="closeup-link" d="M${f(CX + cw / 2)} ${f(yB - ch / 2)} L${f(CLOSE_X)} ${f(cy0)} M${f(CX + cw / 2)} ${f(yB + ch / 2)} L${f(CLOSE_X)} ${f(cy0 + stackH)}"/>
+  </g>
+  ${closeup(parts, cy0)}
 
   <!-- T10: 가열 벽 위의 열전대 -->
   ${group(t10, `
-    <circle class="part-hit" cx="${f(xR + wall / 2)}" cy="${f(yT10)}" r="8"/>
-    <circle class="sensor sensor--surface" cx="${f(xR + wall / 2)}" cy="${f(yT10)}" r="3.5"/>
-    ${label(t10, xR + wall / 2, yT10, rightAnchor, "right")}`)}
+    <circle class="part-hit" cx="${f(xL - wall / 2)}" cy="${f(yT10)}" r="8"/>
+    <circle class="sensor sensor--surface" cx="${f(xL - wall / 2)}" cy="${f(yT10)}" r="3.5"/>
+    ${label(t10, xLo - band, yT10, leftAnchor, "left")}`)}
 
   ${group(an, `
     <rect class="part-hit" x="${f(CX - 24)}" y="${f(yAn - 14)}" width="${f(xR - CX + 26)}" height="28"/>

@@ -16,3 +16,12 @@
 .bead { stroke: var(--surface); stroke-width: .6; }
 .bead--black { fill: var(--sensor-black); }
 .bead--grey { fill: var(--sensor-grey); }
+
+/* 비드 확대 그림. 단면과는 점선으로만 이어진 별도의 창이다 */
+.closeup-box { fill: var(--well); stroke: var(--chart-ink); stroke-width: 1; }
+.closeup-mark { fill: none; stroke: var(--chart-ink); stroke-width: 1; }
+.closeup-link { fill: none; stroke: var(--chart-ink); stroke-width: .8; stroke-dasharray: 3 3; }
+.closeup-title { fill: var(--muted-2); font-size: 12px; }
+.tc-lead--close { stroke-width: 1.2; }
+/* 칸 전체가 버튼이라 선택 테두리를 얇게. 두꺼우면 칸 그림보다 테두리가 먼저 보인다 */
+.closeup-cell.selected .part-hit, .closeup-cell:focus-visible .part-hit { stroke-width: 1.5; }

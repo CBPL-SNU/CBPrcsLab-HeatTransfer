@@ -73,7 +73,7 @@ export const HT16 = {
       approximate: "sideways spacing, from the manual's figure", approximatePosition: true },
     { id: "b-t7", kind: "bead", name: "T7", x: 0.012, z: 0.700, d: 0.00052, side: "right",
       approximate: "sideways spacing, from the manual's figure", approximatePosition: true },
-    { id: "b-t10", kind: "wall-sensor", name: "T10", z: 0.760, side: "right",
+    { id: "b-t10", kind: "wall-sensor", name: "T10", z: 0.760, side: "left",
       approximate: "height on the heated wall", approximatePosition: true },
     { id: "b-heater-wall", kind: "heater", name: "Band heater", side: "left",
       approximate: "the heated length was assumed for the CFD; the real band has not been measured" },
