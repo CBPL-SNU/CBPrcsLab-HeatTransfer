@@ -22,17 +22,19 @@
 
 .nav { display: flex; flex-direction: column; }
 .nav-section { padding: 14px 0; border-bottom: 1px solid var(--frame-line); }
-.nav-group { margin: 0 20px 6px; color: var(--frame-accent); font-size: var(--fs-sm); font-weight: var(--fw-semi); letter-spacing: 0; }
+/* 머리글이 아래 화면들을 묶는다는 것이 보이도록 머리글은 왼쪽 끝에, 화면 이름은 한 단 들여 작게 */
+.nav-group { margin: 0 20px 4px; color: var(--frame-accent); font-size: var(--fs-sm); font-weight: var(--fw-semi); letter-spacing: 0; }
 .nav-items { display: flex; flex-direction: column; gap: 1px; }
 .nav-item {
-  width: 100%; padding: 8px 20px; border: 0; border-radius: 0; background: none;
+  width: 100%; padding: 7px 20px 7px 32px; border: 0; border-radius: 0; background: none;
   color: var(--frame-ink-2); text-align: left;
   transition: background 120ms ease, color 120ms ease;
 }
+.nav-items:first-child .nav-item { padding-left: 20px; }   /* 머리글 없는 My data는 들이지 않는다 */
 .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
 /* 고른 화면은 폭 전체를 채우는 바탕과 글자로만 표시한다. 옆 막대까지 두면 같은 말을 두 번 한다 */
 .nav-item.is-active { background: rgba(111,182,216,.18); color: #fff; }
-.nav-item strong { display: flex; align-items: baseline; gap: var(--sp-2); font-size: var(--fs-base); font-weight: var(--fw-medium); }
+.nav-item strong { display: flex; align-items: baseline; gap: var(--sp-2); font-size: var(--fs-md); font-weight: var(--fw-medium); }
 .nav-item.is-active strong { font-weight: var(--fw-semi); }
 .nav-flag { color: var(--frame-ink-2); font-size: var(--fs-xs); font-weight: 400; opacity: .8; }
 .nav-item > span { display: none; }   /* 이름 한 줄이면 충분하다 */
@@ -63,7 +65,7 @@
   display: flex; flex-direction: column; gap: 2px;
   width: 92px;
 }
-.input > label { color: var(--muted); font-size: var(--fs-xs); font-weight: var(--fw-semi); white-space: nowrap; }
+.input > label { color: var(--muted); font-size: var(--fs-sm); font-weight: var(--fw-semi); white-space: nowrap; }
 .input > label em { color: var(--muted-2); font-style: normal; font-weight: 400; }
 .input .with-unit { display: flex; align-items: baseline; gap: var(--sp-1); }
 .input .unit { color: var(--muted-2); font-family: var(--font-mono); font-size: var(--fs-xs); }

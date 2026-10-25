@@ -176,7 +176,7 @@ dialog::backdrop { background: rgba(18, 40, 63, .4); }
   margin-bottom: var(--sp-3);
 }
 .card > header h2, .card > header h3 {
-  flex: 1; font-size: var(--fs-sm); font-weight: var(--fw-semi); color: var(--muted); margin: 0;
+  flex: 1; font-size: var(--fs-base); font-weight: var(--fw-semi); color: var(--text-2); margin: 0;
 }
 .card > header .sub { color: var(--muted-2); font-size: var(--fs-xs); }
 .card-body { display: flex; flex-direction: column; gap: var(--sp-3); }
