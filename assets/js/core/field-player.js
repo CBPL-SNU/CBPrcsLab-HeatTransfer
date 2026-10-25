@@ -145,17 +145,14 @@ export function createPlayer(el, { frames, current, setFrame, isActive }) {
     playing = true;
     if (current() >= f.length - 1) setFrame(0);
     label();
-    const noLoop = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let simTime = f[current()], lastWall = null, lastDraw = 0;
     const tick = wall => {
       if (!playing) return;
       if (document.hidden || !isActive() || frames() !== f) { stop(); return; }
       if (lastWall !== null) simTime += (wall - lastWall) / 1000 * rate();
       lastWall = wall;
-      if (simTime > f.at(-1)) {
-        if (noLoop) { setFrame(f.length - 1); stop(); return; }
-        simTime = f[0];
-      }
+      // 끝에서 멈춘다. 0 s로 되감으면 마지막 상태를 볼 틈이 없다. 다시 보려면 Replay
+      if (simTime > f.at(-1)) { setFrame(f.length - 1); stop(); return; }
       if (wall - lastDraw >= 1000 / MAX_DRAW_FPS) {
         let i = current() > 0 && f[current()] <= simTime ? current() : 0;
         while (i + 1 < f.length && f[i + 1] <= simTime) i += 1;
