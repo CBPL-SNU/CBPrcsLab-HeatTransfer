@@ -1,6 +1,6 @@
 {
  "case": "B00V17L",
- "source": "B00_17V_G01_laminar_large20s",
+ "source": "B00_17V_large_external60s",
  "durationS": 60.0,
  "frames": [
   0.0,
@@ -613,8 +613,8 @@
  },
  "bead": {
   "x": -3e-05,
-  "z": 0.70002,
-  "radius": 0.00156
+  "z": 0.70001,
+  "radius": 0.001558
  },
  "planes": {
   "full": {
@@ -631,12 +631,14 @@
    },
    "range": {
     "temperature": {
-     "min": 24.597,
-     "max": 193.351
+     "min": 24.552,
+     "max": 193.558,
+     "clipped": false
     },
     "speed": {
      "min": 0.0,
-     "max": 0.6146
+     "max": 0.6176,
+     "clipped": false
     }
    },
    "temperature": "full_T.png",
@@ -648,20 +650,22 @@
    "cols": 25,
    "rows": 25,
    "roi": {
-    "zLo": 0.69202,
-    "zHi": 0.70802,
+    "zLo": 0.69201,
+    "zHi": 0.70801,
     "xLo": -0.00803,
     "xHi": 0.00797,
     "pxPerM": 10000.0
    },
    "range": {
     "temperature": {
-     "min": 24.597,
-     "max": 100.05
+     "min": 24.553,
+     "max": 57.974,
+     "clipped": true
     },
     "speed": {
      "min": 0.0,
-     "max": 0.3616
+     "max": 0.3293,
+     "clipped": true
     }
    },
    "temperature": "zoom_T.png",
