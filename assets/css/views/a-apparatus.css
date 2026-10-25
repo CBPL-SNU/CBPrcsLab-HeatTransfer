@@ -12,10 +12,10 @@
 .cfd-cut { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 4 3; }
 .duct-wall { fill: var(--surface-3); stroke: var(--chart-ink); stroke-width: 1; }
 .break-line { fill: none; stroke: var(--chart-ink); stroke-width: 1; }
-.break-label, .window-label, .legend-note { fill: var(--muted-2); font-size: 12px; }
+.break-label, .window-label, .legend-note { fill: var(--muted-2); font-size: 13px; }
 .window-box { fill: rgba(var(--accent-rgb), .06); stroke: var(--accent); stroke-width: 1; stroke-dasharray: 4 3; }
 .scale-bar path { stroke: var(--chart-ink); stroke-width: 1.5; }
-.scale-bar text { fill: var(--chart-ink); font-size: 12px; }
+.scale-bar text { fill: var(--chart-ink); font-size: 13px; }
 
 /* 히터: 관 안쪽 가열 구간만 표면 온도 색을 옅게 띤다. 밖의 조립체는 윤곽뿐이다 */
 .heater-support { fill: var(--surface); stroke: var(--chart-ink); stroke-width: 1; }
@@ -42,8 +42,7 @@
 /* 이름표 */
 .part-leader { stroke: var(--chart-grid); stroke-width: 1; fill: none; pointer-events: none; }
 .part-label { fill: var(--text-2); font-size: 14px; font-weight: var(--fw-medium); pointer-events: none; }
-.part-sub { fill: var(--muted-2); font-size: 12px; font-family: var(--font-mono); pointer-events: none; }
-.part-approx { fill: var(--muted-2); font-weight: 400; }
+.part-kind { fill: var(--muted); font-weight: var(--fw-regular, 400); }
 /* 줄인 구간의 부품은 리더선을 점선으로. 축척 구간과 같은 확신으로 읽히면 안 된다 */
 .apparatus-part--squeezed .part-leader { stroke-dasharray: 3 3; }
 
@@ -70,3 +69,16 @@
 
 /* 설명 카드의 값이 숫자가 아니라 문장이다 */
 .values--text .v { font-family: var(--font-sans); font-size: var(--fs-md); font-weight: 400; }
+
+/* 부품 목록. 그림의 범례처럼 한 줄에 하나, 고른 줄만 바탕이 바뀐다 */
+.part-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 2px var(--sp-3); }
+.part-row {
+  display: flex; align-items: baseline; gap: var(--sp-2); padding: 6px var(--sp-2);
+  border: 0; border-radius: var(--radius-md); background: none; font: inherit; text-align: left; cursor: pointer; color: var(--text-2);
+}
+.part-row b { font-weight: var(--fw-semi); }
+.part-row span { color: var(--muted); font-size: var(--fs-sm); }
+.part-row:hover { background: var(--surface-2); }
+.part-row.is-active { background: rgba(var(--accent-rgb), .1); color: var(--accent-ink); }
+.part-row:focus-visible { outline: 2px solid rgba(var(--accent-rgb), .6); outline-offset: 1px; }
+.click-hint { color: var(--muted); font-size: var(--fs-base); }

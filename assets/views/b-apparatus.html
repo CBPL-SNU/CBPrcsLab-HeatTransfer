@@ -12,7 +12,7 @@
 
   <div class="card-grid wide-left">
   <div class="card">
-    <header><h2>HT16 in section · the heated section to scale</h2></header>
+    <header><h2>HT16 in section · the heated section to scale</h2><span class="click-hint">Click any part</span></header>
     <div class="card-body">
       <div class="apparatus-stage" id="bApparatusStage"></div>
     </div>
@@ -22,19 +22,14 @@
   <div class="card">
     <header><h2 id="bComponentTitle">—</h2><span class="badge" id="bComponentBadge">—</span></header>
     <div class="card-body">
+      <p class="part-measure" id="bComponentMeasure" hidden>—</p>
       <p id="bComponentSummary">—</p>
-      <div class="values values--text">
-        <div id="bComponentMeasureRow"><span class="k">Measures</span><span class="v" id="bComponentMeasure">—</span></div>
-        <div><span class="k">Where</span><span class="v" id="bComponentLocation">—</span></div>
-      </div>
-      <p class="assumption" id="bComponentRole">—</p>
-      <p class="assumption" id="bComponentApprox" hidden>—</p>
     </div>
   </div>
 
   <div class="card">
     <header><h2>Parts</h2></header>
-    <div class="card-body"><div class="btn-row" id="bComponentList"></div></div>
+    <div class="card-body"><div class="part-list" id="bComponentList"></div></div>
   </div>
 
   <!-- 세 온도가 계산에 들어가는 자리. 계산 화면의 식과 같다 -->
@@ -46,7 +41,7 @@
         <mfrac><msub><mi>h</mi><mi>r</mi></msub><msub><mi>h</mi><mi>c</mi></msub></mfrac>
         <mo>(</mo><msub><mi>T</mi><mn>10</mn></msub><mo>−</mo><msub><mi>T</mi><mtext>bead</mtext></msub><mo>)</mo></mrow></math>
       </p>
-      <p class="assumption">T10 is the hot wall, T5 the air before it is heated, T6–T8 the beads between them. A bead settles where the radiation it takes from the wall equals what convection carries off, so it reads above T5 by the ratio of the two coefficients.</p>
+      <p class="assumption">A bead settles where the radiation it takes from T10 equals what convection carries off to T5.</p>
     </div>
   </div>
   </div>

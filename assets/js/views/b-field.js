@@ -32,7 +32,7 @@ function stackedHeight(w) {
 
 function layout(w, h) {
   const { full, zoom } = data.index.planes;
-  const margin = 8, labelH = 20, bar = 10, barText = 52, gap = 36;
+  const margin = 8, labelH = 20, bar = 10, barText = 64, gap = 36;
   const fullAspect = full.w / full.h, zoomAspect = zoom.w / zoom.h;
   if (w < NARROW) {
     const s = stackedSize(w);

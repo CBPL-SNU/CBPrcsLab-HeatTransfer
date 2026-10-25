@@ -16,6 +16,8 @@ const MIN_BEAD_R = 1.6;         // 단면의 구는 위치 표시일 뿐이다. 
 // 좌우 간격은 그림에서 어림한 값이라 칸을 나누면 간격을 주장하지 않아도 된다
 const ZOOM = 10;
 const CELL = 74, CELL_GAP = 10, CLOSE_X = 360;   // 칸 한 변, 칸 사이, 칸들의 왼쪽 [px]
+const LABEL_W = 122;                               // 칸 오른쪽 이름표 자리. 선택 상자가 칸과 이름표를 함께 감싼다 [px]
+const HIT_PAD = 4;                                 // 선택 상자와 칸 사이 여백. 세 칸 모두 같다 [px]
 const CELL_ORDER = ["b-t8", "b-t7", "b-t6"];     // 위에서부터. T8–T7은 크기, T7–T6은 방사율이 다르다
 
 const rig = HT16;
@@ -32,23 +34,16 @@ function yOf(z) {
 const xOf = x => CX + x * PX_PER_M;
 const f = n => n.toFixed(1);
 const inSqueeze = z => z < Z_BREAK;
-const SENSORS = new Set(["bead", "wall-sensor", "air-sensor", "sensor"]);
 const arrow = (cls, d, marker) => `<path class="${cls}" d="${d}" marker-end="url(#${marker})"/>`;
 
 function label(part, x, y, anchorX, side, lift = 0) {
-  const data = componentData[part.id];
-  const approx = part.approximatePosition ? ' <tspan class="part-approx">≈</tspan>' : "";
   const tx = side === "right" ? anchorX + 8 : anchorX - 8;
   const align = side === "right" ? "start" : "end";
   const yText = y - lift;
-  // 무엇을 재는지는 센서에만 붙인다
-  const sub = data.measure && SENSORS.has(part.kind)
-    ? `<text class="part-sub" x="${f(tx)}" y="${f(yText + 11)}" text-anchor="${align}">${data.measure}</text>` : "";
   const bend = lift ? `V${f(yText)} ` : "";
   return `
     <path class="part-leader" d="M${f(x)} ${f(y)} ${bend}H${f(anchorX)}"/>
-    <text class="part-label" id="blabel-${part.id}" x="${f(tx)}" y="${f(yText + (sub ? -3 : 4))}" text-anchor="${align}">${part.name}${approx}</text>
-    ${sub}`;
+    <text class="part-label" id="blabel-${part.id}" x="${f(tx)}" y="${f(yText + 4)}" text-anchor="${align}">${part.name}</text>`;
 }
 
 function group(part, inner) {
@@ -85,12 +80,12 @@ function coil(x, y0, y1, w) {
 
 // 비드 확대 칸. 칸 안에서는 축척대로다 (단면의 ×10)
 function closeup(parts, y0) {
-  const k = ZOOM * PX_PER_M, body = { "b-t6": "grey body", "b-t7": "black body", "b-t8": "black body" };
+  const k = ZOOM * PX_PER_M, body = { "b-t6": "small grey", "b-t7": "small black", "b-t8": "large black" };
   const cells = CELL_ORDER.map((id, n) => {
     const p = parts[id], x = CLOSE_X, y = y0 + n * (CELL + CELL_GAP), cx = x + CELL / 2, cy = y + CELL / 2 + 6;
     const r = Math.max(p.d / 2 * k, 1.5), tx = x + CELL + 10;
     return `<g class="apparatus-part closeup-cell" data-part="${id}" tabindex="0" role="button" aria-labelledby="blabel-${id}">
-      <rect class="part-hit" x="${f(x - 3)}" y="${f(y - 3)}" width="${f(CELL + 120)}" height="${f(CELL + 6)}"/>
+      <rect class="part-hit" x="${f(x - HIT_PAD)}" y="${f(y - HIT_PAD)}" width="${f(CELL + LABEL_W + 2 * HIT_PAD)}" height="${f(CELL + 2 * HIT_PAD)}" rx="7"/>
       <rect class="closeup-box" x="${f(x)}" y="${f(y)}" width="${CELL}" height="${CELL}" rx="5"/>
       <path class="tc-lead tc-lead--close" d="M${f(cx)} ${f(y)} V${f(cy - r)}" aria-hidden="true"/>
       <g class="flow-layer" data-layer-group="radiation" aria-hidden="true">
@@ -100,8 +95,7 @@ function closeup(parts, y0) {
         ${arrow("conv-path", `M${f(cx + r * 0.7 + 2)} ${f(cy - r * 0.7 - 2)} C${f(cx + r + 8)} ${f(cy - r - 8)} ${f(cx + r + 4)} ${f(y + 16)} ${f(cx + r + 8)} ${f(y + 6)}`, "bArrowConv")}
       </g>
       <circle class="bead ${id === "b-t6" ? "bead--grey" : "bead--black"}" cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}"/>
-      <text class="part-label" id="blabel-${id}" x="${f(tx)}" y="${f(cy - 4)}">${p.name}</text>
-      <text class="part-sub" x="${f(tx)}" y="${f(cy + 10)}">${(p.d * 1000).toFixed(1)} mm · ${body[id]}</text>
+      <text class="part-label" id="blabel-${id}" x="${f(tx)}" y="${f(cy + 5)}">${p.name} <tspan class="part-kind">${body[id]}</tspan></text>
     </g>`;
   }).join("");
   return `
@@ -149,10 +143,9 @@ export function buildDiagramB() {
     <path d="M${f(W - 8 - 0.05 * PX_PER_M)} ${f(TOP - 22)} h${f(0.05 * PX_PER_M)}"/>
     <text x="${f(W - 8)}" y="${f(TOP - 27)}" text-anchor="end">50 mm</text>
   </g>
-  <text class="legend-note" x="${f(W - 8)}" y="${f(height - 8)}" text-anchor="end" aria-hidden="true">≈ position estimated from the manual's figure · beads to scale only in the close-up</text>
 
   <rect class="window-box" x="${f(xLo - band - 6)}" y="${f(yOf(win.zHi) - 4)}" width="${f(xRo - xLo + 2 * band + 12)}" height="${f(yOf(win.zLo) - yOf(win.zHi) + 8)}" rx="4" aria-hidden="true"/>
-  <text class="window-label" x="${f(xLo - band - 10)}" y="${f(yOf(win.zHi) + 14)}" text-anchor="end" aria-hidden="true">${((win.zHi - win.zLo) * 100).toFixed(0)} cm shown in Watch the flow</text>
+  <text class="window-label" x="${f(xLo - band - 10)}" y="${f(yOf(win.zHi) + 14)}" text-anchor="end" aria-hidden="true">${((win.zHi - win.zLo) * 100).toFixed(0)} cm in Watch the flow</text>
 
   ${group(parts["b-duct"], `
     <rect class="part-hit" x="${f(xLo - 3)}" y="${f(yTop)}" width="${f(xRo - xLo + 6)}" height="${f(yInlet - yTop)}"/>
@@ -167,7 +160,7 @@ export function buildDiagramB() {
     <rect class="duct-wall" x="${f(xR)}" y="${f(yBreakBottom)}" width="${f(wall)}" height="${f(yInlet - yBreakBottom)}"/>
     <path class="break-line" d="${wave(yBreakTop + 3, xLo - band - 6, xRo + band + 6)}"/>
     <path class="break-line" d="${wave(yBreakBottom - 3, xLo - band - 6, xRo + band + 6)}"/>
-    <text class="break-label" x="${f(xRo + band + 12)}" y="${f(yBreakTop + BREAK_H / 2 + 4)}">lower ${((Z_BREAK - rig.duct.inletZ) * 100).toFixed(0)} cm compressed, not to scale</text>
+    <text class="break-label" x="${f(xRo + band + 12)}" y="${f(yBreakTop + BREAK_H / 2 + 4)}">lower ${((Z_BREAK - rig.duct.inletZ) * 100).toFixed(0)} cm compressed</text>
     ${label(parts["b-duct"], xLo, yOf(0.86), leftAnchor, "left")}`)}
 
   <!-- 흐름. 공기는 차폐통 옆으로 올라가고, 복사는 가열 벽에서 구로, 대류는 구에서 공기로 -->
@@ -246,6 +239,13 @@ export function buildDiagramB() {
 </svg>`;
 }
 
+// 도식의 범례처럼 한 줄에 하나. 이름 뒤에 무엇인지 짧게
+const partRow = id => {
+  const name = rig.parts.find(p => p.id === id)?.name ?? componentData[id].label;
+  const what = componentData[id].label.split(" · ")[1] ?? "";
+  return `<button class="part-row" type="button" data-part="${id}"><b>${name}</b>${what ? `<span>${what}</span>` : ""}</button>`;
+};
+
 function selectPart(partId) {
   const data = componentData[partId];
   if (!data) return;
@@ -253,14 +253,9 @@ function selectPart(partId) {
   $("#bComponentBadge").textContent = data.badge;
   $("#bComponentTitle").textContent = data.label;
   $("#bComponentSummary").textContent = data.summary;
-  $("#bComponentLocation").textContent = data.location;
-  $("#bComponentRole").textContent = data.role;
-  $("#bComponentMeasureRow").hidden = !data.measure;
-  $("#bComponentMeasure").textContent = data.measure ?? "";
-  const geometry = rig.parts.find(p => p.id === partId);
-  $("#bComponentApprox").hidden = !geometry?.approximate;
-  if (geometry?.approximate) $("#bComponentApprox").textContent = `≈ Estimated, not measured: ${geometry.approximate}.`;
-  $$("#bComponentList .btn").forEach(chip => chip.classList.toggle("is-active", chip.dataset.part === partId));
+  $$("#bComponentList .part-row").forEach(row => row.classList.toggle("is-active", row.dataset.part === partId));
+  $("#bComponentMeasure").hidden = !data.measure;
+  $("#bComponentMeasure").innerHTML = data.measure ?? "";
 }
 
 function updateFlowLayers() {
@@ -273,10 +268,8 @@ function updateFlowLayers() {
 
 export function initBApparatusView() {
   $("#bApparatusStage").innerHTML = buildDiagramB();
-  $("#bComponentList").innerHTML = componentOrder.B
-    .map(id => `<button class="btn" type="button" data-part="${id}">${rig.parts.find(p => p.id === id)?.name ?? componentData[id].label}</button>`)
-    .join("");
-  $$("#bComponentList .btn").forEach(button => button.addEventListener("click", () => selectPart(button.dataset.part)));
+  $("#bComponentList").innerHTML = componentOrder.B.map(partRow).join("");
+  $$("#bComponentList .part-row").forEach(row => row.addEventListener("click", () => selectPart(row.dataset.part)));
   $$("#b-apparatus .apparatus-part").forEach(part => {
     part.addEventListener("click", () => selectPart(part.dataset.part));
     part.addEventListener("keydown", event => {

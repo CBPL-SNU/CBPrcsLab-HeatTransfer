@@ -21,9 +21,9 @@
 
   /* 앱 프레임 — 사이드바를 어둡게 해 화면에 뼈대를 준다.
      헤더는 밝게 둬 화면 제목이 본문의 일부로 읽히게 한다. */
-  --frame: #12283f;
+  --frame: #12283f;           /* CBPL-kit(#1a3a5c)보다 짙은 남색 */
   --frame-ink: #dbe6ef;
-  --frame-ink-2: #91a7bb;
+  --frame-ink-2: #a8b8c8;
   --frame-line: rgba(255, 255, 255, 0.09);
   --frame-accent: #6fb6d8;
 
@@ -65,11 +65,11 @@
   --font-sans: "IBM Plex Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
 
-  --fs-xs: 11px;
-  --fs-sm: 12px;
-  --fs-md: 13px;
-  --fs-base: 14px;
-  --fs-lg: 17px;
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 14px;
+  --fs-base: 15px;
+  --fs-lg: 18px;
   --fs-num: 23px;   /* 값 묶음의 숫자 */
   --fs-answer: 34px; /* 화면의 답 하나 */
 
@@ -97,7 +97,7 @@
   --shadow-raised: 0 24px 80px rgba(20, 33, 45, 0.22);
 
   /* 치수 */
-  --sidebar-w: 224px;
+  --sidebar-w: 264px;
   --header-h: 52px;
   --content-max: 1320px;
 }

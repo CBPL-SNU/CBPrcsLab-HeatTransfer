@@ -16,7 +16,7 @@ export const SERIES_COLOR = {
 export const CHART_INK = { ink: "#5c6a76", grid: "#dbe2e8", mark: "#46525e", plate: "#ffffff" };
 
 // 그래프 안에서 서체를 섞지 않는다. 축 숫자와 계열 이름이 달라 보이면 안 된다.
-export const CHART_FONT = "11px 'IBM Plex Sans KR', system-ui, sans-serif";
+export const CHART_FONT = "12.5px 'IBM Plex Sans KR', system-ui, sans-serif";
 
 // 표시 크기와 devicePixelRatio에 맞춤. 화면이 숨겨져 크기를 못 재면 null
 export function setupCanvas(canvas) {
@@ -59,10 +59,10 @@ export function drawAxes(ctx, w, h, xLabel, yLabel, xTicks, yTicks, xMap, yMap, 
   xTicks.forEach(value => {
     const x = xMap(value);
     ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, h - bottom); ctx.stroke();
-    ctx.textAlign = "center"; ctx.fillText(String(value), x, h - 13);
+    ctx.textAlign = "center"; ctx.fillText(String(value), x, h - 17);
   });
   ctx.textAlign = "left"; ctx.fillText(yLabel, left, 11);
-  ctx.textAlign = "right"; ctx.fillText(xLabel, w - right, h - 2);
+  ctx.textAlign = "right"; ctx.fillText(xLabel, w - right, h - 1);
   ctx.textAlign = "left";
 }
 

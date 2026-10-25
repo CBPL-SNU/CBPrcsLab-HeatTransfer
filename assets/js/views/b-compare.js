@@ -1,7 +1,7 @@
 // 실험 B 비교 화면: 아무 두 case의 구 주변을 같은 시각에 나란히 본다.
 
 import { $, $$, clamp, numberValue } from "../core/dom.js";
-import { setupCanvas, drawAxes, drawLine, makeScales, paintUpTo, CHART_INK, CHART_FONT, SERIES_COLOR, SERIES_DASH, SENSOR_COLOR } from "../core/chart.js";
+import { setupCanvas, drawAxes, drawLine, makeScales, paintUpTo, CHART_INK, CHART_FONT, SERIES_DASH, SENSOR_COLOR } from "../core/chart.js";
 import { loadCase, ensureField, physical, saturated, valueRange } from "../core/cfd-loader.js";
 import { RAMP, paintFrame, sampleFrame, createPlayer, showProbe, hideProbe } from "../core/field-player.js";
 import { CFD_CASES } from "../data/cfd-cases.js";
@@ -45,7 +45,7 @@ function rangeFor(c) {
 
 // 넓으면 나란히, 좁으면 위아래. 색 범위가 공유면 막대 하나, 따로면 창마다 하나
 function layout(w) {
-  const margin = 8, labelH = 20, gap = 24, side = 68, own = scale === "own";
+  const margin = 8, labelH = 20, gap = 24, side = 86, own = scale === "own";   // side: 색 막대와 "≥ 39.5 °C" 자리
   if (w < 560) {
     const s = Math.min(w - 2 * margin - side, 300), x = (w - s - side) / 2;
     const panels = [{ x, y: margin, w: s, h: s }, { x, y: margin + s + labelH + gap, w: s, h: s }];
@@ -123,19 +123,18 @@ function drawTemperatures() {
   const setup = setupCanvas($("#cTempChart"));
   if (!setup) return;
   const { ctx, w, h } = setup;
-  const airs = cases.map(c => c.data.index.ambientC);
-  const all = cases.flatMap(c => c.data.history.T_bead_avg_C.filter(v => v !== null));
-  const lo = Math.min(...airs, ...all), hi = Math.max(...all), pad = (hi - lo) * 0.1 || 1, end = frames().at(-1);
+  // 실험한 날마다 유입 공기 온도가 달라 °C로 그리면 기준선이 둘이 된다. 유입 공기를 0으로 맞춘 ΔT로 그리고 기준선은 그리지 않는다
+  const rise = c => c.data.history.T_bead_avg_C.map(v => (v === null ? null : v - c.data.index.ambientC));
+  const all = cases.flatMap(c => rise(c).filter(v => v !== null));
+  const lo = Math.min(0, ...all), hi = Math.max(...all), pad = (hi - lo) * 0.1 || 1, end = frames().at(-1);
   const { xMap, yMap } = makeScales(w, h, [0, end], [lo - pad, hi + pad]);
   const digits = hi - lo < 5 ? 1 : 0;
-  drawAxes(ctx, w, h, "t (s)", "T (°C)", [0, Math.round(end / 2), end],
+  drawAxes(ctx, w, h, "t (s)", "ΔT (K)", [0, Math.round(end / 2), end],
     [+lo.toFixed(digits), +((lo + hi) / 2).toFixed(digits), +hi.toFixed(digits)], xMap, yMap);
   paintUpTo(ctx, xMap(now()), h, () => {
     cases.forEach(c => {
-      const air = c.data.index.ambientC, stop = c.data.index.frames.at(-1);
-      drawLine(ctx, [[xMap(0), yMap(air)], [xMap(stop), yMap(air)]], SERIES_COLOR.residual, 1.4, [7, 4]);
-      const { time_s: t, T_bead_avg_C: T } = c.data.history;
-      drawLine(ctx, t.flatMap((s, i) => (T[i] === null ? [] : [[xMap(s), yMap(T[i])]])), SIDE_COLOR[c.side], c.line, SIDE_DASH[c.side]);
+      const t = c.data.history.time_s, dT = rise(c);
+      drawLine(ctx, t.flatMap((s, i) => (dT[i] === null ? [] : [[xMap(s), yMap(dT[i])]])), SIDE_COLOR[c.side], c.line, SIDE_DASH[c.side]);
     });
   });
 }
@@ -171,8 +170,7 @@ function updateLabels() {
 // 범례는 고른 두 case에 따라 바뀐다. 선 굵기가 구 지름, 실선·점선이 왼쪽·오른쪽이다
 function renderLegend() {
   $("#cLegend").innerHTML = cases.map(c =>
-    `<span><i style="border-color:${SIDE_COLOR[c.side]};border-top-width:${c.line + 1}px;border-top-style:${c.side === "left" ? "solid" : "dashed"}"></i>${c.label}</span>`).join("")
-    + '<span><i class="residual dashed"></i>Inlet air</span>';
+    `<span><i style="border-color:${SIDE_COLOR[c.side]};border-top-width:${c.line + 1}px;border-top-style:${c.side === "left" ? "solid" : "dashed"}"></i>${c.label}</span>`).join("");
   $("#cHeadL").textContent = cases[0].label;
   $("#cHeadR").textContent = cases[1].label;
 }
