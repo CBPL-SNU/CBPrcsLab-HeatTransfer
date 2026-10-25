@@ -12,7 +12,7 @@
 
   <div class="card-grid wide-left">
   <div class="card">
-    <header><h2>HT14 in section · the heater region to scale</h2></header>
+    <header><h2>HT14 in section · the heater region to scale</h2><span class="click-hint">Click any part</span></header>
     <div class="card-body">
       <div class="apparatus-stage" id="apparatusStage"></div>
     </div>
@@ -22,20 +22,14 @@
   <div class="card">
     <header><h2 id="componentTitle">—</h2><span class="badge" id="componentBadge">—</span></header>
     <div class="card-body">
+      <p class="part-measure" id="componentMeasure" hidden>—</p>
       <p id="componentSummary">—</p>
-      <div class="values values--text">
-        <div id="componentMeasureRow"><span class="k">Measures</span><span class="v" id="componentMeasure">—</span></div>
-        <div id="componentStateRow"><span class="k">In Experiment A</span><span class="v" id="componentState">—</span></div>
-        <div><span class="k">Where</span><span class="v" id="componentLocation">—</span></div>
-      </div>
-      <p class="assumption" id="componentRole">—</p>
-      <p class="assumption" id="componentApprox" hidden>—</p>
     </div>
   </div>
 
   <div class="card">
     <header><h2>Parts</h2></header>
-    <div class="card-body"><div class="btn-row" id="componentList"></div></div>
+    <div class="card-body"><div class="part-list" id="componentList"></div></div>
   </div>
 
   <!-- 이 화면이 답해야 할 세 번째 질문: 두 온도가 계산에 어떻게 들어가는가 -->
@@ -50,7 +44,7 @@
         <math><mrow><msub><mi>Q</mi><mtext>rad</mtext></msub><mo>=</mo><mi>ε</mi><mi>σ</mi><mi>A</mi><mo>(</mo>
         <msubsup><mi>T</mi><mn>10</mn><mn>4</mn></msubsup><mo>−</mo><msubsup><mi>T</mi><mn>8</mn><mn>4</mn></msubsup><mo>)</mo></mrow></math>
       </p>
-      <p class="assumption">T10 is the surface, T8 the surroundings. Temperatures go into the T⁴ term in kelvin. A = πDL is the heated 70 mm only. The radiation lands on the duct wall, whose temperature is not measured; the course balance assumes the wall sits at T8. Both terms are worked out on the Calculate screen.</p>
+      <p class="assumption">T10 is the cylinder surface and T8 the surroundings. Put both in kelvin for the T⁴ term. A is the surface of the heated 70 mm only, not the whole cylinder.</p>
     </div>
   </div>
   </div>

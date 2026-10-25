@@ -31,22 +31,16 @@ const xOf = x => CX + x * PX_PER_M;
 const f = n => n.toFixed(1);
 const inSqueeze = z => z < Z_BREAK;
 
-// 이름표. 센서는 무엇을 재는지 한 줄 더 붙인다. 나머지 설명은 오른쪽 카드가 맡는다.
+// 이름표는 한 줄. 무엇을 재는지 등 나머지 설명은 오른쪽 카드가 맡는다.
 // 리더선은 부품에서 시작해 필요하면 한 번 꺾고 옆으로 나간다.
 function label(part, x, y, anchorX, side, lift = 0) {
-  const data = componentData[part.id];
-  // ≈ 는 위치가 어림인 센서에만 그린다. 형상이나 두께의 어림은 카드가 말한다.
-  // 전부에 붙이면 표지가 뜻을 잃는다.
-  const approx = part.approximatePosition ? ' <tspan class="part-approx">≈</tspan>' : "";
   const tx = side === "right" ? anchorX + 8 : anchorX - 8;
   const align = side === "right" ? "start" : "end";
   const yText = y - lift;
-  const sub = part.kind === "sensor" ? `<text class="part-sub" x="${f(tx)}" y="${f(yText + 11)}" text-anchor="${align}">${data.measure}</text>` : "";
   const bend = lift ? `V${f(yText)} ` : "";
   return `
     <path class="part-leader" d="M${f(x)} ${f(y)} ${bend}H${f(anchorX)}"/>
-    <text class="part-label" id="label-${part.id}" x="${f(tx)}" y="${f(yText + (sub ? -3 : 4))}" text-anchor="${align}">${part.name}${approx}</text>
-    ${sub}`;
+    <text class="part-label" id="label-${part.id}" x="${f(tx)}" y="${f(yText + 4)}" text-anchor="${align}">${part.name}</text>`;
 }
 
 function group(part, inner) {
@@ -116,11 +110,10 @@ export function buildDiagram() {
     <path d="M${f(W - 8 - 0.05 * PX_PER_M)} ${f(TOP - 22)} h${f(0.05 * PX_PER_M)}"/>
     <text x="${f(W - 8)}" y="${f(TOP - 27)}" text-anchor="end">50 mm</text>
   </g>
-  <text class="legend-note" x="${f(W - 8)}" y="${f(height - 8)}" text-anchor="end" aria-hidden="true">≈ position estimated from the manual's figure, not measured</text>
 
   <!-- Watch the flow 창 -->
   <rect class="window-box" x="${f(xLo - 6)}" y="${f(yOf(win.zHi) - 4)}" width="${f(xRo - xLo + 12)}" height="${f(yOf(win.zLo) - yOf(win.zHi) + 8)}" rx="4" aria-hidden="true"/>
-  <text class="window-label" x="${f(xLo - 6)}" y="${f(yOf(win.zHi) - 10)}" aria-hidden="true">${((win.zHi - win.zLo) * 100).toFixed(0)} cm shown in Watch the flow</text>
+  <text class="window-label" x="${f(xLo - 6)}" y="${f(yOf(win.zHi) - 10)}" aria-hidden="true">${((win.zHi - win.zLo) * 100).toFixed(0)} cm in Watch the flow</text>
 
   <!-- 관: 위 구간 축척대로, 아래 구간 줄임 -->
   ${group(parts["a-duct"], `
@@ -137,7 +130,7 @@ export function buildDiagram() {
     <rect class="duct-wall" x="${f(xR)}" y="${f(yBreakBottom)}" width="${f(wall)}" height="${f(yInlet - yBreakBottom)}"/>
     <path class="break-line" d="${wave(yBreakTop + 3, xLo - 6, xRo + 6)}"/>
     <path class="break-line" d="${wave(yBreakBottom - 3, xLo - 6, xRo + 6)}"/>
-    <text class="break-label" x="${f(xRo + 12)}" y="${f(yBreakTop + BREAK_H / 2 + 4)}">lower ${((Z_BREAK - rig.duct.inletZ) * 100).toFixed(0)} cm compressed, not to scale</text>
+    <text class="break-label" x="${f(xRo + 12)}" y="${f(yBreakTop + BREAK_H / 2 + 4)}">lower ${((Z_BREAK - rig.duct.inletZ) * 100).toFixed(0)} cm compressed</text>
     ${label(parts["a-duct"], xLo, yOf(1.12), leftAnchor, "left")}`)}
 
   <!-- 흐름. 켜고 끌 수 있다. 팬이 꺼져 있어도 플룸이 관 아래 공기를 끌어올린다.
@@ -208,6 +201,13 @@ export function buildDiagram() {
 </svg>`;
 }
 
+// 도식의 범례처럼 한 줄에 하나. 이름 뒤에 무엇인지 짧게
+const partRow = id => {
+  const name = rig.parts.find(p => p.id === id)?.name ?? componentData[id].label;
+  const what = componentData[id].label.split(" · ")[1] ?? "";
+  return `<button class="part-row" type="button" data-part="${id}"><b>${name}</b>${what ? `<span>${what}</span>` : ""}</button>`;
+};
+
 function selectPart(partId) {
   const data = componentData[partId];
   if (!data) return;
@@ -216,17 +216,9 @@ function selectPart(partId) {
   $("#componentBadge").textContent = data.badge;
   $("#componentTitle").textContent = data.label;
   $("#componentSummary").textContent = data.summary;
-  $("#componentLocation").textContent = data.location;
-  $("#componentRole").textContent = data.role;
-  // 센서만 무엇을 재는지가 있고, 나머지는 이 실험에서의 상태가 있다
-  $("#componentMeasureRow").hidden = !data.measure;
-  $("#componentMeasure").textContent = data.measure ?? "";
-  $("#componentStateRow").hidden = !data.inExpA;
-  $("#componentState").textContent = data.inExpA ?? "";
-  const geometry = rig.parts.find(p => p.id === partId);
-  $("#componentApprox").hidden = !geometry?.approximate;
-  if (geometry?.approximate) $("#componentApprox").textContent = `≈ Estimated, not measured: ${geometry.approximate}.`;
-  $$("#componentList .btn").forEach(chip => chip.classList.toggle("is-active", chip.dataset.part === partId));
+  $$("#componentList .part-row").forEach(row => row.classList.toggle("is-active", row.dataset.part === partId));
+  $("#componentMeasure").hidden = !data.measure;
+  $("#componentMeasure").innerHTML = data.measure ?? "";
 }
 
 function updateFlowLayers() {
@@ -239,11 +231,8 @@ function updateFlowLayers() {
 
 export function initApparatusView() {
   $("#apparatusStage").innerHTML = buildDiagram();
-
-  $("#componentList").innerHTML = componentOrder.A
-    .map(id => `<button class="btn" type="button" data-part="${id}">${rig.parts.find(p => p.id === id)?.name ?? componentData[id].label}</button>`)
-    .join("");
-  $$("#componentList .btn").forEach(button => button.addEventListener("click", () => selectPart(button.dataset.part)));
+  $("#componentList").innerHTML = componentOrder.A.map(partRow).join("");
+  $$("#componentList .part-row").forEach(row => row.addEventListener("click", () => selectPart(row.dataset.part)));
 
   $$("#a-apparatus .apparatus-part").forEach(part => {
     part.addEventListener("click", () => selectPart(part.dataset.part));
