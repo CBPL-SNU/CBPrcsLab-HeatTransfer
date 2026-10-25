@@ -1,15 +1,15 @@
 <div class="conditions">
-  <!-- 유동 조건과 구 크기를 따로 고른다. 작은 구는 1.6 m/s에서만 계산했다 -->
+  <!-- 유동 조건과 구 크기를 따로 고른다. CFD의 두 구는 크기만 다른 흑체다 -->
   <div class="input free"><label>Air flow</label>
     <div class="btn-row">
-      <button class="btn b-flow" data-case-large="B00V5L" type="button">Fan off · 5 V</button>
-      <button class="btn b-flow" data-case-large="B00V17L" type="button">Fan off · 17 V</button>
-      <button class="btn b-flow" data-case-large="B02L" type="button">0.2 m/s</button>
+      <button class="btn b-flow" data-case-large="B00V5L" data-case-small="B00V5S" type="button">Fan off · 5 V</button>
+      <button class="btn b-flow" data-case-large="B00V17L" data-case-small="B00V17S" type="button">Fan off · 17 V</button>
+      <button class="btn b-flow" data-case-large="B02L" data-case-small="B02S" type="button">0.2 m/s</button>
       <button class="btn b-flow" data-case-large="B16L" data-case-small="B16S" type="button">1.6 m/s</button>
     </div>
   </div>
   <span class="divider"></span>
-  <div class="input free"><label>Bead</label>
+  <div class="input free"><label>Black bead</label>
     <div class="btn-row">
       <button class="btn b-bead" data-bead="large" type="button" aria-pressed="false">3.1 mm</button>
       <button class="btn b-bead" data-bead="small" type="button" aria-pressed="false">0.5 mm</button>

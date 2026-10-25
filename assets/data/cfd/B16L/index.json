@@ -332,11 +332,13 @@
    "range": {
     "temperature": {
      "min": 23.611,
-     "max": 102.177
+     "max": 102.177,
+     "clipped": false
     },
     "speed": {
      "min": 0.0,
-     "max": 2.0976
+     "max": 2.0976,
+     "clipped": false
     }
    },
    "temperature": "full_T.png",
@@ -357,11 +359,13 @@
    "range": {
     "temperature": {
      "min": 23.614,
-     "max": 29.426
+     "max": 29.426,
+     "clipped": false
     },
     "speed": {
      "min": 0.0,
-     "max": 2.3249
+     "max": 2.1935,
+     "clipped": true
     }
    },
    "temperature": "zoom_T.png",

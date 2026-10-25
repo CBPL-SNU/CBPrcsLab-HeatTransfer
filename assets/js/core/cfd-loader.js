@@ -95,6 +95,11 @@ export function physical(index, field, byte, plane) {
   return range.min + (range.max - range.min) * byte / 255;
 }
 
+// 색 범위 위로 잘린 픽셀. 실제 값은 표시값 이상이다
+export function saturated(index, field, byte, plane) {
+  return byte === 255 && Boolean(valueRange(index, field, plane).clipped);
+}
+
 // 실험 B는 창마다 색 범위가 다르다
 export function valueRange(index, field, plane) {
   const own = plane && index.planes[plane].range;

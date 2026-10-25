@@ -3,4 +3,4 @@
 .case-select { min-width: 200px; }
 .compare-table td:first-child { color: var(--muted); }
 .compare-table .unit { color: var(--muted-2); font-family: var(--font-mono); font-size: var(--fs-xs); }
-.compare-table th:not(:first-child) { text-align: right; }
+.compare-table th:not(:first-child) { text-align: right; white-space: normal; }   /* 케이스 이름이 길어 줄바꿈을 허용한다 */

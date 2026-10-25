@@ -30,6 +30,10 @@ VIEWS = {
 ZOOM_DIAMETERS = 2.5              # 창 반폭 = 구 지름 × 이 값, 0.5 mm 단위로 올림
 ZOOM_PX = 160
 SMOOTH_SIGMA = 1.0                # px. 삼각화 흔적만 지운다
+# 자연대류는 정지 상태에서 출발해 0.7~0.9 s에 100 °C 가까운 공기 덩어리가 구 위를 한 번 지나간다.
+# 이 세 프레임으로 구 주변 창의 색 범위를 잡으면 나머지 60 s가 한 색으로 뭉개지므로 범위에서 뺀다.
+# 빠진 프레임은 위쪽 색으로 포화되고, index에 clipped로 남겨 판독값에 ≥를 붙인다
+RANGE_SKIP_S = {"zoom": 1.0}
 
 
 def grid(view):
@@ -44,7 +48,7 @@ def clean(values):
     return [None if not math.isfinite(v) else round(float(v), 5) for v in values]
 
 
-def convert(raw_dir, case):
+def convert(raw_dir, case, jacket_K=None):
     raw_dir = Path(raw_dir)
     out_dir = OUT / case
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -65,9 +69,11 @@ def convert(raw_dir, case):
 
     centre = bead_pts.mean(axis=0)
     radius = float(np.linalg.norm(bead_pts - centre, axis=1).max())
-    jacket_C = info["jacket_K"] - 273.15
+    # B00_17V_big 메타데이터에는 벽 온도가 빠져 있어 인자로 받는다 (같은 17 V 실측 484.9 K)
+    jacket_K = info.get("jacket_K", jacket_K)
+    jacket_C = jacket_K - 273.15
     # 가열 벽면 범위는 메타데이터에 없어 마지막 프레임에서 벽 온도에 닿은 점으로 찾는다
-    hot = air_T[-1] > info["jacket_K"] - 0.5
+    hot = air_T[-1] > jacket_K - 0.5
     jacket_z = (float(air_pts[hot, 2].min()), float(air_pts[hot, 2].max()))
 
     half = math.ceil(2 * radius * ZOOM_DIAMETERS / 0.0005 - 1e-9) * 0.0005
@@ -99,8 +105,12 @@ def convert(raw_dir, case):
             temps.append(gaussian_filter(resample(T_all[i][keep]), SMOOTH_SIGMA).astype(np.float32))
             speeds.append(gaussian_filter(resample(speed_all[i][keep]), SMOOTH_SIGMA).astype(np.float32))
         # 창마다, 조건 안에서 고정. 프레임마다 정규화하면 재생 중 색이 숨쉰다
-        t_lo, t_hi = min(f.min() for f in temps), max(f.max() for f in temps)
-        u_hi = max(f.max() for f in speeds)
+        counted = time_s >= time_s[0] + RANGE_SKIP_S.get(name, 0)
+        t_lo = min(f.min() for f in temps)
+        t_hi = max(f.max() for f, c in zip(temps, counted) if c)
+        u_hi = max(f.max() for f, c in zip(speeds, counted) if c)
+        t_clip = max(f.max() for f in temps) > t_hi + 0.01
+        u_clip = max(f.max() for f in speeds) > u_hi + 0.001
         sheet, cols, rows = to_sprite(temps, t_lo, t_hi, w, h)
         Image.fromarray(sheet, "L").save(out_dir / f"{name}_T.png", optimize=True)
         sheet, _, _ = to_sprite(speeds, 0.0, u_hi, w, h)
@@ -108,11 +118,11 @@ def convert(raw_dir, case):
         index["planes"][name] = {
             "w": w, "h": h, "cols": cols, "rows": rows,
             "roi": view,
-            "range": {"temperature": {"min": round(float(t_lo), 3), "max": round(float(t_hi), 3)},
-                      "speed": {"min": 0.0, "max": round(float(u_hi), 4)}},
+            "range": {"temperature": {"min": round(float(t_lo), 3), "max": round(float(t_hi), 3), "clipped": bool(t_clip)},
+                      "speed": {"min": 0.0, "max": round(float(u_hi), 4), "clipped": bool(u_clip)}},
             "temperature": f"{name}_T.png", "speed": f"{name}_U.png",
         }
-        print(f"  {name}: {w}×{h} px, {t_lo:.2f}–{t_hi:.2f} °C, ≤ {u_hi:.2f} m/s")
+        print(f"  {name}: {w}×{h} px, {t_lo:.2f}–{t_hi:.2f} °C{' (clipped)' if t_clip else ''}, ≤ {u_hi:.2f} m/s{' (clipped)' if u_clip else ''}")
 
     hist = np.load(raw_dir / "integrated_histories.npz")
     keys = ["time_s", "T_bead_avg_C", "T_bead_center_C",
@@ -124,6 +134,6 @@ def convert(raw_dir, case):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        sys.exit("usage: cfd_b_to_frames.py <raw case dir> <case id>")
-    convert(sys.argv[1], sys.argv[2])
+    if len(sys.argv) not in (3, 4):
+        sys.exit("usage: cfd_b_to_frames.py <raw case dir> <case id> [jacket K]")
+    convert(sys.argv[1], sys.argv[2], float(sys.argv[3]) if len(sys.argv) == 4 else None)

@@ -2,7 +2,7 @@
 
 import { $, $$, clamp, numberValue } from "../core/dom.js";
 import { setupCanvas, drawAxes, drawLine, drawArea, makeScales, paintUpTo, CHART_INK, CHART_FONT, SERIES_COLOR, SENSOR_COLOR } from "../core/chart.js";
-import { loadCase, ensureField, physical, valueRange } from "../core/cfd-loader.js";
+import { loadCase, ensureField, physical, saturated, valueRange } from "../core/cfd-loader.js";
 import { RAMP, paintFrame, sampleFrame, createPlayer, showProbe, hideProbe } from "../core/field-player.js";
 
 const PANEL_LABEL = { full: "Heated section", zoom: "Around the bead" };
@@ -128,7 +128,7 @@ function paintPanel(ctx, panel) {
   const digits = field === "temperature" ? (range.max - range.min < 10 ? 1 : 0) : 2;
   const unit = field === "temperature" ? "°C" : "m/s";
   ctx.fillStyle = CHART_INK.ink; ctx.textAlign = "left";
-  ctx.fillText(`${range.max.toFixed(digits)} ${unit}`, bar.x + bar.w + 5, panel.y + 9);
+  ctx.fillText(`${range.clipped ? "≥ " : ""}${range.max.toFixed(digits)} ${unit}`, bar.x + bar.w + 5, panel.y + 9);
   ctx.fillText(`${range.min.toFixed(digits)} ${unit}`, bar.x + bar.w + 5, panel.y + panel.h);
 }
 
@@ -195,8 +195,10 @@ function drawBeadHeat() {
   const { xMap, yMap } = makeScales(w, h, [0, end], [lo, hi]);
   // 작은 구는 1 mW 안쪽이라 눈금 자릿수를 범위에 맞춘다
   const digits = hi - lo < 5 ? 2 : 0;
+  // 자연대류는 시작 직후 뜨거운 공기가 구를 데워 대류가 음수로 크게 내려간다. 그때는 아래 끝도 눈금으로 단다
+  const ticks = lo < -0.1 * hi ? [lo, 0, hi] : [0, hi / 2, hi];
   drawAxes(ctx, w, h, "t (s)", "Q (mW)", [0, Math.round(end / 2), end],
-    [0, +(hi / 2).toFixed(digits), +hi.toFixed(digits)], xMap, yMap);
+    ticks.map(v => +v.toFixed(digits)), xMap, yMap);
   const inn = rows.map(r => [xMap(r.t), yMap(r.inn)]), out = rows.map(r => [xMap(r.t), yMap(r.out)]);
   paintUpTo(ctx, xMap(data.index.frames[frameIndex]), h, () => {
     drawArea(ctx, inn, out, SERIES_COLOR.residual);
@@ -243,13 +245,15 @@ function handleProbe(event) {
   const panel = layout(rect.width, rect.height).find(p => px >= p.x && px < p.x + p.w && py >= p.y && py < p.y + p.h);
   if (!panel) { hideTip(); return; }
   const u = (px - panel.x) / panel.w, v = (py - panel.y) / panel.h;
-  const value = physical(data.index, field, sampleFrame(data, panel.plane, field, frameIndex, u, v), panel.plane);
+  const byte = sampleFrame(data, panel.plane, field, frameIndex, u, v);
+  const value = physical(data.index, field, byte, panel.plane);
+  const atLeast = saturated(data.index, field, byte, panel.plane) ? "≥ " : "";
   const { planes, bead } = data.index;
   const roi = planes[panel.plane].roi;
   const x = roi.xLo + u * (roi.xHi - roi.xLo), z = roi.zHi - v * (roi.zHi - roi.zLo);
   const tubeR = planes.full.roi.xHi;              // 관 안쪽 반지름. 전체 창이 벽에서 벽까지다
   showProbe(probe(), rect, panel, px, py, {
-    reading: field === "temperature" ? `${value.toFixed(panel.plane === "zoom" ? 2 : 1)} °C` : `${value.toFixed(3)} m/s`,
+    reading: atLeast + (field === "temperature" ? `${value.toFixed(panel.plane === "zoom" ? 2 : 1)} °C` : `${value.toFixed(3)} m/s`),
     surfaces: [{ name: "bead", d: Math.hypot(x - bead.x, z - bead.z) - bead.radius }, { name: "tube wall", d: tubeR - Math.abs(x) }],
     coords: [["x", x], ["z", z]],
     res: 1 / roi.pxPerM
