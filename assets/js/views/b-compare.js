@@ -1,8 +1,8 @@
 // 실험 B 비교 화면: 아무 두 case의 구 주변을 같은 시각에 나란히 본다.
 
 import { $, $$, clamp, numberValue } from "../core/dom.js";
-import { setupCanvas, drawAxes, drawLine, makeScales, paintUpTo, CHART_INK, CHART_FONT, SERIES_COLOR, SENSOR_COLOR } from "../core/chart.js";
-import { loadCase, ensureField, physical, valueRange } from "../core/cfd-loader.js";
+import { setupCanvas, drawAxes, drawLine, makeScales, paintUpTo, CHART_INK, CHART_FONT, SERIES_COLOR, SERIES_DASH, SENSOR_COLOR } from "../core/chart.js";
+import { loadCase, ensureField, physical, saturated, valueRange } from "../core/cfd-loader.js";
 import { RAMP, paintFrame, sampleFrame, createPlayer, showProbe, hideProbe } from "../core/field-player.js";
 import { CFD_CASES } from "../data/cfd-cases.js";
 
@@ -10,7 +10,9 @@ const CHOICES = Object.entries(CFD_CASES).filter(([, c]) => c.kind === "B")
   .map(([id, c]) => ({ id, label: c.label.replace(/^B · /, "") }));
 const DEFAULT_PAIR = ["B16L", "B16S"];     // 같은 흐름 속의 두 구 크기. 실험 B의 핵심 비교
 const SIDES = ["left", "right"];
-const SIDE_COLOR = { left: SENSOR_COLOR.black, right: SENSOR_COLOR.grey };
+// CFD의 두 구는 크기만 다른 흑체라 둘 다 흑체 색이다. 회색은 회색체(T6) 색이므로 쓰지 않고 선 모양으로 가른다
+const SIDE_COLOR = { left: SENSOR_COLOR.black, right: SENSOR_COLOR.black };
+const SIDE_DASH = { left: SERIES_DASH.solid, right: SERIES_DASH.dashed };
 const MIN_DT = 0.05;              // 이보다 작은 온도차에서는 h를 나누지 않는다 [K]
 
 let cases = null;                 // [{ side, id, label, data, line }]
@@ -36,7 +38,9 @@ const ended = c => now() > c.data.index.frames.at(-1) + 1e-6;
 function rangeFor(c) {
   if (scale === "own") return valueRange(c.data.index, field, "zoom");
   const ranges = cases.map(k => valueRange(k.data.index, field, "zoom"));
-  return { min: Math.min(...ranges.map(r => r.min)), max: Math.max(...ranges.map(r => r.max)) };
+  const max = Math.max(...ranges.map(r => r.max));
+  // 상한을 정한 쪽이 잘렸으면 공유 범위도 잘린 것이다
+  return { min: Math.min(...ranges.map(r => r.min)), max, clipped: ranges.some(r => r.max === max && r.clipped) };
 }
 
 // 넓으면 나란히, 좁으면 위아래. 색 범위가 공유면 막대 하나, 따로면 창마다 하나
@@ -88,7 +92,7 @@ function paintBar(ctx, bar, range) {
   ctx.strokeStyle = CHART_INK.grid; ctx.strokeRect(bar.x + 0.5, bar.y + 0.5, 9, bar.h - 1);
   const unit = field === "temperature" ? "°C" : "m/s", digits = field === "temperature" ? 1 : 2;
   ctx.font = CHART_FONT; ctx.fillStyle = CHART_INK.ink; ctx.textAlign = "left";
-  ctx.fillText(`${range.max.toFixed(digits)} ${unit}`, bar.x + 15, bar.y + 9);
+  ctx.fillText(`${range.clipped ? "≥ " : ""}${range.max.toFixed(digits)} ${unit}`, bar.x + 15, bar.y + 9);
   ctx.fillText(`${range.min.toFixed(digits)} ${unit}`, bar.x + 15, bar.y + bar.h);
 }
 
@@ -131,7 +135,7 @@ function drawTemperatures() {
       const air = c.data.index.ambientC, stop = c.data.index.frames.at(-1);
       drawLine(ctx, [[xMap(0), yMap(air)], [xMap(stop), yMap(air)]], SERIES_COLOR.residual, 1.4, [7, 4]);
       const { time_s: t, T_bead_avg_C: T } = c.data.history;
-      drawLine(ctx, t.flatMap((s, i) => (T[i] === null ? [] : [[xMap(s), yMap(T[i])]])), SIDE_COLOR[c.side], c.line);
+      drawLine(ctx, t.flatMap((s, i) => (T[i] === null ? [] : [[xMap(s), yMap(T[i])]])), SIDE_COLOR[c.side], c.line, SIDE_DASH[c.side]);
     });
   });
 }
@@ -164,10 +168,10 @@ function updateLabels() {
   }).join("; ") + ` at ${now().toFixed(1)} s.`);
 }
 
-// 범례는 고른 두 case에 따라 바뀐다. 선 굵기가 구 지름, 색이 왼쪽·오른쪽이다
+// 범례는 고른 두 case에 따라 바뀐다. 선 굵기가 구 지름, 실선·점선이 왼쪽·오른쪽이다
 function renderLegend() {
   $("#cLegend").innerHTML = cases.map(c =>
-    `<span><i style="border-color:${SIDE_COLOR[c.side]};border-top-width:${c.line + 1}px"></i>${c.label}</span>`).join("")
+    `<span><i style="border-color:${SIDE_COLOR[c.side]};border-top-width:${c.line + 1}px;border-top-style:${c.side === "left" ? "solid" : "dashed"}"></i>${c.label}</span>`).join("")
     + '<span><i class="residual dashed"></i>Inlet air</span>';
   $("#cHeadL").textContent = cases[0].label;
   $("#cHeadR").textContent = cases[1].label;
@@ -184,10 +188,12 @@ function handleProbe(event) {
   if (k < 0) { hideTip(); return; }
   const c = cases[k], panel = panels[k], roi = roiOf(c), { bead } = c.data.index;
   const u = (px - panel.x) / panel.w, v = (py - panel.y) / panel.h;
-  const value = physical(c.data.index, field, sampleFrame(c.data, "zoom", field, indexAt(c, now()), u, v), "zoom");
+  const byte = sampleFrame(c.data, "zoom", field, indexAt(c, now()), u, v);
+  const value = physical(c.data.index, field, byte, "zoom");
+  const atLeast = saturated(c.data.index, field, byte, "zoom") ? "≥ " : "";
   const x = roi.xLo + u * (roi.xHi - roi.xLo), z = roi.zHi - v * (roi.zHi - roi.zLo);
   showProbe(probe(), rect, panel, px, py, {
-    reading: field === "temperature" ? `${value.toFixed(2)} °C` : `${value.toFixed(3)} m/s`,
+    reading: atLeast + (field === "temperature" ? `${value.toFixed(2)} °C` : `${value.toFixed(3)} m/s`),
     surfaces: [{ name: "bead", d: Math.hypot(x - bead.x, z - bead.z) - bead.radius }],
     coords: [["x", x], ["z", z]],
     res: 1 / roi.pxPerM
