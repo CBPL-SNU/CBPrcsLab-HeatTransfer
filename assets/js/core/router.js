@@ -24,7 +24,7 @@ function renderNav() {
     <div class="nav-section">
       ${group ? `<h2 class="nav-group">${group}</h2>` : ""}
       <div class="nav-items">${views.map(view => `
-        <button class="nav-item${group ? " nav-item--sub" : ""}" type="button" data-view="${view.id}">
+        <button class="nav-item" type="button" data-view="${view.id}">
           <strong>${view.label}${view.status === "planned" ? '<span class="nav-flag">planned</span>' : ""}</strong>
           <span>${view.sub}</span>
         </button>`).join("")}
@@ -46,14 +46,17 @@ function planPlaceholder(view) {
     </div>`;
 }
 
-/** 화면 전용 CSS가 있으면 그 화면을 처음 열 때 붙인다. 없으면 조용히 넘어간다. */
+// 화면 전용 CSS를 처음 열 때 붙이고, 다 읽힐 때까지 기다린다.
+// 기다리지 않으면 장치도 SVG가 스타일 없이 검게 한 번 그려진다. 파일이 없어도 화면은 연다
 function loadViewStyles(id) {
   const href = `assets/css/views/${id}.css`;
-  if (document.querySelector(`link[href="${href}"]`)) return;
+  if (document.querySelector(`link[href="${href}"]`)) return Promise.resolve();
   const link = document.createElement("link");
   link.rel = "stylesheet";
   link.href = href;
+  const ready = new Promise(resolve => { link.onload = resolve; link.onerror = resolve; });
   document.head.append(link);
+  return ready;
 }
 
 async function loadView(view) {
@@ -66,7 +69,7 @@ async function loadView(view) {
     section.innerHTML = planPlaceholder(view);
     return;
   }
-  loadViewStyles(view.id);
+  const styled = loadViewStyles(view.id);
 
   // 실패한 화면은 loaded에 넣지 않는다. 넣어 두면 다시 눌러도 빈 화면이 그대로 남는다.
   let markup;
@@ -79,6 +82,7 @@ async function loadView(view) {
     return;
   }
 
+  await styled;
   loaded.add(view.id);
   section.innerHTML = `<div class="content">${markup}</div>`;
   if (onActivate[view.id]?.mount) onActivate[view.id].mount();
