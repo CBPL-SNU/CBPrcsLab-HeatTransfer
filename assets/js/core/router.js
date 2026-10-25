@@ -84,7 +84,8 @@ async function loadView(view) {
 
   await styled;
   loaded.add(view.id);
-  section.innerHTML = `<div class="content">${markup}</div>`;
+  // 화면 파일마다 조건 띠와 .content를 따로 갖는다. 한 번 더 감싸면 조건 띠가 여백 안으로 떠 보인다
+  section.innerHTML = markup;
   if (onActivate[view.id]?.mount) onActivate[view.id].mount();
 }
 

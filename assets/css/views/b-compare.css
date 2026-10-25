@@ -1,6 +1,18 @@
 #cCanvas { display: block; width: 100%; height: 380px; }
 .b-viewer { padding: var(--sp-2); border-radius: var(--radius-md); background: var(--well); }
 .case-select { min-width: 200px; }
-.compare-table td:first-child { color: var(--muted); }
-.compare-table .unit { color: var(--muted-2); font-family: var(--font-mono); font-size: var(--fs-xs); }
-.compare-table th:not(:first-child) { text-align: right; white-space: normal; }   /* 케이스 이름이 길어 줄바꿈을 허용한다 */
+
+/* 두 비드를 막대로. 색은 다른 그래프와 같은 뜻(복사 빨강, 대류 파랑),
+   왼쪽 case는 채운 막대, 오른쪽은 같은 색 빗금이라 그래프의 실선·점선과 짝이 맞는다 */
+.bar-group--rad { --bar: var(--series-rad); }
+.bar-group--conv { --bar: var(--series-conv); }
+.bar-group + .bar-group { margin-top: var(--sp-4); }
+.bar-head { margin-bottom: var(--sp-2); font-weight: var(--fw-semi); color: var(--text); }
+.bar-head .unit { margin-left: 6px; color: var(--muted); font-size: var(--fs-sm); font-weight: 400; }
+.bar-row { display: grid; grid-template-columns: minmax(0, 1fr) 48px; column-gap: var(--sp-2); align-items: center; margin-bottom: var(--sp-2); }
+.bar-name { grid-column: 1 / -1; color: var(--muted); font-size: var(--fs-sm); }
+.bar-track { height: 14px; }
+.bar-track i { display: block; height: 100%; border-radius: var(--radius-sm); transition: width 120ms linear; }
+.bar-row--left .bar-track i { background: var(--bar); }
+.bar-row--right .bar-track i { border: 1.5px solid var(--bar); background: repeating-linear-gradient(135deg, var(--bar) 0 2px, transparent 2px 6px); }
+.bar-val { text-align: right; font-family: var(--font-mono); }

@@ -97,7 +97,7 @@
   --shadow-raised: 0 24px 80px rgba(20, 33, 45, 0.22);
 
   /* 치수 */
-  --sidebar-w: 264px;
+  --sidebar-w: 236px;
   --header-h: 52px;
   --content-max: 1320px;
 }
