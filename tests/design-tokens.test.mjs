@@ -112,7 +112,7 @@ describe("디자인 토큰 · 대비", () => {
   });
 
   test("그래프 안의 글자가 본문 기준을 넘는다", () => {
-    // 눈금 숫자와 안내선 이름은 11px 글자이므로 4.5:1이다. 그래프 배경은 --well이다.
+    // 눈금 숫자와 안내선 이름은 12.5px 글자이므로 4.5:1이다. 그래프 배경은 --well이다.
     for (const bg of ["#ffffff", token("well")]) {
       const r = contrast(CHART_INK.ink, bg);
       assert.ok(r >= 4.5, `CHART_INK.ink ${CHART_INK.ink} on ${bg}: ${r.toFixed(2)}:1 (기준 4.5)`);

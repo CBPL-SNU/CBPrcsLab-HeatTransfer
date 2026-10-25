@@ -125,8 +125,9 @@ canvas.chart--short { height: 150px; }   /* 한 화면에 그래프가 둘일 �
 
 /* ── 수식 ─────────────────────────────────────
    MathML을 쓴다. 브라우저 내장이라 라이브러리가 필요 없다. */
-.formula { color: var(--muted-2); }
-.formula math { font-size: var(--fs-base); }
+.formula { color: var(--text); text-align: center; margin: var(--sp-2) 0; }   /* 한 줄을 차지하는 식은 가운데 */
+.formula math { font-size: 20px; }
+.part-measure { font-size: 20px; color: var(--text); }
 
 /* ── 표 ─────────────────────────────────────── */
 .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-md); }
