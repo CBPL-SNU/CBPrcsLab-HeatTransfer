@@ -35,12 +35,24 @@ function indexAt(c, t) {
 }
 const ended = c => now() > c.data.index.frames.at(-1) + 1e-6;
 
+// 공유 온도 범위는 유입 공기 기준 ΔT로 맞춘다. 실험한 날마다 공기 온도가 달라
+// °C로 공유하면 따뜻한 날의 공기가 검정이 아니라 보라로 칠해진다
+const offset = c => (field === "temperature" ? c.data.index.ambientC : 0);
+
+function sharedRise() {
+  const rises = cases.map(k => {
+    const r = valueRange(k.data.index, field, "zoom");
+    return { min: r.min - offset(k), max: r.max - offset(k), clipped: r.clipped };
+  });
+  const max = Math.max(...rises.map(r => r.max));
+  // 상한을 정한 쪽이 잘렸으면 공유 범위도 잘린 것이다
+  return { min: Math.min(...rises.map(r => r.min)), max, clipped: rises.some(r => r.max === max && r.clipped) };
+}
+
 function rangeFor(c) {
   if (scale === "own") return valueRange(c.data.index, field, "zoom");
-  const ranges = cases.map(k => valueRange(k.data.index, field, "zoom"));
-  const max = Math.max(...ranges.map(r => r.max));
-  // 상한을 정한 쪽이 잘렸으면 공유 범위도 잘린 것이다
-  return { min: Math.min(...ranges.map(r => r.min)), max, clipped: ranges.some(r => r.max === max && r.clipped) };
+  const r = sharedRise();
+  return { ...r, min: r.min + offset(c), max: r.max + offset(c) };
 }
 
 // 넓으면 나란히, 좁으면 위아래. 색 범위가 공유면 막대 하나, 따로면 창마다 하나
@@ -90,10 +102,12 @@ function paintBar(ctx, bar, range) {
   RAMP[field].forEach((color, i) => gradient.addColorStop(i / (RAMP[field].length - 1), color));
   ctx.fillStyle = gradient; ctx.fillRect(bar.x, bar.y, 10, bar.h);
   ctx.strokeStyle = CHART_INK.grid; ctx.strokeRect(bar.x + 0.5, bar.y + 0.5, 9, bar.h - 1);
-  const unit = field === "temperature" ? "°C" : "m/s", digits = field === "temperature" ? 1 : 2;
+  const rise = scale !== "own" && field === "temperature";
+  if (rise) range = sharedRise();
+  const unit = rise ? "K" : field === "temperature" ? "°C" : "m/s", digits = field === "temperature" ? 1 : 2;
   ctx.font = CHART_FONT; ctx.fillStyle = CHART_INK.ink; ctx.textAlign = "left";
   ctx.fillText(`${range.clipped ? "≥ " : ""}${range.max.toFixed(digits)} ${unit}`, bar.x + 15, bar.y + 9);
-  ctx.fillText(`${range.min.toFixed(digits)} ${unit}`, bar.x + 15, bar.y + bar.h);
+  ctx.fillText(`${(+range.min.toFixed(digits)).toFixed(digits)} ${unit}`, bar.x + 15, bar.y + bar.h);   // -0.0 대신 0.0
 }
 
 export function drawBCompare() {
@@ -142,16 +156,25 @@ function drawTemperatures() {
 // 크기나 조건이 다른 두 구를 면적당으로 맞춘다
 function showNumbers() {
   cases.forEach(c => {
-    const k = c.side === "left" ? "L" : "R", air = c.data.index.ambientC;
+    const air = c.data.index.ambientC;
     const T = at(c, "T_bead_avg_C"), rad = at(c, "Q_air_to_bead_rad_W"), conv = at(c, "Q_air_to_bead_conv_W");
     const area = Math.PI * (2 * c.data.index.bead.radius) ** 2;           // 구 겉넓이 πD² [m²]
     const dT = T === null ? null : T - air;
     $(`#cErr${c.side === "left" ? "Left" : "Right"}`).innerHTML = dT === null ? "—" : `${dT.toFixed(2)} <small>K</small>`;
-    $(`#cWall${k}`).textContent = c.data.index.jacket.tempC.toFixed(1);
-    $(`#cAir${k}`).textContent = air.toFixed(2);
-    $(`#cBead${k}`).textContent = T === null ? "—" : T.toFixed(2);
-    $(`#cRad${k}`).textContent = rad === null ? "—" : (rad / area).toFixed(0);
-    $(`#cH${k}`).textContent = conv === null || dT === null || dT < MIN_DT ? "—" : (-conv / (area * dT)).toFixed(0);
+    c.rad = rad === null ? null : rad / area;
+    c.h = conv === null || dT === null || dT < MIN_DT ? null : -conv / (area * dT);
+  });
+  paintBars("#cRadBars", "rad");
+  paintBars("#cHBars", "h");
+}
+
+// 막대 길이는 지금 두 값 중 큰 쪽에 맞춘다. 두 비드의 비가 보이면 된다
+function paintBars(id, key) {
+  const top = Math.max(...cases.map(c => c[key] ?? 0)) || 1;
+  $$(`${id} .bar-row`).forEach((row, i) => {
+    const v = cases[i][key];
+    row.querySelector("i").style.width = `${v === null ? 0 : Math.max(0, v / top) * 100}%`;
+    row.querySelector(".bar-val").textContent = v === null ? "—" : v.toFixed(0);
   });
 }
 
@@ -171,8 +194,12 @@ function updateLabels() {
 function renderLegend() {
   $("#cLegend").innerHTML = cases.map(c =>
     `<span><i style="border-color:${SIDE_COLOR[c.side]};border-top-width:${c.line + 1}px;border-top-style:${c.side === "left" ? "solid" : "dashed"}"></i>${c.label}</span>`).join("");
-  $("#cHeadL").textContent = cases[0].label;
-  $("#cHeadR").textContent = cases[1].label;
+  const rows = cases.map(c => `<div class="bar-row bar-row--${c.side}"><span class="bar-name">${c.label}</span>` +
+    `<span class="bar-track"><i></i></span><span class="bar-val num">—</span></div>`).join("");
+  $("#cRadBars").innerHTML = rows;
+  $("#cErrLeftName").textContent = cases[0].label;
+  $("#cErrRightName").textContent = cases[1].label;
+  $("#cHBars").innerHTML = rows;
 }
 
 const probe = () => ({ tip: $("#cTip"), coords: $("#cCoords"), crossH: $("#cCrossH"), crossV: $("#cCrossV") });
