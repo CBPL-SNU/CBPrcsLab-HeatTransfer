@@ -1,6 +1,98 @@
 import { switchView } from "../core/router.js";
 import { VIEWS } from "../data/views.js";
 
+const LINK = /\[([^\]]+)\]\(([^\s)]+)\)/g;
+
+// 외부 웹 링크, 등록된 화면 링크, 저장소 docs/ 안의 파일만 허용한다.
+function linkKind(href) {
+  if (href.startsWith("#")) return VIEWS.some(view => view.id === href.slice(1)) ? "screen" : null;
+  if (/^https?:\/\//i.test(href)) return "web";
+  if (/^docs\/[\w.-]+$/.test(href)) return "doc";
+  return null;
+}
+
+function makeLink(text, href) {
+  const kind = linkKind(href);
+  const node = document.createElement(kind ? "a" : "span");
+  node.textContent = text;
+  if (!kind) return node;
+  node.setAttribute("href", href);
+  if (kind !== "screen") { node.target = "_blank"; node.rel = "noopener"; }
+  return node;
+}
+
+// → 문자는 본문 글꼴에 없어 대체 글꼴로 어긋나게 그려지므로 아이콘은 모두 SVG로 둔다
+const svg = paths => `<svg viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>`;
+const ICON = {
+  file: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>'),
+  download: svg('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>'),
+  arrow: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
+  external: svg('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>')
+};
+
+// 실험 묶음의 주제. Calculate 화면 제목의 "·" 뒤를 쓴다
+function groupTopic(group) {
+  const title = VIEWS.find(view => view.group === group)?.title ?? "";
+  return title.split("·").slice(1).join("·").trim();
+}
+
+function formatBytes(bytes) {
+  return bytes >= 1e6 ? (bytes / 1e6).toFixed(1) + " MB" : Math.round(bytes / 1e3) + " kB";
+}
+
+// 링크만 있는 문단은 본문 속 밑줄 링크 대신 버튼 줄로 보인다.
+// 파일은 내려받기 카드, 화면은 실험 표지를 단 이동 버튼이 된다.
+function linkRow(text) {
+  const matches = [...text.matchAll(LINK)];
+  if (!matches.length || text.replace(LINK, "").replace(/[·|\s]/g, "")) return null;
+  const row = document.createElement("div");
+  row.className = "intro-links";
+  for (const [, label, href] of matches) {
+    const kind = linkKind(href);
+    const node = makeLink("", href);
+    node.classList.add("intro-link", "intro-link--" + (kind ?? "none"));
+    const lead = document.createElement("span");
+    lead.className = "intro-link-lead";
+    const title = document.createElement("span");
+    title.className = "intro-link-title";
+    title.textContent = label;
+    const meta = document.createElement("span");
+    meta.className = "intro-link-meta";
+    let trail = ICON.external;
+
+    if (kind === "doc") {
+      lead.innerHTML = ICON.file;
+      trail = ICON.download;
+      const type = href.split(".").pop().toUpperCase();
+      meta.textContent = type;
+      fetch(href, { method: "HEAD" }).then(response => {
+        const size = Number(response.headers.get("content-length"));
+        if (response.ok && size) meta.textContent = type + " · " + formatBytes(size);
+      }).catch(() => {});
+    } else if (kind === "screen") {
+      const view = VIEWS.find(item => item.id === href.slice(1));
+      const letter = /Experiment (\w+)$/.exec(view.group ?? "")?.[1];
+      if (letter) { lead.textContent = letter; lead.classList.add("is-letter"); }
+      else lead.innerHTML = ICON.arrow;
+      meta.textContent = groupTopic(view.group) || view.sub;
+      trail = ICON.arrow;
+    } else {
+      lead.innerHTML = ICON.external;
+      meta.textContent = new URL(href, location.href).hostname;
+    }
+
+    const body = document.createElement("span");
+    body.className = "intro-link-body";
+    body.append(title, meta);
+    const end = document.createElement("span");
+    end.className = "intro-link-trail";
+    end.innerHTML = trail;
+    node.append(lead, body, end);
+    row.append(node);
+  }
+  return row;
+}
+
 // 소개에 필요한 Markdown만 지원한다. HTML을 실행하지 않고 DOM의 텍스트로 넣는다.
 function inline(parent, text) {
   const pattern = /\x60([^\x60]+)\x60|\*\*([^*]+)\*\*|\[([^\]]+)\]\(([^\s)]+)\)/g;
@@ -11,17 +103,7 @@ function inline(parent, text) {
     if (match[1] !== undefined || match[2] !== undefined) {
       node = document.createElement(match[1] !== undefined ? "code" : "strong");
       node.textContent = match[1] ?? match[2];
-    } else {
-      // 외부 웹 링크, 등록된 화면 링크, 저장소 docs/ 안의 파일만 허용한다.
-      const href = match[4];
-      const screen = href.startsWith("#") && VIEWS.some(view => view.id === href.slice(1));
-      const web = /^https?:\/\//i.test(href);
-      const doc = /^docs\/[\w.-]+$/.test(href);
-      node = document.createElement(screen || web || doc ? "a" : "span");
-      node.textContent = match[3];
-      if (screen || web || doc) node.setAttribute("href", href);
-      if (web || doc) { node.target = "_blank"; node.rel = "noopener"; }
-    }
+    } else node = makeLink(match[3], match[4]);
     parent.append(node);
     end = match.index + match[0].length;
   }
@@ -35,8 +117,10 @@ export function renderIntroductionMarkdown(source) {
   let list = null;
   const flush = () => {
     if (!paragraph.length) return;
-    const node = document.createElement("p");
-    inline(node, paragraph.join(" "));
+    const text = paragraph.join(" ");
+    const row = linkRow(text);
+    const node = row ?? document.createElement("p");
+    if (!row) inline(node, text);
     fragment.append(node);
     paragraph = [];
   };
