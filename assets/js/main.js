@@ -16,6 +16,7 @@ import { initApparatusView } from "./views/a-apparatus.js";
 import { initBFieldViewer, drawBFieldView } from "./views/b-field.js";
 import { initBCompare, drawBCompare } from "./views/b-compare.js";
 import { initBApparatusView } from "./views/b-apparatus.js";
+import { initDataView } from "./views/data.js";
 
 import { initIntroductionView } from "./views/introduction.js";
 
@@ -32,7 +33,8 @@ const SCREENS = {
   "experiment-b": { mount: initExperimentBView, redraw: drawBChart },
   "b-field": { mount: initBFieldViewer, redraw: drawBFieldView },
   "b-compare": { mount: initBCompare, redraw: drawBCompare },
-  "b-apparatus": { mount: initBApparatusView }
+  "b-apparatus": { mount: initBApparatusView },
+  data: { mount: initDataView }
 };
 
 const ready = id => VIEWS.find(view => view.id === id)?.status === "ready";

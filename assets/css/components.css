@@ -2,7 +2,7 @@
 
 /* ── 입력 ─────────────────────────────────────
    측정값은 mono에 오른쪽 정렬. 자릿수가 맞아야 비교가 된다. */
-input[type="number"], input[type="text"], select {
+input[type="number"], input[type="text"], input[type="date"], select {
   width: 100%;
   min-height: 30px;
   padding: 4px var(--sp-2);

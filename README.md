@@ -12,8 +12,8 @@ pre-computed CFD results in dedicated screens.
 Every calculation runs in the browser. No input is sent to a server.
 
 > **Prototype.** Several dimensions and material properties remain example values,
-> and transient parameters need calibration against measurements. My data is still
-> a planned screen. Each model screen describes its assumptions.
+> and transient parameters need calibration against measurements. Each model screen
+> describes its assumptions.
 
 ## Screens
 
@@ -22,7 +22,7 @@ use the tool. The introduction and both lumped screens are in English. Existing 
 
 Each experiment has **Calculate**, **Lumped parameter**, **Watch the flow**, and
 **Apparatus** screens. Experiment B also has **Compare** for two CFD cases side by
-side. **My data** currently displays a planned-feature notice.
+side. **My data** keeps measured values in the browser and exports them as an Excel file.
 
 The lumped screens default to **600 seconds (10 minutes)**. Change the conditions and
 press the calculate button to update the graph and results; the duration can be set

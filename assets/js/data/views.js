@@ -60,10 +60,9 @@ export const VIEWS = [
     title: "Experiment B · The HT16 rig and its sensors"
   },
   {
-    id: "data", status: "planned",
+    id: "data", status: "ready",
     label: "My data", sub: "Enter and export",
-    title: "My measurements",
-    plan: "A table for the values measured on the rig, with CSV import and export and a browser-local draft. Entry and export work; import, validation and saving do not exist yet."
+    title: "My measurements"
   }
 ];
 
