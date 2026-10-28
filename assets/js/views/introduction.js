@@ -12,14 +12,15 @@ function inline(parent, text) {
       node = document.createElement(match[1] !== undefined ? "code" : "strong");
       node.textContent = match[1] ?? match[2];
     } else {
-      // 외부 웹 링크와 등록된 화면 링크만 허용한다.
+      // 외부 웹 링크, 등록된 화면 링크, 저장소 docs/ 안의 파일만 허용한다.
       const href = match[4];
       const screen = href.startsWith("#") && VIEWS.some(view => view.id === href.slice(1));
       const web = /^https?:\/\//i.test(href);
-      node = document.createElement(screen || web ? "a" : "span");
+      const doc = /^docs\/[\w.-]+$/.test(href);
+      node = document.createElement(screen || web || doc ? "a" : "span");
       node.textContent = match[3];
-      if (screen || web) node.setAttribute("href", href);
-      if (web) { node.target = "_blank"; node.rel = "noopener"; }
+      if (screen || web || doc) node.setAttribute("href", href);
+      if (web || doc) { node.target = "_blank"; node.rel = "noopener"; }
     }
     parent.append(node);
     end = match.index + match[0].length;

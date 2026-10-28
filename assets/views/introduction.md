@@ -2,6 +2,8 @@
 
 This educational web tool supports the heat transfer experiments in **Chemical and Biological Process Lab**, offered by the **Department of Chemical and Biological Engineering at Seoul National University**. It connects experimental measurements with apparatus diagrams, steady-state calculations, lumped-parameter models, and computational fluid dynamics (CFD) results.
 
+[Download the heat transfer laboratory handout (PDF)](docs/CBPL-HT_handout.pdf)
+
 ## What this tool does
 
 The tool visualizes internal flow and temperature distributions that are difficult to observe during the experiment, as well as transient behavior that steady-state measurements do not capture.
