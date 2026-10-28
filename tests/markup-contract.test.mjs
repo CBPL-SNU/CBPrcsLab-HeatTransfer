@@ -4,7 +4,7 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { componentData, componentOrder } from "../assets/js/data/components.js";
@@ -75,14 +75,14 @@ describe("마크업 계약 · id", () => {
     // planned 화면의 뷰 모듈은 main.js가 부르지 않으므로 마크업도 없는 게 맞다.
     // status를 "ready"로 바꾸는 순간 이 검사가 그 화면의 마크업을 요구한다.
     // 화면 id와 파일 이름이 다른 것만 여기 적는다. 나머지는 views/<id>.js다.
-    const moduleOf = { data: "views/data-table.js" };
+    const moduleOf = { data: "views/data.js" };
     const plannedFiles = VIEWS
       .filter(v => v.status === "planned")
       .map(v => moduleOf[v.id] ?? `views/${v.id}.js`);
 
     const missing = [];
     for (const [file, source] of jsSources) {
-      const rel = file.replace(ROOT + "/", "").replace("assets/js/", "");
+      const rel = relative(join(ROOT, "assets", "js"), file).split(sep).join("/");
       if (plannedFiles.includes(rel)) continue;
       for (const m of source.matchAll(/\$\("#([A-Za-z0-9_-]+)"/g)) {
         if (!htmlIds.has(m[1])) missing.push(`${m[1]}  (${rel})`);

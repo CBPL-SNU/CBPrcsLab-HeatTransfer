@@ -14,6 +14,8 @@ node_modules/
 
 # 교안과 개인 보고서 — 이름과 학번이 들어 있고 저작권도 남의 것이다
 *.pdf
+# 사이트에서 배포하는 실험 교안만 예외. PDF 속성의 작성자 이름은 지웠다
+!docs/CBPL-HT_handout.pdf
 
 # 파이썬 캐시
 __pycache__/

@@ -21,7 +21,7 @@ export function beadConvection(spec, velocity) {
 }
 
 // 열수지 Qrad = Qconv 를 풀어 Tc를 구함. 전선 전도 손실은 미포함
-export function solveSensor(name, { wallC, gasC, velocity, t6Emissivity } = {}) {
+export function solveSensor(name, { wallC, gasC, velocity, t6Emissivity, material = {} } = {}) {
   const spec = sensorSpec(name, { t6Emissivity });
   const { re, Nu, h, area } = beadConvection(spec, velocity);
   const wallK = toK(wallC);
@@ -42,14 +42,20 @@ export function solveSensor(name, { wallC, gasC, velocity, t6Emissivity } = {}) 
   const qRad = spec.epsilon * SIGMA * AIR.F * area * (Math.pow(wallK, 4) - Math.pow(tcK, 4));
   const qConv = h * area * (tcK - gasK);
 
-  // 선형화한 복사 계수. 시간상수 계산용
+  // 열전달량 표시용 복사 계수. 시간상수에는 평형점에서의 미분 계수를 쓴다.
   const hRad = spec.epsilon * SIGMA * AIR.F * (wallK + tcK) * (wallK * wallK + tcK * tcK);
   const volume = Math.PI / 6 * Math.pow(spec.d, 3);
-  const thermalCapacity = BEAD_MATERIAL.density * volume * BEAD_MATERIAL.cp;
-  const tau = thermalCapacity / Math.max(area * (h + hRad), 1e-12);
+  const density = material.density ?? BEAD_MATERIAL.density;
+  const cp = material.cp ?? BEAD_MATERIAL.cp;
+  const thermalCapacity = material.thermalCapacity ?? density * volume * cp;
+  if (![density, cp, thermalCapacity].every(value => Number.isFinite(value) && value > 0)) {
+    throw new RangeError("Bead density, specific heat and heat capacity must be positive finite values");
+  }
+  const hRadLocal = 4 * spec.epsilon * SIGMA * AIR.F * tcK ** 3;
+  const tau = thermalCapacity / (area * (h + hRadLocal));
 
   return {
-    ...spec, wallC, gasC, velocity, re, Nu, h, hRad, area,
-    tcC, equilibrium: tcC, error: tcC - gasC, qRad, qConv, tau, thermalCapacity
+    ...spec, wallC, gasC, velocity, re, Nu, h, hRad, hRadLocal, area,
+    tcC, equilibrium: tcC, error: tcC - gasC, qRad, qConv, tau, thermalCapacity, density, cp, volume
   };
 }

@@ -1,6 +1,31 @@
-// 내 데이터 화면의 입력 표 스키마와 예시값
+// 내 데이터 화면의 측정 표. rows는 교안의 설정값으로, 입력칸에 흐리게 보이는 안내다(측정값이 아니다)
 
 export const schemas = {
-  A: { headers: ["Data", "V (V)", "I (A)", "T8 (°C)", "T10 (°C)"], rows: 3, examples: [["a", 5, .11, 24.8, 43.2], ["b", 11, .25, 25.1, 89.7], ["c", 17, .39, 25.6, 143.8]] },
-  B: { headers: ["Data", "V (V)", "Ua (m/s)", "T5 (°C)", "T6 (°C)", "T7 (°C)", "T8 (°C)", "T10 (°C)"], rows: 7, examples: [["a", 5, 0, 25, 28, 31, 34, 67], ["b", 11, 0, 25, 33, 39, 47, 105], ["c", 17, 0, 25, 38, 49, 63, 145], ["d", 17, .2, 25, 34, 43, 55, 142], ["e", 17, .4, 25, 31, 38, 48, 140], ["f", 17, .8, 25, 29, 34, 41, 137], ["g", 17, 1.6, 25, 27, 30, 35, 133]] }
+  A: {
+    title: "Experiment A · Combined convection and radiation",
+    columns: [
+      { key: "V", label: "Voltage", unit: "V" },
+      { key: "I", label: "Current", unit: "A" },
+      { key: "T8", label: "Air T8", unit: "°C" },
+      { key: "T10", label: "Surface T10", unit: "°C" }
+    ],
+    rows: [{ V: 5 }, { V: 11 }, { V: 17 }]
+  },
+  B: {
+    title: "Experiment B · Radiation error in temperature measurement",
+    columns: [
+      { key: "V", label: "Voltage", unit: "V" },
+      { key: "I", label: "Current", unit: "A" },
+      { key: "Ua", label: "Air velocity", unit: "m/s" },
+      { key: "T5", label: "Inlet air T5", unit: "°C" },
+      { key: "T6", label: "Grey bead T6", unit: "°C" },
+      { key: "T7", label: "Small black T7", unit: "°C" },
+      { key: "T8", label: "Large black T8", unit: "°C" },
+      { key: "T10", label: "Wall T10", unit: "°C" }
+    ],
+    rows: [
+      { V: 5, Ua: 0 }, { V: 11, Ua: 0 }, { V: 17, Ua: 0 },
+      { V: 17, Ua: 0.2 }, { V: 17, Ua: 0.4 }, { V: 17, Ua: 0.8 }, { V: 17, Ua: 1.6 }
+    ]
+  }
 };

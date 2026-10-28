@@ -1,0 +1,84 @@
+/* 본문 한 단과 오른쪽 목차. 한 줄이 70자 안팎이 되도록 본문 폭을 묶는다 */
+.intro-layout {
+  display: grid; grid-template-columns: minmax(0, 760px) 180px;
+  gap: var(--sp-6); justify-content: center; align-items: start;
+}
+
+.intro-doc { padding: 40px 48px 48px; line-height: 1.7; color: var(--text); overflow-wrap: anywhere; }
+.intro-doc > :first-child { margin-top: 0; }
+.intro-doc h2 { margin: 0 0 var(--sp-3); font-size: 26px; font-weight: var(--fw-semi); letter-spacing: -.01em; line-height: 1.3; }
+.intro-doc h3 {
+  margin: 40px 0 var(--sp-3); padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-lg); font-weight: var(--fw-semi);
+}
+.intro-doc h4 { margin: var(--sp-6) 0 var(--sp-2); font-size: var(--fs-base); font-weight: var(--fw-semi); }
+/* 상단 바에 가리지 않게 */
+.intro-doc h3 { scroll-margin-top: calc(var(--header-h) + var(--sp-4)); }
+.intro-doc p, .intro-doc li { font-size: var(--fs-base); }
+.intro-doc p { margin: 0 0 var(--sp-3); }
+.intro-doc ul, .intro-doc ol { margin: 0 0 var(--sp-3); padding-left: 1.4em; }
+.intro-doc li + li { margin-top: var(--sp-1); }
+.intro-doc strong { font-weight: var(--fw-semi); }
+.intro-doc a { color: var(--accent-ink); text-underline-offset: 3px; }
+.intro-doc blockquote {
+  margin: var(--sp-5) 0 0; padding: var(--sp-3) var(--sp-4);
+  background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--radius-md);
+  color: var(--accent-ink); font-size: var(--fs-md);
+}
+/* 링크만 있는 문단. 파일은 내려받기 카드, 화면은 이동 버튼 */
+.intro-links { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin: var(--sp-5) 0 var(--sp-6); }
+.intro-link {
+  flex: 1 1 260px;
+  display: flex; align-items: center; gap: var(--sp-4);
+  padding: var(--sp-4);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  background: var(--surface); box-shadow: var(--shadow-card);
+  color: var(--text); text-decoration: none;
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.intro-doc a.intro-link { color: var(--text); }
+.intro-link:hover { border-color: var(--accent-line); box-shadow: 0 2px 4px rgba(21, 29, 38, .05), 0 10px 24px -8px rgba(var(--accent-rgb), .28); transform: translateY(-1px); }
+.intro-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.intro-link-lead {
+  flex: none; display: grid; place-items: center;
+  width: 44px; height: 44px; border-radius: var(--radius-md);
+  background: var(--accent-soft); color: var(--accent-ink);
+}
+/* 실험 표지. 사이드바와 같은 남색에 실험 글자 */
+.intro-link-lead.is-letter { background: var(--frame); color: var(--frame-accent); font-size: 20px; font-weight: var(--fw-semi); }
+.intro-link-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.35; }
+.intro-link-title { font-weight: var(--fw-semi); font-size: var(--fs-base); }
+.intro-link-meta { color: var(--muted); font-size: var(--fs-sm); }
+.intro-link-trail { flex: none; display: grid; color: var(--muted-2); transition: color .15s, transform .15s; }
+.intro-link:hover .intro-link-trail { color: var(--accent); transform: translateX(2px); }
+.intro-link--doc:hover .intro-link-trail { transform: translateY(2px); }
+.intro-link svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.intro-link-trail svg { width: 20px; height: 20px; }
+/* 파일 카드는 혼자 한 줄을 다 쓴다. 일부만 차지하면 떠 있는 상자처럼 보인다 */
+.intro-link--doc { flex-basis: 100%; }
+
+.intro-doc code { font-family: var(--font-mono); background: var(--well); padding: 1px 4px; border-radius: var(--radius-sm); }
+
+.intro-toc { position: sticky; top: calc(var(--header-h) + var(--sp-4)); padding-top: var(--sp-2); }
+.intro-toc:empty { display: none; }
+.intro-toc-title { margin-bottom: var(--sp-2); color: var(--muted); font-size: var(--fs-xs); font-weight: var(--fw-semi); letter-spacing: .04em; text-transform: uppercase; }
+.intro-toc ul { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--border); }
+.intro-toc a {
+  display: block; margin-left: -2px; padding: 5px 0 5px 14px;
+  border-left: 2px solid transparent;
+  color: var(--muted); font-size: var(--fs-sm); line-height: 1.45; text-decoration: none;
+}
+.intro-toc a:hover { color: var(--text); }
+.intro-toc a.is-active { color: var(--accent-ink); border-left-color: var(--accent); font-weight: var(--fw-semi); }
+
+/* 좁은 화면에서는 목차를 숨긴다. 글이 짧아 스크롤로 충분하다 */
+@media (max-width: 1080px) {
+  .intro-layout { grid-template-columns: minmax(0, 760px); }
+  .intro-toc { display: none; }
+}
+@media (max-width: 860px) {
+  .intro-doc { padding: var(--sp-5) var(--sp-4) var(--sp-6); }
+  .intro-doc h2 { font-size: 22px; }
+}

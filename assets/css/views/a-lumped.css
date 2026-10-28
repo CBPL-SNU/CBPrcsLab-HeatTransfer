@@ -1,0 +1,18 @@
+#a-lumped .conditions { padding: 0 0 var(--sp-4); background: none; }
+#a-lumped canvas.chart { height: 300px; }
+#a-lumped .table-wrap + p { margin-top: var(--sp-3); }
+
+/* 좁은 화면에서는 수식 영역만 가로로 스크롤한다. */
+#a-lumped .formula { max-width: 100%; overflow-x: auto; padding: var(--sp-2) 0; }
+#a-lumped .formula math { width: max-content; min-width: 100%; }
+#a-lumped .input.wide { width: 180px; max-width: 100%; }
+
+#a-lumped .lumped-inspector { position: relative; min-width: 0; }
+#a-lumped .lumped-tooltip { display: block; padding: var(--sp-2); background: var(--well); color: var(--text); font-family: var(--font-mono); font-size: var(--fs-sm); box-sizing: border-box; block-size: calc(1.5em + 2 * var(--sp-2)); line-height: 1.5; white-space: nowrap; overflow-x: auto; overflow-y: hidden; }
+#a-lumped .lumped-controls { display: flex; align-items: center; gap: var(--sp-2); margin-block: var(--sp-2); }
+#a-lumped .lumped-controls select { width: auto; }
+#a-lumped canvas.chart { cursor: crosshair; }
+#a-lumped .lumped-materials { flex-basis: 100%; }
+#a-lumped .lumped-materials summary { cursor: pointer; }
+#a-lumped .lumped-materials fieldset { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin: var(--sp-3) 0; border: 1px solid var(--border); }
+#a-lumped .lumped-materials label { display: flex; flex-direction: column; width: 190px; max-width: 100%; }

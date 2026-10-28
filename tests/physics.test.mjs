@@ -8,7 +8,7 @@ import { morganCN, cylinderHeat, experimentASteady, cylinderArea } from "../asse
 import { solveSensor, sensorSpec, beadConvection } from "../assets/js/physics/experiment-b.js";
 import { simulateCylinder, simulateSensors } from "../assets/js/physics/lumped.js";
 import { rk4Scalar, bisect } from "../assets/js/core/numeric.js";
-import { CYLINDER, SIGMA } from "../assets/js/physics/constants.js";
+import { CYLINDER, SIGMA, AIR } from "../assets/js/physics/constants.js";
 
 const close = (a, b, tol, message) =>
   assert.ok(Math.abs(a - b) <= tol, `${message}: ${a} vs ${b} (허용 ${tol})`);
@@ -217,6 +217,111 @@ describe("Lumped-parameter 시간응답", () => {
     const sim = simulateSensors({ wall: 120, gas: 25, velocity: 0.4, initial: 30, t6Emissivity: 0.4, duration: 180 });
     for (const name of ["T6", "T7", "T8"]) {
       close(sim.series[name][0].temp, 30, 1e-12, `${name} 초기값`);
+    }
+  });
+});
+
+
+describe("실험 B · 비선형 과도응답", () => {
+  const base = { wall: 120, gas: 25, velocity: 0.4, initial: 25, t6Emissivity: 0.4 };
+  test("기본 계산은 600초이며 가열·냉각 모두 평형을 넘지 않는다", () => {
+    for (const initial of [25, 300]) {
+      const r = simulateSensors({ ...base, initial });
+      assert.equal(r.duration, 600);
+      for (const sensor of r.sensors) {
+        const points = r.series[sensor.name];
+        assert.equal(points.at(-1).t, 600);
+        const sign = Math.sign(sensor.equilibrium - initial);
+        for (let i = 1; i < points.length; i++) {
+          assert.ok(Number.isFinite(points[i].temp));
+          assert.ok(sign * (points[i].temp - points[i - 1].temp) >= -1e-10);
+          assert.ok(sign * (sensor.equilibrium - points[i].temp) >= -1e-8);
+        }
+      }
+    }
+  });
+  test("초기 기울기는 원래의 비선형 열수지와 일치한다", () => {
+    const p = { ...base, initial: 300, duration: 1e-5, samples: 1 };
+    const r = simulateSensors(p);
+    for (const sensor of r.sensors) {
+      const qRad = sensor.epsilon * SIGMA * AIR.F * sensor.area * ((p.wall + 273.15) ** 4 - (p.initial + 273.15) ** 4);
+      const slope = (qRad - sensor.h * sensor.area * (p.initial - p.gas)) / sensor.thermalCapacity;
+      const actual = (r.series[sensor.name][1].temp - p.initial) / p.duration;
+      close(actual, slope, Math.abs(slope) * 1e-4, sensor.name + " 초기 기울기");
+    }
+  });
+  test("적분 간격을 줄이면 과도 구간의 온도가 수렴한다", () => {
+    const p = { ...base, wall: 500, initial: 300, duration: 0.713, samples: 1, names: ["T8"] };
+    const at = dt => simulateSensors({ ...p, dt }).series.T8.at(-1).temp;
+    const [coarse, fine, ref] = [0.1, 0.025, 0.001].map(at);
+    assert.ok(Math.abs(fine - ref) < Math.abs(coarse - ref));
+    close(coarse, ref, 1e-5, "기본 간격의 오차");
+  });
+  test("저장점 수를 바꿔도 같은 마지막 시각의 결과가 유지된다", () => {
+    const p = { ...base, duration: 7.137 };
+    const a = simulateSensors({ ...p, samples: 7 });
+    const b = simulateSensors({ ...p, samples: 101 });
+    for (const name of ["T6", "T7", "T8"]) {
+      assert.equal(a.series[name].at(-1).t, p.duration);
+      close(a.series[name].at(-1).temp, b.series[name].at(-1).temp, 1e-5, name);
+    }
+  });
+  test("시간상수는 평형점 열수지의 수치 미분과 일치한다", () => {
+    for (const name of ["T6", "T7", "T8"]) {
+      const s = solveSensor(name, { wallC: 500, gasC: 25, velocity: 0.4, t6Emissivity: 0.4 });
+      const net = t => s.epsilon * SIGMA * AIR.F * s.area * ((500 + 273.15) ** 4 - (t + 273.15) ** 4) - s.h * s.area * (t - 25);
+      const derivative = (net(s.tcC + 0.001) - net(s.tcC - 0.001)) / 0.002;
+      close(s.tau, -s.thermalCapacity / derivative, s.tau * 1e-8, name);
+    }
+  });
+  test("0초는 초기값만 반환하고 잘못된 적분 조건은 거부한다", () => {
+    const initialPoint = simulateSensors({ ...base, duration: 0 }).series.T6;
+    assert.equal(initialPoint.length, 1);
+    assert.equal(initialPoint[0].t, 0);
+    assert.equal(initialPoint[0].temp, 25);
+    assert.ok(initialPoint[0].rate > 0);
+    for (const bad of [{ dt: 0 }, { dt: -1 }, { duration: NaN }, { samples: 0 }, { initial: -273.15 }]) {
+      assert.throws(() => simulateSensors({ ...base, ...bad }), RangeError);
+    }
+  });
+});
+
+
+describe("센서별 열용량과 순간 변화율", () => {
+  const p = { wall: 120, gas: 25, velocity: 0.4, initial: 25, t6Emissivity: 0.4, duration: 10, samples: 100 };
+  test("비열을 두 배로 하면 초기 기울기가 절반이고 평형 온도는 같다", () => {
+    const base = simulateSensors(p);
+    const changed = simulateSensors({ ...p, beadProperties: { T6: { cp: 1000 } } });
+    close(changed.sensors[0].thermalCapacity, 2 * base.sensors[0].thermalCapacity, 1e-12, "두 배 열용량");
+    close(changed.series.T6[0].rate, base.series.T6[0].rate / 2, 1e-12, "초기 기울기");
+    assert.equal(changed.sensors[0].equilibrium, base.sensors[0].equilibrium);
+    assert.ok(changed.series.T6[50].temp < base.series.T6[50].temp);
+    assert.deepEqual(changed.series.T7, base.series.T7);
+  });
+  test("유효 열용량을 직접 주면 밀도·비열보다 우선한다", () => {
+    const a = simulateSensors({ ...p, beadProperties: { T8: { thermalCapacity: 0.2, density: 1000, cp: 100 } } });
+    const b = simulateSensors({ ...p, beadProperties: { T8: { thermalCapacity: 0.2, density: 9000, cp: 2000 } } });
+    assert.equal(a.sensors[2].thermalCapacity, 0.2);
+    assert.deepEqual(a.series.T8, b.series.T8);
+  });
+  test("저장된 순간 기울기는 각 점의 열수지와 일치한다", () => {
+    const result = simulateSensors({ ...p, initial: 300 });
+    for (const sensor of result.sensors) for (const point of result.series[sensor.name]) {
+      const net = sensor.epsilon * SIGMA * AIR.F * sensor.area * ((p.wall + 273.15) ** 4 - (point.temp + 273.15) ** 4) - sensor.h * sensor.area * (point.temp - p.gas);
+      close(point.rate, net / sensor.thermalCapacity, 1e-9, sensor.name);
+    }
+    assert.ok(result.series.T6[0].rate < 0);
+  });
+  test("A의 저장된 기울기도 열수지와 일치한다", () => {
+    const input = { V: 11, I: 0.25, ta: 25, initial: 25, capacity: 18, ua: 0.006, duration: 600 };
+    for (const point of simulateCylinder(input).points) {
+      const heat = cylinderHeat({ tsC: point.temp, taC: input.ta });
+      close(point.rate, (input.V * input.I - heat.qConv - heat.qRad - input.ua * (point.temp - input.ta)) / input.capacity, 1e-12, "A 기울기");
+    }
+  });
+  test("0 또는 음의 열용량과 과도한 연산 조건은 거부한다", () => {
+    for (const material of [{ cp: 0 }, { density: -1 }, { thermalCapacity: 0 }, { thermalCapacity: NaN }, { thermalCapacity: 1e-15 }]) {
+      assert.throws(() => simulateSensors({ ...p, beadProperties: { T6: material } }), RangeError);
     }
   });
 });

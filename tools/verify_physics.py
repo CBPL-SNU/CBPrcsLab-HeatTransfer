@@ -111,6 +111,30 @@ def simulate_cylinder(p, const):
     return float(sol.y[0, -1])
 
 
+def simulate_sensor(p, name, times, const):
+    air, material = const["AIR"], const["BEAD_MATERIAL"]
+    spec = const["SENSOR_DEFS"][name]
+    epsilon = p["t6Emissivity"] if name == "T6" else spec["epsilon"]
+    d = spec["d"]
+    area = np.pi * d**2
+    override = p.get("beadProperties", {}).get(name, {})
+    density = override.get("density", material["density"])
+    specific_heat = override.get("cp", material["cp"])
+    capacity = override.get("thermalCapacity", density * specific_heat * np.pi * d**3 / 6)
+    re = p["velocity"] * d / air["nu"]
+    h = air["k"] / d * (2 + 0.6 * np.sqrt(re) * air["Pr"]**(1/3))
+
+    def rhs(_t, y):
+        radiation = epsilon * const["SIGMA"] * air["F"] * area * ((p["wall"] + KELVIN)**4 - (y[0] + KELVIN)**4)
+        return [(radiation - h * area * (y[0] - p["gas"])) / capacity]
+
+    sol = solve_ivp(rhs, (0, p["duration"]), [p["initial"]], t_eval=times,
+                    method="DOP853", rtol=1e-11, atol=1e-12)
+    if not sol.success:
+        raise RuntimeError(sol.message)
+    return sol.y[0]
+
+
 # --- 비교 --------------------------------------------------------------------
 
 class Report:
@@ -171,6 +195,16 @@ def main() -> int:
         # 고정 간격 RK4(dt=0.01)와 적응형 적분의 차이만큼은 허용한다.
         r.compare(f"{tag} finalTemp", case["finalTemp"], final, 1e-8)
     r.section("Lumped 시간적분", len(data["lumpedA"]))
+
+    max_error = 0.0
+    for case in data["lumpedB"]:
+        for name, points in case["series"].items():
+            actual = simulate_sensor(case["inputs"], name, [p["t"] for p in points], const)
+            for point, temp in zip(points, actual):
+                max_error = max(max_error, abs(point["temp"] - temp))
+                r.compare(f"lumped B {name} t={point['t']}", point["temp"], temp, 1e-7)
+    r.section("Lumped B 비선형 시간적분", len(data["lumpedB"]))
+    print(f"  B 시간응답 최대 절대 차이: {max_error:.3e} °C")
 
     print()
     if r.failures:

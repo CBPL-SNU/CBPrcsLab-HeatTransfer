@@ -1,0 +1,29 @@
+<div class="conditions">
+  <div class="input free"><label>Experiment</label>
+    <div class="btn-row" role="group" aria-label="Experiment">
+      <button class="btn dataset-button is-active" data-dataset="A" type="button" aria-pressed="true">A · Convection and radiation</button>
+      <button class="btn dataset-button" data-dataset="B" type="button" aria-pressed="false">B · Radiation error</button>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="input wide"><label for="dataDate">Date</label><input id="dataDate" type="date"></div>
+  <div class="input"><label for="dataGroup">Group</label><input id="dataGroup" type="text" autocomplete="off"></div>
+  <div class="spacer"></div>
+  <div class="btn-row">
+    <button class="btn btn--quiet" id="clearData" type="button">Clear</button>
+    <button class="btn btn--primary" id="exportXlsx" type="button">Export Excel</button>
+  </div>
+</div>
+
+<div class="content">
+  <div class="card">
+    <header><h2 id="dataTitle"></h2><span class="data-saved" id="dataSaved" role="status"></span></header>
+    <div class="card-body">
+      <div class="table-wrap" id="dataTableWrap"></div>
+      <div class="data-comment">
+        <label for="dataComment">Comment</label>
+        <textarea id="dataComment" rows="3"></textarea>
+      </div>
+    </div>
+  </div>
+</div>

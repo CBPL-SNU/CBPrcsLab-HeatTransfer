@@ -8,7 +8,7 @@ import { dirname, join } from "node:path";
 import { CYLINDER, AIR, AIR_A_DEFAULT, SENSOR_DEFS, BEAD_MATERIAL, SIGMA, GRAVITY } from "../assets/js/physics/constants.js";
 import { experimentASteady } from "../assets/js/physics/experiment-a.js";
 import { solveSensor } from "../assets/js/physics/experiment-b.js";
-import { simulateCylinder } from "../assets/js/physics/lumped.js";
+import { simulateCylinder, simulateSensors } from "../assets/js/physics/lumped.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -46,7 +46,26 @@ for (const [V, I, duration] of [[5, 0.11, 600], [11, 0.25, 600], [17, 0.39, 900]
     lumpedA.push({ inputs: { ...inputs, dt: 0.01 }, finalTemp: r.finalTemp, qConv: r.qConv, qRad: r.qRad });
   }
 
-const payload = { generated: new Date().toISOString(), constants, experimentA, experimentB, lumpedA };
+const lumpedB = [];
+for (const [wall, gas, initial, velocity, duration] of [
+  [120, 25, 25, 0.4, 600], [145, 25, 25, 1.6, 600], [120, 25, 300, 0, 600],
+  [10, 25, 25, 0.2, 600], [500, 25, 300, 0.4, 600], [40, 40, 40, 0, 600],
+  [145, 25, 25, 5, 7.137]
+]) {
+  const inputs = { wall, gas, initial, velocity, duration, t6Emissivity: 0.4, samples: 1200 };
+  const r = simulateSensors(inputs);
+  lumpedB.push({ inputs, series: r.series });
+}
+
+for (const beadProperties of [
+  { T6: { cp: 1000 }, T7: { density: 4000 } },
+  { T8: { thermalCapacity: 0.2 }, T6: { thermalCapacity: 0.001 } }
+]) {
+  const inputs = { wall: 120, gas: 25, initial: 25, velocity: 0.4, duration: 600, t6Emissivity: 0.4, samples: 1200, beadProperties };
+  lumpedB.push({ inputs, series: simulateSensors(inputs).series });
+}
+
+const payload = { generated: new Date().toISOString(), constants, experimentA, experimentB, lumpedA, lumpedB };
 const out = join(here, "reference.json");
 writeFileSync(out, JSON.stringify(payload, null, 2));
-console.log(`${out}\n실험 A ${experimentA.length}건 · 실험 B ${experimentB.length}건 · lumped A ${lumpedA.length}건`);
+console.log(`${out}\n실험 A ${experimentA.length}건 · 실험 B ${experimentB.length}건 · lumped A ${lumpedA.length}건 · lumped B ${lumpedB.length}건`);
