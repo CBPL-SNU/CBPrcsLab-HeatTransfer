@@ -19,6 +19,7 @@ function inline(parent, text) {
       node = document.createElement(screen || web ? "a" : "span");
       node.textContent = match[3];
       if (screen || web) node.setAttribute("href", href);
+      if (web) { node.target = "_blank"; node.rel = "noopener"; }
     }
     parent.append(node);
     end = match.index + match[0].length;
@@ -69,16 +70,69 @@ export function renderIntroductionMarkdown(source) {
   return fragment;
 }
 
+// 목차는 본문의 절 제목(md의 ##)으로 만든다. 소절 제목은 길어서 넣지 않는다.
+// 주소의 #은 router가 화면 전환에 쓰므로, 목차는 주소를 바꾸지 않고 스크롤만 한다.
+let onScroll = null;
+function buildToc(content, toc) {
+  if (onScroll) window.removeEventListener("scroll", onScroll);
+  const headings = [...content.querySelectorAll("h3")];
+  if (!headings.length) { toc.replaceChildren(); return; }
+  const title = document.createElement("div");
+  title.className = "intro-toc-title";
+  title.textContent = "On this page";
+  const list = document.createElement("ul");
+
+  const activate = current => links.forEach((link, index) => link.classList.toggle("is-active", headings[index] === current));
+  // 목차를 눌러 부드럽게 스크롤하는 동안에는 지나가는 절을 강조하지 않는다
+  let target = null, release = 0;
+  const links = headings.map((heading, index) => {
+    heading.id = "intro-" + index;
+    const link = document.createElement("a");
+    link.href = "#" + heading.id;
+    link.textContent = heading.textContent;
+    link.addEventListener("click", event => {
+      event.preventDefault();
+      target = heading;
+      activate(heading);
+      heading.scrollIntoView({ behavior: "smooth", block: "start" });
+      clearTimeout(release);
+      release = setTimeout(() => { target = null; }, 900);
+    });
+    const item = document.createElement("li");
+    item.append(link);
+    list.append(item);
+    return link;
+  });
+  toc.replaceChildren(title, list);
+
+  // 상단 바 아래 140px 선을 지난 마지막 제목이 현재 절이다.
+  // 페이지 끝에 닿으면 마지막 절은 그 선까지 올라오지 못하므로 따로 처리한다
+  let frame = 0;
+  const mark = () => {
+    frame = 0;
+    if (target || !content.offsetParent) return;
+    const bottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+    const current = bottom ? headings.at(-1)
+      : headings.filter(heading => heading.getBoundingClientRect().top < 140).at(-1) ?? headings[0];
+    activate(current);
+  };
+  onScroll = () => { if (!frame) frame = requestAnimationFrame(mark); };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  mark();
+}
+
 export function initIntroductionView() {
   const content = document.querySelector("#introductionContent");
+  const toc = document.querySelector("#introductionToc");
   const retry = document.querySelector("#retryIntroduction");
   async function load() {
     content.setAttribute("aria-busy", "true");
     retry.hidden = true;
     try {
-      const response = await fetch("assets/views/introduction.md", { cache: "no-cache" });
+      const response = await fetch("assets/views/introduction.md");
       if (!response.ok) throw new Error('HTTP ' + response.status);
       content.replaceChildren(renderIntroductionMarkdown(await response.text()));
+      buildToc(content, toc);
     } catch (error) {
       content.textContent = 'Could not load the introduction. Please try again. (' + error.message + ')';
       retry.hidden = false;
