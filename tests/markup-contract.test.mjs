@@ -4,7 +4,7 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { componentData, componentOrder } from "../assets/js/data/components.js";
@@ -82,7 +82,7 @@ describe("마크업 계약 · id", () => {
 
     const missing = [];
     for (const [file, source] of jsSources) {
-      const rel = file.replace(ROOT + "/", "").replace("assets/js/", "");
+      const rel = relative(join(ROOT, "assets", "js"), file).split(sep).join("/");
       if (plannedFiles.includes(rel)) continue;
       for (const m of source.matchAll(/\$\("#([A-Za-z0-9_-]+)"/g)) {
         if (!htmlIds.has(m[1])) missing.push(`${m[1]}  (${rel})`);

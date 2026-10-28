@@ -10,9 +10,19 @@
 
 export const VIEWS = [
   {
+    id: "introduction", status: "ready",
+    label: "Introduction", sub: "Purpose and how to use this tool",
+    title: "Heat Transfer Lab · Introduction"
+  },
+  {
     id: "experiment-a", group: "Experiment A", status: "ready",
     label: "Calculate", sub: "Where the supplied power goes",
     title: "Experiment A · Combined convection and radiation"
+  },
+  {
+    id: "a-lumped", group: "Experiment A", status: "ready",
+    label: "Lumped parameter", sub: "Transient temperature response",
+    title: "Experiment A · Lumped parameter"
   },
   {
     id: "a-field", group: "Experiment A", status: "ready",
@@ -28,6 +38,11 @@ export const VIEWS = [
     id: "experiment-b", group: "Experiment B", status: "ready",
     label: "Calculate", sub: "Thermocouple error",
     title: "Experiment B · Radiation error in temperature measurement"
+  },
+  {
+    id: "b-lumped", group: "Experiment B", status: "ready",
+    label: "Lumped parameter", sub: "Transient temperature response",
+    title: "Experiment B · Lumped parameter"
   },
   {
     id: "b-field", group: "Experiment B", status: "ready",

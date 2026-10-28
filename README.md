@@ -2,17 +2,94 @@
 
 Educational web tool for the heat transfer laboratory (Chemical Engineering Process Lab).
 
-Students enter the values they measured on the apparatus and compare them against a
-steady-state energy balance, a lumped-parameter transient model, and pre-computed CFD
-results — all on the same axes.
+Students enter the values they measured on the apparatus, examine a steady-state
+energy balance, calculate lumped-parameter temperature responses, and explore
+pre-computed CFD results in dedicated screens.
 
 - **Experiment A** — combined natural convection and radiation from a heated cylinder
 - **Experiment B** — radiation error in thermocouple temperature measurement
 
 Every calculation runs in the browser. No input is sent to a server.
 
-> **Prototype.** CFD fields and several material properties are still placeholder
-> values. See [`docs/ROADMAP.md`](docs/ROADMAP.md) for what is real and what is not.
+> **Prototype.** Several dimensions and material properties remain example values,
+> and transient parameters need calibration against measurements. My data is still
+> a planned screen. Each model screen describes its assumptions.
+
+## Screens
+
+The site opens on **Introduction**, with a short guide to the experiments and how to
+use the tool. The introduction and both lumped screens are in English. Existing screen links such as `#experiment-a` still open directly.
+
+Each experiment has **Calculate**, **Lumped parameter**, **Watch the flow**, and
+**Apparatus** screens. Experiment B also has **Compare** for two CFD cases side by
+side. **My data** currently displays a planned-feature notice.
+
+The lumped screens default to **600 seconds (10 minutes)**. Change the conditions and
+press the calculate button to update the graph and results; the duration can be set
+from 10 to 3,600 seconds. Experiment A shows the cylinder temperature and final
+convection and radiation rates. Experiment B shows T6, T7 and T8 on one graph for
+the selected duration. Both results tables show end-of-run temperatures and
+convection and radiation rates evaluated at those temperatures. B rates are signed:
+positive convection leaves the bead and positive radiation enters it.
+Each sensor has a distinct colour; solid curves show the transient response.
+Both graphs include matching dashed horizontal lines for steady-state temperatures.
+A’s steady balance includes the extra loss UA. Coloured temperature labels in the outer left column identify the steady-state
+guides; grey tick labels sit closer to the vertical axis. Nearby steady-state
+labels are separated and connected to their actual heights. Only the inspected sample is marked.
+Result tables use scientific notation with superscript exponents for nonzero
+values below 0.1 in magnitude or at least one million. Unnecessary trailing zeros
+in scientific-notation mantissas are omitted.
+A short run may end before reaching steady state.
+
+Shared input defaults match the Calculate screens: A uses 11 V, 1.87 A and
+19.6 °C air; B uses a 165 °C wall, 25.5 °C air, 0.4 m/s velocity and T6
+emissivity 0.4. A allows current up to 4 A. Initial transient temperatures default
+to the corresponding air temperature. Calculate’s measured surface temperature
+is not an initial condition for the heating simulation. Transient-only capacity,
+extra loss and duration defaults remain editable model assumptions.
+
+Both models integrate nonlinear energy balances using RK4. Experiment B evaluates
+the radiation and convection terms throughout the response, rather than fitting an
+exponential curve to the equilibrium temperature. Its step size is limited by the
+shortest thermal time scale for each sensor, independently of the graph sampling
+interval. Sensor capacity is configurable independently for T6, T7 and T8. Expand **Bead
+material and effective heat capacity** to enter density and specific heat, or an
+effective capacity directly. A blank override uses `C = ρ cₚ πd³/6`; an entered
+capacity takes precedence. Capacity affects the response speed, but not the
+steady-state temperature under these fixed boundary conditions.
+Wall temperature, air temperature, velocity and material properties remain constant
+during each B run; wire conduction is not included.
+
+Both lumped graphs support inspection: hover near a solid curve or tap it to read
+a computed sample’s time, temperature and signed `dT/dt` in °C/s. The rate comes
+from the energy balance at that sample, not a difference between plotted points.
+The inspection box keeps a compact, single-line height when the readout clears.
+On narrow screens, its contents scroll horizontally. Experiment B
+provides **Inspect curve** when curves overlap; A has a single curve and no selector.
+With the graph focused, left/right
+arrows select time, up/down select the curve, Home/End select endpoints and Escape
+clears the readout. Inspection and resizing reuse the computed response.
+
+The model sections list fixed geometry, emissivities, view factors and air
+properties. These assumptions still need checking against the apparatus; exposing
+thermal capacity does not calibrate the rest of the model.
+
+The lumped energy balances use native MathML for fractions, subscripts and powers,
+with no additional scripts, fonts or external services. On narrow screens, the
+equation region can scroll horizontally. MathML lives in the screen HTML; the
+introduction Markdown renderer is unchanged.
+
+### Editing the introduction
+
+Edit `assets/views/introduction.md` to change the text, then reload the page. It
+supports headings (`#` through `###`), paragraphs, flat ordered and unordered lists,
+bold text, inline code, blockquotes, HTTP(S) links, and links to registered screens
+such as `[Experiment A](#experiment-a)`. Tables, nested lists, images, code blocks,
+math rendering and embedded HTML are not supported.
+
+The page layout is in `assets/views/introduction.html`; its styling is in
+`assets/css/views/introduction.css`. Menu labels and the page title are defined in
+`assets/js/data/views.js`.
 
 ## Requirements
 
@@ -42,7 +119,7 @@ Python's built-in tooling.
 
 ```bash
 npm start              # serve on http://localhost:8000 (no-cache, see below)
-npm test               # property tests for the physics models
+npm test               # physics, markup and design-token checks
 npm run verify         # cross-check the models against an independent SciPy implementation
 npm run verify:python  # same check using python3 instead of uv
 ```
@@ -72,10 +149,26 @@ measured dimensions replace today's placeholders.
 `tools/reference.json`, then recomputes every case in `tools/verify_physics.py` using
 Brent root finding and adaptive Runge–Kutta — deliberately *different* algorithms from
 the bisection and fixed-step RK4 the browser uses, so a mistake in one implementation
-cannot hide in the other. The first run takes about 15 seconds while uv fetches NumPy
-and SciPy; later runs are under a second.
+cannot hide in the other. The B transient check uses DOP853 and compares the sampled
+temperature histories across heating, cooling and equilibrium conditions. The first
+run may also need to download NumPy and SciPy.
 
 Run both before committing anything under `assets/js/physics/`.
+
+For an additional B transient check without SciPy, export the reference results and
+run the independent quadrature check. It recovers elapsed time from the energy
+balance, `t = ∫ C / Qnet(T) dT`, over the early and middle parts of the response.
+The near-equilibrium region is excluded because this integral becomes singular.
+
+```bash
+node tools/export_reference.mjs
+python3 tools/verify_sensor_quadrature.py
+node tools/benchmark_sensors.mjs       # 600-second, three-sensor engine benchmark
+```
+
+On Windows, `py` can replace `python3` if Python is installed through the launcher.
+The benchmark reports computation time only; downloads and chart rendering are not
+included. Its results are specific to the machine and JavaScript runtime.
 
 ## CFD frames
 
@@ -97,26 +190,28 @@ Re-run it whenever a new case lands in `rawdata/`; commit the output under
 ## Layout
 
 ```text
-index.html            markup and apparatus SVG diagrams
+index.html            app shell, screen containers and assumptions dialog
 assets/css/
   tokens.css          the design system — colours, type, spacing, shape
   base.css            reset and base typography
   app.css             frame: dark sidebar, header, content
   components.css      panels, buttons, fields, notes, charts, tables
-  views.css           per-screen rules
+  views/              per-screen rules, including introduction and lumped screens
   fonts.css           vendored IBM Plex faces (no CDN)
-assets/fonts/         woff2 files, Latin subsets only
+assets/fonts/         vendored woff2 font files
 assets/js/
   core/               DOM helpers, router, canvas plotting, numerical routines
   physics/            heat transfer models — no DOM access, unit-testable
   data/               component copy, CFD case metadata, table schemas
   views/              per-screen input handling and rendering
-assets/svg/           the apparatus diagrams, kept as standalone files
+assets/views/         screen HTML and the editable introduction.md
+                      apparatus SVG diagrams are generated by their view modules
 assets/data/cfd/      CFD frames the browser actually loads: one PNG sprite per plane
                       and field, plus index.json and the integrated history
-tests/                property tests for the physics models
-tools/                reference export, the SciPy cross-check, and cfd_to_frames.py
-docs/ROADMAP.md       development roadmap and hosting review
+tests/                physics, markup and design-token checks
+tools/                static server, CFD conversion, reference export, independent
+                      physics checks and sensor benchmark
+docs/                 roadmap and detailed introduction/lumped change records
 ```
 
 ## Conventions
@@ -128,3 +223,6 @@ See [`CLAUDE.md`](CLAUDE.md) for commit message and code comment conventions.
 - [Development plan](260727_공실_열전달_학습툴_계획.md) — full plan (Korean)
 - [Summary](260727_공실_열전달_학습툴_계획_요약.md) — condensed version (Korean)
 - [Roadmap](docs/ROADMAP.md) — next steps and deployment review (Korean)
+
+- [Introduction changes](docs/INTRODUCTION_CHANGELOG.md) — implementation and editing notes (Korean)
+- [Lumped changes](docs/LUMPED_CHANGELOG.md) — models, screens, verification and benchmark results (Korean)

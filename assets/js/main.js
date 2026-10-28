@@ -17,7 +17,15 @@ import { initBFieldViewer, drawBFieldView } from "./views/b-field.js";
 import { initBCompare, drawBCompare } from "./views/b-compare.js";
 import { initBApparatusView } from "./views/b-apparatus.js";
 
+import { initIntroductionView } from "./views/introduction.js";
+
+import { initLumped as initLumpedA, drawLumped as drawLumpedA } from "./views/a-lumped.js";
+import { initLumped as initLumpedB, drawLumped as drawLumpedB } from "./views/b-lumped.js";
+
 const SCREENS = {
+  "a-lumped": { mount: initLumpedA, redraw: drawLumpedA },
+  "b-lumped": { mount: initLumpedB, redraw: drawLumpedB },
+  introduction: { mount: initIntroductionView },
   "experiment-a": { mount: initExperimentAView, redraw: drawAChart },
   "a-field": { mount: initFieldViewer, redraw: drawFieldView },
   "a-apparatus": { mount: initApparatusView },

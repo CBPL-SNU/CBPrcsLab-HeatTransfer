@@ -1,0 +1,12 @@
+/* 소개의 여백과 글꼴은 이 파일에서 조정한다. */
+#introduction .content { max-width: 960px; }
+.introduction-copy { padding: clamp(20px, 4vw, 48px); line-height: 1.85; overflow-wrap: anywhere; }
+.introduction-copy > * + * { margin-top: var(--sp-3); }
+.introduction-copy h2 { font-size: clamp(24px, 3vw, 32px); }
+.introduction-copy h3 { margin-top: var(--sp-6); font-size: var(--fs-lg); }
+.introduction-copy h4 { margin-top: var(--sp-5); }
+.introduction-copy ul, .introduction-copy ol { padding-left: 1.5em; margin-bottom: 0; }
+.introduction-copy li + li { margin-top: var(--sp-2); }
+.introduction-copy a { color: var(--accent-ink); text-underline-offset: 3px; }
+.introduction-copy blockquote { margin-left: 0; margin-right: 0; padding-left: var(--sp-4); border-left: 3px solid var(--border); color: var(--muted); }
+.introduction-copy code { font-family: var(--font-mono); background: var(--well); padding: 1px 4px; }

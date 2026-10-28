@@ -1,0 +1,29 @@
+<div class="content" lang="en">
+  <p>Calculate the temperature response of T6, T7 and T8 from the balance between radiation gained and convection lost. Bead size and emissivity affect both the response speed and the steady-state reading.</p>
+  <form class="conditions" data-lumped-form aria-label="Transient model conditions">
+<div class="input wide"><label for="b-lumped-wall">Wall temperature (°C)</label><input id="b-lumped-wall" name="wall" type="number" value="165" min="-50" max="800" step="0.1" required></div>
+<div class="input wide"><label for="b-lumped-gas">Air temperature (°C)</label><input id="b-lumped-gas" name="gas" type="number" value="25.5" min="-50" max="500" step="0.1" required></div>
+<div class="input wide"><label for="b-lumped-velocity">Air velocity (m/s)</label><input id="b-lumped-velocity" name="velocity" type="number" value="0.4" min="0" max="5" step="0.1" required></div>
+<div class="input wide"><label for="b-lumped-initial">Initial temperature (°C)</label><input id="b-lumped-initial" name="initial" type="number" value="25.5" min="-50" max="800" step="0.1" required></div>
+<div class="input wide"><label for="b-lumped-t6Emissivity">T6 emissivity</label><input id="b-lumped-t6Emissivity" name="t6Emissivity" type="number" value="0.4" min="0.01" max="1" step="0.01" required></div>
+<div class="input wide"><label for="b-lumped-duration">Duration (s)</label><input id="b-lumped-duration" name="duration" type="number" value="600" min="10" max="3600" step="1" required></div>
+    <details class="lumped-materials"><summary>Bead material and effective heat capacity</summary>
+      <p class="assumption">For each spherical bead, C = ρ cₚ πd³/6. Leave the effective capacity blank to use density and specific heat, or enter a calibrated capacity directly. An override takes precedence over density and specific heat. Capacity changes the response speed, not the steady-state temperature.</p>
+      <div data-lumped-materials></div>
+    </details>
+    <button class="btn btn--primary" type="submit">Calculate</button>
+  </form>
+  <p class="caution" data-lumped-error role="status" hidden></p>
+  <p class="assumption" data-lumped-status role="status"></p>
+  <article class="card"><header><h2>Mean temperature over time</h2><span class="badge">Lumped model</span></header>
+    <div class="lumped-inspector">
+      <canvas class="chart" data-lumped-chart role="img" tabindex="0" aria-label="Interactive temperature response. Left and right arrows select time; up and down arrows select a curve."></canvas>
+      <output class="lumped-tooltip" data-lumped-tooltip></output>
+    </div>
+    <div class="lumped-controls"><label for="b-lumped-curve">Inspect curve</label><select id="b-lumped-curve" data-lumped-curve aria-label="Curve to inspect"></select></div>
+    <p class="assumption">Hover near a solid curve or tap it to read a computed sample. Use left/right arrow keys for time and up/down for the curve. The signed rate dT/dt is positive during heating and negative during cooling.</p>
+    <p class="assumption" data-lumped-legend></p>
+  </article>
+  <article class="card"><header><h2>Results at the end of the run</h2></header><div class="table-wrap"><table><thead><tr><th>Quantity</th><th>Value</th></tr></thead><tbody data-lumped-results></tbody></table></div><p class="assumption">The table shows each bead’s integrated end-of-run temperature and heat transfer rates at that temperature. Positive convection represents heat leaving the bead; positive radiation represents heat entering it. Dashed horizontal lines show steady-state temperatures, solved independently of the run duration.</p></article>
+  <article class="card"><header><h2>Model and assumptions</h2></header><div class="card-body"><div class="formula" tabindex="0" role="region" aria-label="Energy balance"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Bead heat capacity times temperature rate equals radiation gained minus convection lost."><mrow><msub><mi>C</mi><mi>b</mi></msub><mfrac><mrow><mi mathvariant="normal">d</mi><msub><mi>T</mi><mi>b</mi></msub></mrow><mrow><mi mathvariant="normal">d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mi>ε</mi><mi>σ</mi><mi>F</mi><mi>A</mi><mo>(</mo><msup><msub><mi>T</mi><mi>w</mi></msub><mn>4</mn></msup><mo>−</mo><msup><msub><mi>T</mi><mi>b</mi></msub><mn>4</mn></msup><mo>)</mo><mo>−</mo><mi>h</mi><mi>A</mi><mo>(</mo><msub><mi>T</mi><mi>b</mi></msub><mo>−</mo><msub><mi>T</mi><mi>g</mi></msub><mo>)</mo></mrow></math></div><p data-lumped-fixed></p><p data-lumped-capacities></p><p>Wall temperature, air temperature and air velocity remain constant during the run. Each bead has a uniform temperature; conduction along the wires is excluded.</p><p>Some material properties, dimensions and emissivities are example values. Check these inputs and assumptions before comparing with measurements. Temperatures in the radiation term are absolute temperatures (K).</p></div></article>
+</div>

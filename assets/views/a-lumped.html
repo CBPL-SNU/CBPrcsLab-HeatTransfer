@@ -1,0 +1,26 @@
+<div class="content" lang="en">
+  <p>Treat the cylinder and heater as a single temperature node. The difference between supplied power and convection, radiation and additional heat loss determines how its temperature changes.</p>
+  <form class="conditions" data-lumped-form aria-label="Transient model conditions">
+<div class="input wide"><label for="a-lumped-V">Voltage (V)</label><input id="a-lumped-V" name="V" type="number" value="11" min="0" max="30" step="0.1" required></div>
+<div class="input wide"><label for="a-lumped-I">Current (A)</label><input id="a-lumped-I" name="I" type="number" value="1.87" min="0" max="4" step="0.01" required></div>
+<div class="input wide"><label for="a-lumped-ta">Air temperature (°C)</label><input id="a-lumped-ta" name="ta" type="number" value="19.6" min="-50" max="500" step="0.1" required></div>
+<div class="input wide"><label for="a-lumped-initial">Initial temperature (°C)</label><input id="a-lumped-initial" name="initial" type="number" value="19.6" min="-50" max="800" step="0.1" required></div>
+<div class="input wide"><label for="a-lumped-capacity">Heat capacity (J/K)</label><input id="a-lumped-capacity" name="capacity" type="number" value="18" min="0.1" max="1000" step="0.1" required></div>
+<div class="input wide"><label for="a-lumped-ua">Extra loss UA (W/K)</label><input id="a-lumped-ua" name="ua" type="number" value="0.006" min="0" max="2" step="0.001" required></div>
+<div class="input wide"><label for="a-lumped-duration">Duration (s)</label><input id="a-lumped-duration" name="duration" type="number" value="600" min="10" max="3600" step="1" required></div>
+    <button class="btn btn--primary" type="submit">Calculate</button>
+  </form>
+  <p class="caution" data-lumped-error role="status" hidden></p>
+  <p class="assumption" data-lumped-status role="status"></p>
+  <article class="card"><header><h2>Mean temperature over time</h2><span class="badge">Lumped model</span></header>
+    <div class="lumped-inspector">
+      <canvas class="chart" data-lumped-chart role="img" tabindex="0" aria-label="Interactive temperature response. Left and right arrows select time; up and down arrows select a curve."></canvas>
+      <output class="lumped-tooltip" data-lumped-tooltip></output>
+    </div>
+    <p class="assumption">Hover near a solid curve or tap it to read a computed sample. Use left/right arrow keys to select time. The signed rate dT/dt is positive during heating and negative during cooling.</p>
+    <p class="assumption" data-lumped-legend></p>
+  </article>
+  
+  <article class="card"><header><h2>Results at the end of the run</h2></header><div class="table-wrap"><table><thead><tr><th>Quantity</th><th>Value</th></tr></thead><tbody data-lumped-results></tbody></table></div><p class="assumption">The table shows the integrated end-of-run temperature and heat transfer rates. Positive convection and radiation values represent heat leaving the cylinder. The dashed horizontal line solves the steady energy balance, including extra loss UA, independently of the run duration.</p></article>
+  <article class="card"><header><h2>Model and assumptions</h2></header><div class="card-body"><div class="formula" tabindex="0" role="region" aria-label="Energy balance"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Cylinder heat capacity times temperature rate equals electrical power minus convection, radiation and additional heat loss."><mrow><msub><mi>C</mi><mi>s</mi></msub><mfrac><mrow><mi mathvariant="normal">d</mi><msub><mi>T</mi><mi>s</mi></msub></mrow><mrow><mi mathvariant="normal">d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mi>V</mi><mi>I</mi><mo>−</mo><msub><mi>Q</mi><mtext>conv</mtext></msub><mo>(</mo><msub><mi>T</mi><mi>s</mi></msub><mo>)</mo><mo>−</mo><msub><mi>Q</mi><mtext>rad</mtext></msub><mo>(</mo><msub><mi>T</mi><mi>s</mi></msub><mo>)</mo><mo>−</mo><mi mathvariant="normal">UA</mi><mo>(</mo><msub><mi>T</mi><mi>s</mi></msub><mo>−</mo><msub><mi>T</mi><mi>a</mi></msub><mo>)</mo></mrow></math></div><p data-lumped-fixed></p><p>Calibrate the effective heat capacity and additional heat loss coefficient UA against measured temperature histories. Convection uses the McAdams correlation.</p><p>Some material properties, dimensions and emissivities are example values. Check these inputs and assumptions before comparing with measurements. Temperatures in the radiation term are absolute temperatures (K).</p></div></article>
+</div>
