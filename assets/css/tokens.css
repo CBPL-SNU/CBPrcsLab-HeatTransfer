@@ -62,7 +62,7 @@
   --status-warn-soft: #fff7df;
 
   /* 타입 — IBM Plex는 x-높이가 작아 같은 px에서 더 작게 보인다 */
-  --font-sans: "IBM Plex Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
 
   --fs-xs: 12px;
