@@ -1,9 +1,9 @@
 // 실험 B 화면: 선택한 열전쌍의 측정 온도·오차와 유속별 비교 그래프
 
 import { $, $$, numberValue, syncQuickSet } from "../core/dom.js";
-import { setupCanvas, drawAxes, drawLine, makeScales, drawVerticalMarker, drawHorizontalGuide, labelEnds, labelOnPlot, CHART_INK, CHART_FONT, PLOT_MARGIN, SERIES_COLOR, sensorStyle } from "../core/chart.js";
+import { setupCanvas, drawAxes, drawLine, makeScales, drawVerticalMarker, drawHorizontalGuide, labelOnPlot, CHART_INK, CHART_FONT, PLOT_MARGIN, SERIES_COLOR, sensorStyle } from "../core/chart.js";
 import { solveSensor } from "../physics/experiment-b.js";
-import { toK } from "../physics/constants.js";
+import { toK, SENSOR_DEFS } from "../physics/constants.js";
 import { bisect } from "../core/numeric.js";
 
 // 복사 오차를 무시할 수 있는 최소 유속. 교안 B의 예비·결과 항목이다.
@@ -38,7 +38,7 @@ export function drawBChart() {
   const { ctx, w, h } = setup;
   const conditions = readConditions();
 
-  const minX = 0.05, maxX = 1.8;
+  const minX = 0, maxX = 1.8;
   const series = { T6: [], T7: [], T8: [] };
   // 곡선의 색과 굵기는 비드의 표면과 지름에서 나온다. T6은 방사율이 입력값이라
   // 학생이 그 값을 올리면 곡선도 흑체 쪽으로 어두워진다.
@@ -56,14 +56,17 @@ export function drawBChart() {
   }
 
   minY = Math.min(minY, conditions.gasC);
-  maxY = Math.min(Math.max(maxY, conditions.gasC + 1), conditions.wallC);
-  const pad = Math.max((maxY - minY) * 0.14, 1);
-  minY -= pad * 0.25;
-  maxY += pad;
+  maxY = Math.max(maxY, conditions.gasC);
+  const span = Math.max(maxY - minY, 1);
+  minY -= Math.max(2, span * 0.2);
+  maxY += Math.max(2, span * 0.14);
 
   const { xMap, yMap } = makeScales(w, h, [minX, maxX], [minY, maxY]);
-  drawAxes(ctx, w, h, "U (m/s)", "T (°C)", [0.2, 0.8, 1.6],
-    [+minY.toFixed(0), +((minY + maxY) / 2).toFixed(0), +maxY.toFixed(0)], xMap, yMap);
+  const tickScale = maxY - minY < 3 ? 10 : 1;
+  const tickMin = Math.ceil(minY * tickScale) / tickScale, tickMax = Math.floor(maxY * tickScale) / tickScale;
+  const ticks = [tickMin, Math.round((tickMin + tickMax) / 2 * tickScale) / tickScale, tickMax];
+  const velocityTicks = Array.from({ length: 10 }, (_, index) => index / 5);
+  drawAxes(ctx, w, h, "U (m/s)", "T (°C)", velocityTicks, ticks, xMap, yMap);
   SENSOR_NAMES.forEach(name =>
     drawLine(ctx, series[name].map(item => [xMap(item.velocity), yMap(item.temperature)]),
       style[name].color, style[name].width, style[name].dash));
@@ -73,22 +76,17 @@ export function drawBChart() {
   drawHorizontalGuide(ctx, yMap(conditions.gasC), w, SERIES_COLOR.marker, [2, 5], 1);
   drawVerticalMarker(ctx, xMap(conditions.velocity), h);
 
-  // 안내선이 무엇인지 그래프 안에서 바로 읽히게 한다. 글자는 크롬 색이라야 대비가 선다.
-  ctx.font = CHART_FONT;
-  labelOnPlot(ctx, "Air temperature", 50, yMap(conditions.gasC) - 5, CHART_INK.ink);
-
   // 선택한 센서가 1% 기준을 넘어서는 지점. 리그 범위 안일 때만 그린다.
   const critical = criticalVelocity(selectedSensor, conditions);
   if (critical !== null && critical > minX && critical < maxX) {
     drawVerticalMarker(ctx, xMap(critical), h, CHART_INK.mark);
-    labelOnPlot(ctx, `${selectedSensor} within 1% above ${critical.toFixed(2)} m/s`,
-      xMap(critical) + 6, PLOT_MARGIN.top + 12, CHART_INK.mark);
+    ctx.font = CHART_FONT;
+    const label = '1% threshold: ' + critical.toFixed(2) + ' m/s';
+    const labelX = Math.max(PLOT_MARGIN.left + 6, Math.min(xMap(critical) + 6, w - PLOT_MARGIN.right - ctx.measureText(label).width - 6));
+    labelOnPlot(ctx, label, labelX, PLOT_MARGIN.top + 14, CHART_INK.mark);
   }
 
-  labelEnds(ctx, SENSOR_NAMES.map(name => {
-    const last = series[name][series[name].length - 1];
-    return { name, color: style[name].color, x: xMap(last.velocity), y: yMap(last.temperature) };
-  }));
+
 }
 
 export function updateB() {
@@ -98,7 +96,8 @@ export function updateB() {
   syncQuickSet(".b-velocity", conditions.velocity);
   $("#bVelocityValue").textContent = result.velocity.toFixed(2);
   $("#bSensorTemp").innerHTML = `${result.tcC.toFixed(2)} <small>°C</small>`;
-  $("#bSensorSub").textContent = `${result.name} · ε=${result.epsilon.toFixed(2)} · d=${(result.d * 1000).toFixed(1)} mm`;
+  $("#bGasTempReadout").innerHTML = `${conditions.gasC.toFixed(2)} <small>°C</small>`;
+  $("#bWallTempReadout").innerHTML = `${conditions.wallC.toFixed(2)} <small>°C</small>`;
   $("#bError").innerHTML = `${result.error >= 0 ? "+" : ""}${result.error.toFixed(2)} <small>°C</small>`;
   $("#bHr").innerHTML = `${result.hRad.toFixed(1)} <small>W/m²K</small>`;
   $("#bH").innerHTML = `${result.h.toFixed(1)} <small>W/m²K</small>`;
@@ -114,12 +113,17 @@ export function updateB() {
 }
 
 export function initExperimentBView() {
+  $("#bT7Emissivity").value = SENSOR_DEFS.T7.epsilon.toFixed(2);
+  $("#bT8Emissivity").value = SENSOR_DEFS.T8.epsilon.toFixed(2);
   ["#bWallTemp", "#bGasTemp", "#bVelocity", "#bT6Emissivity"]
     .forEach(id => $(id).addEventListener("input", updateB));
 
   $$(".sensor-button").forEach(button => button.addEventListener("click", () => {
     selectedSensor = button.dataset.sensor;
-    $$(".sensor-button").forEach(item => item.classList.toggle("is-active", item === button));
+    $$(".sensor-button").forEach(item => {
+      item.classList.toggle("is-active", item === button);
+      item.setAttribute("aria-pressed", String(item === button));
+    });
     updateB();
   }));
 

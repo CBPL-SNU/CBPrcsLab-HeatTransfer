@@ -6,9 +6,9 @@
    왼쪽 case는 채운 막대, 오른쪽은 같은 색 빗금이라 그래프의 실선·점선과 짝이 맞는다 */
 .bar-group--rad { --bar: var(--series-rad); }
 .bar-group--conv { --bar: var(--series-conv); }
-.bar-head { margin-bottom: var(--sp-1); color: var(--text); font-size: var(--fs-sm); font-weight: var(--fw-semi); }
+.bar-head { margin-bottom: var(--sp-1); color: var(--text); font-size: var(--fs-md); font-weight: var(--fw-semi); }
 .bar-head .unit { margin-left: 6px; color: var(--muted); font-weight: 400; }
-.bar-row { display: grid; grid-template-columns: minmax(0, 1fr) 48px; column-gap: var(--sp-2); align-items: center; margin-bottom: var(--sp-1); }
+.bar-row { display: grid; grid-template-columns: minmax(0, 1fr) max-content; column-gap: var(--sp-2); align-items: center; margin-bottom: var(--sp-1); }
 .bar-track { height: 12px; }
 /* 범례의 막대 견본. 색은 물리량마다 다르므로 견본은 무채색으로 채움·빗금만 보인다 */
 .bar-swatch { display: inline-block; width: 14px; height: 9px; margin: 0 6px 0 4px; border-radius: var(--radius-sm); --bar: var(--muted); }
@@ -17,7 +17,7 @@
 .bar-track i { display: block; height: 100%; border-radius: var(--radius-sm); transition: width 120ms linear; }
 .bar-row--left .bar-track i { background: var(--bar); }
 .bar-row--right .bar-track i { border: 1.5px solid var(--bar); background: repeating-linear-gradient(135deg, var(--bar) 0 2px, transparent 2px 6px); }
-.bar-val { text-align: right; font-family: var(--font-mono); }
+.bar-val { text-align: right; font-family: var(--font-mono); font-size: var(--fs-lg); white-space: nowrap; }
 
 /* 두 case의 값은 좁아져도 나란히 둔다. 위아래로 쌓이면 오른쪽 열만 길어진다 */
 #b-compare .values { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3); }

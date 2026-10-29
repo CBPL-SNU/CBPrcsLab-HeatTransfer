@@ -1,14 +1,19 @@
 #b-lumped .conditions { padding: 0 0 var(--sp-4); background: none; }
 #b-lumped canvas.chart { height: 300px; }
+#b-lumped .lumped-results-grid > .card { min-width: 0; }
+@media (min-width: 1081px) {
+  #b-lumped .lumped-results-grid { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: stretch; }
+}
 #b-lumped .table-wrap + p { margin-top: var(--sp-3); }
 
 /* 좁은 화면에서는 수식 영역만 가로로 스크롤한다. */
 #b-lumped .formula { max-width: 100%; overflow-x: auto; padding: var(--sp-2) 0; }
-#b-lumped .formula math { width: max-content; min-width: 100%; }
+#b-lumped .formula > [data-tex] { width: max-content; min-width: 100%; }
 #b-lumped .input.wide { width: 180px; max-width: 100%; }
 
 #b-lumped .lumped-inspector { position: relative; min-width: 0; }
-#b-lumped .lumped-tooltip { display: block; padding: var(--sp-2); background: var(--well); color: var(--text); font-family: var(--font-mono); font-size: var(--fs-sm); box-sizing: border-box; block-size: calc(1.5em + 2 * var(--sp-2)); line-height: 1.5; white-space: nowrap; overflow-x: auto; overflow-y: hidden; }
+#b-lumped .lumped-tooltip { position: absolute; z-index: 2; display: block; width: max-content; max-width: calc(100% - 16px); padding: var(--sp-2); background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-card); font-family: var(--font-mono); font-size: var(--fs-md); box-sizing: border-box; line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; pointer-events: none; }
+#b-lumped .lumped-tooltip[hidden] { display: none; }
 #b-lumped .lumped-controls { display: flex; align-items: center; gap: var(--sp-2); margin-block: var(--sp-2); }
 #b-lumped .lumped-controls select { width: auto; }
 #b-lumped canvas.chart { cursor: crosshair; }

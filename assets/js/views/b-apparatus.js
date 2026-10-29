@@ -129,7 +129,7 @@ export function buildDiagramB() {
   const cw = 34, ch = 12;
 
   return `
-<svg class="apparatus-diagram" style="--diagram-width: ${W}px" viewBox="0 0 ${W} ${f(height)}" role="group" aria-label="Section through the HT16 duct. Parts are buttons; press one to read about it.">
+<svg class="apparatus-diagram" style="--diagram-width: ${W}px" viewBox="0 0 ${W} ${f(height)}" role="group" aria-label="Cross-section through the HT16 duct. Parts are buttons; press one to read about it.">
   <defs>
     <marker id="bArrowAir" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="5.4" refY="3.5" orient="auto"><path class="arrow-air" d="M0,0 L7,3.5 L0,7 z"/></marker>
     <marker id="bArrowConv" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="5.4" refY="3.5" orient="auto"><path class="arrow-conv" d="M0,0 L7,3.5 L0,7 z"/></marker>

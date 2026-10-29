@@ -31,8 +31,8 @@ export const VIEWS = [
   },
   {
     id: "a-apparatus", group: "Experiment A", status: "ready",
-    label: "Apparatus", sub: "HT14 in section",
-    title: "Experiment A · The HT14 rig and its sensors"
+    label: "Apparatus", sub: "HT14 in cross-section",
+    title: "Experiment A · The HT14 apparatus and its sensors"
   },
   {
     id: "experiment-b", group: "Experiment B", status: "ready",
@@ -56,8 +56,8 @@ export const VIEWS = [
   },
   {
     id: "b-apparatus", group: "Experiment B", status: "ready",
-    label: "Apparatus", sub: "HT16 in section",
-    title: "Experiment B · The HT16 rig and its sensors"
+    label: "Apparatus", sub: "HT16 in cross-section",
+    title: "Experiment B · The HT16 apparatus and its sensors"
   },
   {
     id: "data", status: "ready",

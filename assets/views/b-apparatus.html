@@ -12,7 +12,7 @@
 
   <div class="card-grid wide-left">
   <div class="card">
-    <header><h2>HT16 in section · the heated section to scale</h2><span class="click-hint">Click any part</span></header>
+    <header><h2>HT16 in cross-section · the heated region to scale</h2><span class="click-hint">Click any part</span></header>
     <div class="card-body">
       <div class="apparatus-stage" id="bApparatusStage"></div>
     </div>
@@ -20,16 +20,15 @@
 
   <div class="card-stack">
   <div class="card">
-    <header><h2 id="bComponentTitle">—</h2><span class="badge" id="bComponentBadge">—</span></header>
-    <div class="card-body">
-      <p class="part-measure" id="bComponentMeasure" hidden>—</p>
-      <p id="bComponentSummary">—</p>
-    </div>
-  </div>
-
-  <div class="card">
     <header><h2>Parts</h2></header>
-    <div class="card-body"><div class="part-list" id="bComponentList"></div></div>
+    <div class="card-body">
+      <div class="part-list" id="bComponentList"></div>
+      <section class="card-sub" aria-labelledby="bComponentTitle" aria-live="polite" aria-atomic="true">
+        <div class="part-detail-heading"><h3 id="bComponentTitle">—</h3><span class="badge" id="bComponentBadge">—</span></div>
+        <p class="part-measure" id="bComponentMeasure" hidden>—</p>
+        <p id="bComponentSummary">—</p>
+      </section>
+    </div>
   </div>
 
   <!-- 세 온도가 계산에 들어가는 자리. 계산 화면의 식과 같다 -->
@@ -37,9 +36,7 @@
     <header><h2>How T5, T10 and a bead enter the balance</h2></header>
     <div class="card-body">
       <p class="formula">
-        <math><mrow><msub><mi>T</mi><mtext>bead</mtext></msub><mo>−</mo><msub><mi>T</mi><mn>5</mn></msub><mo>=</mo>
-        <mfrac><msub><mi>h</mi><mi>r</mi></msub><msub><mi>h</mi><mi>c</mi></msub></mfrac>
-        <mo>(</mo><msub><mi>T</mi><mn>10</mn></msub><mo>−</mo><msub><mi>T</mi><mtext>bead</mtext></msub><mo>)</mo></mrow></math>
+        <span data-display="block" data-tex="T_{\mathrm{bead}}-T_5 = \frac{h_r}{h_c}\left(T_{10}-T_{\mathrm{bead}}\right)"></span>
       </p>
       <p class="assumption">A bead settles where the radiation it takes from T10 equals what convection carries off to T5.</p>
     </div>

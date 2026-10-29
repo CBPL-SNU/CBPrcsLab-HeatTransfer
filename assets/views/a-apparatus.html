@@ -12,7 +12,7 @@
 
   <div class="card-grid wide-left">
   <div class="card">
-    <header><h2>HT14 in section · the heater region to scale</h2><span class="click-hint">Click any part</span></header>
+    <header><h2>HT14 in cross-section · the heater region to scale</h2><span class="click-hint">Click any part</span></header>
     <div class="card-body">
       <div class="apparatus-stage" id="apparatusStage"></div>
     </div>
@@ -20,29 +20,28 @@
 
   <div class="card-stack">
   <div class="card">
-    <header><h2 id="componentTitle">—</h2><span class="badge" id="componentBadge">—</span></header>
+    <header><h2>Parts</h2></header>
     <div class="card-body">
-      <p class="part-measure" id="componentMeasure" hidden>—</p>
-      <p id="componentSummary">—</p>
+      <div class="part-list" id="componentList"></div>
+      <section class="card-sub" aria-labelledby="componentTitle" aria-live="polite" aria-atomic="true">
+        <div class="part-detail-heading"><h3 id="componentTitle">—</h3><span class="badge" id="componentBadge">—</span></div>
+        <p class="part-measure" id="componentMeasure" hidden>—</p>
+        <p id="componentSummary">—</p>
+      </section>
     </div>
   </div>
 
-  <div class="card">
-    <header><h2>Parts</h2></header>
-    <div class="card-body"><div class="part-list" id="componentList"></div></div>
-  </div>
-
   <!-- 이 화면이 답해야 할 세 번째 질문: 두 온도가 계산에 어떻게 들어가는가 -->
-  <div class="card">
+  <div class="card apparatus-balance">
     <header><h2>How T10 and T8 enter the balance</h2></header>
     <div class="card-body">
       <p class="formula">
-        <math><mrow><msub><mi>Q</mi><mtext>conv</mtext></msub><mo>=</mo><mi>h</mi><mi>A</mi><mo>(</mo>
-        <msub><mi>T</mi><mn>10</mn></msub><mo>−</mo><msub><mi>T</mi><mn>8</mn></msub><mo>)</mo></mrow></math>
+        <span data-display="block" data-tex="Q_{\mathrm{conv}} ="></span>
+        <span data-display="block" data-tex="hA\left(T_{10}-T_8\right)"></span>
       </p>
       <p class="formula">
-        <math><mrow><msub><mi>Q</mi><mtext>rad</mtext></msub><mo>=</mo><mi>ε</mi><mi>σ</mi><mi>A</mi><mo>(</mo>
-        <msubsup><mi>T</mi><mn>10</mn><mn>4</mn></msubsup><mo>−</mo><msubsup><mi>T</mi><mn>8</mn><mn>4</mn></msubsup><mo>)</mo></mrow></math>
+        <span data-display="block" data-tex="Q_{\mathrm{rad}} ="></span>
+        <span data-display="block" data-tex="\epsilon\sigma A\left(T_{10}^4-T_8^4\right)"></span>
       </p>
     </div>
   </div>

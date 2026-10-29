@@ -25,18 +25,20 @@
     <button class="btn btn--primary" type="submit">Calculate</button>
   </form>
   <p class="caution" data-lumped-error role="status" hidden></p>
-  <p class="assumption" data-lumped-status role="status"></p>
+  <p class="assumption" data-lumped-status role="status" hidden></p>
   <p class="caution" data-lumped-warnings role="status" hidden></p>
-  <p class="assumption" data-lumped-air></p>
-  <article class="card"><header><h2>Mean temperature over time</h2><span class="badge">Lumped model</span></header>
-    <div class="lumped-inspector">
-      <canvas class="chart" data-lumped-chart role="img" tabindex="0" aria-label="Interactive temperature response. Left and right arrows select time; up and down arrows select a curve."></canvas>
-      <output class="lumped-tooltip" data-lumped-tooltip></output>
-    </div>
-    <p class="assumption">Hover near a solid curve or tap it to read a computed sample. Use left/right arrow keys to select time. The signed rate dT/dt is positive during heating and negative during cooling.</p>
-    <p class="assumption" data-lumped-legend></p>
-  </article>
-  
-  <article class="card"><header><h2>Results at the end of the run</h2></header><div class="table-wrap"><table><thead><tr><th>Quantity</th><th>Value</th></tr></thead><tbody data-lumped-results></tbody></table></div><p class="assumption">The table shows the integrated end-of-run temperature and heat transfer rates. Positive convection and radiation values represent heat leaving the cylinder. The dashed horizontal line solves the steady energy balance, including extra loss UA, independently of the run duration.</p></article>
-  <article class="card"><header><h2>Model and assumptions</h2></header><div class="card-body"><div class="formula" tabindex="0" role="region" aria-label="Energy balance"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Cylinder heat capacity times temperature rate equals electrical power minus convection, radiation and additional heat loss."><mrow><msub><mi>C</mi><mi>s</mi></msub><mfrac><mrow><mi mathvariant="normal">d</mi><msub><mi>T</mi><mi>s</mi></msub></mrow><mrow><mi mathvariant="normal">d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mi>V</mi><mi>I</mi><mo>−</mo><msub><mi>Q</mi><mtext>conv</mtext></msub><mo>(</mo><msub><mi>T</mi><mi>s</mi></msub><mo>)</mo><mo>−</mo><msub><mi>Q</mi><mtext>rad</mtext></msub><mo>(</mo><msub><mi>T</mi><mi>s</mi></msub><mo>)</mo><mo>−</mo><mi mathvariant="normal">UA</mi><mo>(</mo><msub><mi>T</mi><mi>s</mi></msub><mo>−</mo><msub><mi>T</mi><mi>a</mi></msub><mo>)</mo></mrow></math></div><p data-lumped-fixed></p><p>Calibrate the effective heat capacity and additional heat loss coefficient UA against measured temperature histories. Convection uses the selected correlation. Morgan evaluates buoyancy using the cylinder–air film temperature.</p><p>Some material properties, dimensions and emissivities are example values. Check these inputs and assumptions before comparing with measurements. Temperatures in the radiation term are absolute temperatures (K).</p></div></article>
+  <p class="assumption" data-lumped-air hidden></p>
+  <div class="card-grid wide-left lumped-results-grid">
+    <article class="card"><header><h2>Mean temperature over time</h2><span class="badge">Lumped model</span></header>
+      <div class="lumped-inspector">
+        <canvas class="chart" data-lumped-chart role="img" tabindex="0" aria-label="Interactive temperature response. Left and right arrows select time; up and down arrows select a curve."></canvas>
+        <output class="lumped-tooltip" data-lumped-tooltip hidden></output>
+      </div>
+      <div class="legend" data-lumped-legend aria-label="Graph legend"></div>
+      <p class="assumption">Hover near a solid curve or tap it to read a computed sample. Use left/right arrow keys to select time.</p>
+    </article>
+
+    <article class="card"><header><h2>Results at the end of the run</h2></header><div class="table-wrap"><table><thead><tr><th>Quantity</th><th>Value</th></tr></thead><tbody data-lumped-results></tbody></table></div></article>
+  </div>
+  <article class="card"><header><h2>Model and assumptions</h2></header><div class="card-body"><div class="formula" tabindex="0" role="region" aria-label="Energy balance"><span data-display="block" data-tex="C_s\frac{\mathrm{d}T_s}{\mathrm{d}t} = VI-Q_{\mathrm{conv}}(T_s)-Q_{\mathrm{rad}}(T_s)-\mathrm{UA}(T_s-T_a)"></span></div><p data-lumped-fixed></p><p>Calibrate the effective heat capacity and additional heat loss coefficient UA against measured temperature histories. Convection uses the selected correlation. Morgan evaluates buoyancy using the cylinder–air film temperature.</p><p>Some material properties, dimensions and emissivities are example values. Check these inputs and assumptions before comparing with measurements. Temperatures in the radiation term are absolute temperatures (K).</p></div></article>
 </div>

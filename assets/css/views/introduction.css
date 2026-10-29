@@ -21,13 +21,13 @@
 
 .intro-doc { padding: 40px 48px 48px; line-height: 1.7; color: var(--text); overflow-wrap: anywhere; }
 .intro-doc > :first-child { margin-top: 0; }
-.intro-doc h2 { margin: 0 0 var(--sp-3); font-size: 26px; font-weight: var(--fw-semi); letter-spacing: -.01em; line-height: 1.3; }
+.intro-doc h2 { margin: 0 0 var(--sp-3); font-size: var(--fs-base); font-weight: var(--fw-semi); letter-spacing: -.01em; line-height: 1.3; }
 .intro-doc h3 {
   margin: 40px 0 var(--sp-3); padding-bottom: var(--sp-2);
   border-bottom: 1px solid var(--border);
-  font-size: var(--fs-lg); font-weight: var(--fw-semi);
+  font-size: var(--fs-base); font-weight: var(--fw-semi);
 }
-.intro-doc h4 { margin: var(--sp-6) 0 var(--sp-2); font-size: var(--fs-base); font-weight: var(--fw-semi); }
+.intro-doc h4 { margin: var(--sp-6) 0 var(--sp-2); font-size: var(--fs-md); font-weight: var(--fw-semi); }
 /* 상단 바에 가리지 않게 */
 .intro-doc h3 { scroll-margin-top: calc(var(--header-h) + var(--sp-4)); }
 .intro-doc p, .intro-doc li { font-size: var(--fs-base); }
@@ -62,7 +62,7 @@
   background: var(--accent-soft); color: var(--accent-ink);
 }
 /* 실험 표지. 사이드바와 같은 남색에 실험 글자 */
-.intro-link-lead.is-letter { background: var(--frame); color: var(--frame-accent); font-size: 20px; font-weight: var(--fw-semi); }
+.intro-link-lead.is-letter { background: var(--frame); color: var(--frame-accent); font-size: var(--fs-md); font-weight: var(--fw-semi); }
 .intro-link-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.35; }
 .intro-link-title { font-weight: var(--fw-semi); font-size: var(--fs-base); }
 .intro-link-meta { color: var(--muted); font-size: var(--fs-sm); }
@@ -78,12 +78,12 @@
 
 .intro-toc { position: sticky; top: calc(var(--header-h) + var(--sp-4)); padding-top: var(--sp-2); }
 .intro-toc:empty { display: none; }
-.intro-toc-title { margin-bottom: var(--sp-2); color: var(--muted); font-size: var(--fs-xs); font-weight: var(--fw-semi); letter-spacing: .04em; text-transform: uppercase; }
+.intro-toc-title { margin-bottom: var(--sp-2); color: var(--muted); font-size: var(--fs-base); font-weight: var(--fw-semi); letter-spacing: .04em; text-transform: uppercase; }
 .intro-toc ul { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--border); }
 .intro-toc a {
   display: block; margin-left: -2px; padding: 5px 0 5px 14px;
   border-left: 2px solid transparent;
-  color: var(--muted); font-size: var(--fs-sm); line-height: 1.45; text-decoration: none;
+  color: var(--muted); font-size: var(--fs-md); line-height: 1.45; text-decoration: none;
 }
 .intro-toc a:hover { color: var(--text); }
 .intro-toc a.is-active { color: var(--accent-ink); border-left-color: var(--accent); font-weight: var(--fw-semi); }
@@ -95,5 +95,4 @@
 }
 @media (max-width: 860px) {
   .intro-doc { padding: var(--sp-5) var(--sp-4) var(--sp-6); }
-  .intro-doc h2 { font-size: 22px; }
 }

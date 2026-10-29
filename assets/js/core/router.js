@@ -4,6 +4,7 @@
 // 그래서 화면 하나를 맡은 사람은 자기 파일만 건드리면 되고, 서로 충돌하지 않는다.
 
 import { $, $$ } from "./dom.js";
+import { renderFormulas } from "./math.js";
 import { VIEWS, DEFAULT_VIEW } from "../data/views.js";
 
 let onActivate = {};
@@ -86,6 +87,7 @@ async function loadView(view) {
   loaded.add(view.id);
   // 화면 파일마다 조건 띠와 .content를 따로 갖는다. 한 번 더 감싸면 조건 띠가 여백 안으로 떠 보인다
   section.innerHTML = markup;
+  renderFormulas(section);
   if (onActivate[view.id]?.mount) onActivate[view.id].mount();
 }
 

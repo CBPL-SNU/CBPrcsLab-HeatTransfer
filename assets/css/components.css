@@ -8,7 +8,7 @@ input[type="number"], input[type="text"], input[type="date"], select {
   padding: 4px var(--sp-2);
   border: 1px solid var(--border); border-radius: var(--radius-md);
   background: var(--well); box-shadow: var(--inset);
-  color: var(--text); font-size: var(--fs-md);
+  color: var(--text); font-size: var(--fs-input);
 }
 input[type="number"] { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
 input:focus, select:focus { border-color: var(--accent); }
@@ -24,7 +24,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   padding: 4px var(--sp-2);
   border: 1px solid var(--border); border-radius: var(--radius-sm);
   background: var(--surface); color: var(--text);
-  font-size: var(--fs-sm); font-weight: var(--fw-medium); white-space: nowrap;
+  font-size: var(--fs-md); font-weight: var(--fw-medium); white-space: nowrap;
   transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 .btn { min-height: 30px; }
@@ -72,7 +72,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   font-family: var(--font-mono); font-size: var(--fs-answer); font-weight: var(--fw-semi);
   font-variant-numeric: tabular-nums; line-height: 1.05;
 }
-.answer .figure small { margin-left: var(--sp-1); color: var(--muted); font-size: var(--fs-base); font-weight: 400; }
+.answer .figure small { margin-left: var(--sp-1); color: var(--muted); font-size: inherit; font-weight: 400; }
 .answer .figure.conv { color: var(--series-conv); }
 .answer .figure.rad { color: var(--series-rad); }
 .answer .caption { color: var(--muted); font-size: var(--fs-md); max-width: 44ch; }
@@ -80,10 +80,10 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 /* ── 값 묶음 ──────────────────────────────────── */
 .values { display: flex; flex-wrap: wrap; gap: var(--sp-3) var(--sp-6); }
 .values > div { display: flex; flex-direction: column; gap: 1px; }
-.values .k { color: var(--muted); font-size: var(--fs-xs); font-weight: var(--fw-semi); }
+.values .k { color: var(--muted); font-size: var(--fs-md); font-weight: var(--fw-semi); }
 .values .v { font-family: var(--font-mono); font-size: var(--fs-num); font-weight: var(--fw-semi); font-variant-numeric: tabular-nums; }
-.values .v small { margin-left: 2px; color: var(--muted-2); font-size: var(--fs-xs); font-weight: 400; }
-.values .n { color: var(--muted-2); font-family: var(--font-mono); font-size: var(--fs-xs); }
+.values .v small { margin-left: 2px; color: var(--muted-2); font-size: inherit; font-weight: 400; }
+.values .n { color: var(--muted-2); font-family: var(--font-mono); font-size: var(--fs-sm); }
 .values .v.conv { color: var(--series-conv); }
 .values .v.rad { color: var(--series-rad); }
 
@@ -115,6 +115,11 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 #experiment-a .input-panel-section:first-child { padding-top: 0; }
 #experiment-a .input-panel-section:last-child { padding-bottom: 0; }
 #experiment-a .input-panel-section + .input-panel-section { border-top: 1px solid var(--border); }
+#experiment-a .input-panel-row { display: grid; grid-template-columns: max-content max-content minmax(0, 1fr); }
+#experiment-a .input-panel-row > .input-panel-section { padding-top: 0; gap: var(--sp-2); }
+#experiment-a .input-panel-row > .input-panel-section:first-child { padding-right: var(--sp-3); }
+#experiment-a .input-panel-row > .input-panel-section + .input-panel-section { padding-inline: var(--sp-3); padding-bottom: var(--sp-4); border-top: 0; border-left: 1px solid var(--border); }
+#experiment-a .input-panel-row > .input-panel-section.input-panel-analysis { container: analysis-controls / inline-size; padding-right: 0; padding-bottom: 0; }
 #experiment-a h2 { margin: 0; color: var(--text-2); font-size: var(--fs-base); font-weight: var(--fw-semi); line-height: 1.35; }
 #experiment-a .condition-section, #experiment-a .temperature-inputs { min-width: 0; max-width: 100%; margin: 0; padding: 0; border: 0; }
 #experiment-a .input-panel { background: var(--surface); border-bottom: 1px solid var(--border); }
@@ -122,8 +127,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 #experiment-a .input-panel .input { display: grid; grid-template-columns: 88px 106px; grid-auto-columns: max-content; align-items: center; justify-content: start; min-width: 0; width: 100%; gap: var(--sp-2); }
 #experiment-a .input-panel .with-unit { display: grid; grid-template-columns: 80px 22px; align-items: center; width: 106px; gap: var(--sp-1); }
 #experiment-a .input-panel .input > label,
-#experiment-a .input-panel .unit,
-#experiment-a .input-panel input:not([type="checkbox"]):not([type="radio"]) { font-size: var(--fs-md); line-height: 1.4; }
+#experiment-a .input-panel .unit { font-size: var(--fs-md); line-height: 1.4; }
+#experiment-a .input-panel input:not([type="checkbox"]):not([type="radio"]) { font-size: var(--fs-input); line-height: 1.4; }
 #experiment-a .input-panel .input > label { white-space: nowrap; }
 #experiment-a .input-panel .number-stepper,
 #experiment-a .input-panel .with-unit > input { width: 80px; height: 32px; }
@@ -131,17 +136,27 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 #experiment-a .input-panel .number-step-buttons { flex-basis: 18px; }
 #experiment-a .input-panel input[readonly] { padding-left: var(--sp-1); padding-right: 22px; }
 #experiment-a .input-panel .resistance-lock { display: inline-flex; grid-column: 3; grid-row: 1; align-items: center; gap: var(--sp-1); font-weight: 400; cursor: pointer; }
+#experiment-a .input-panel-row .group { grid-template-columns: repeat(2, 106px) max-content; gap: var(--sp-2); }
+#experiment-a .input-panel-row .temperature-inputs .group { grid-template-columns: repeat(2, 106px); }
+#experiment-a .input-panel-row .input { grid-template-columns: 106px; gap: var(--sp-1); }
+#experiment-a .input-panel-row .condition-section .input:last-child { grid-template-columns: 106px max-content; }
+#experiment-a .input-panel-row .with-unit { grid-column: 1; grid-row: 2; }
+#experiment-a .input-panel-row .resistance-lock { grid-column: 2; grid-row: 2; }
 .resistance-lock input { margin: 0; accent-color: var(--accent); }
 #experiment-a input[readonly] { background: var(--surface-2); box-shadow: none; color: var(--muted); font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; cursor: default; }
 
-/* 좁은 패널에서는 라벨을 위로 올려 입력값의 세 열 정렬을 유지한다. */
+/* 공간이 부족하면 모델 영역을 먼저 아래로 내린다. */
+@container input-controls (max-width: 1119px) {
+  #experiment-a .input-panel-row { grid-template-columns: max-content minmax(0, 1fr); }
+  #experiment-a .input-panel-row > .input-panel-section.input-panel-analysis { grid-column: 1 / -1; padding: var(--sp-4) 0 0; border-left: 0; border-top: 1px solid var(--border); }
+}
 @container input-controls (max-width: 681px) {
-  #experiment-a .input-panel .group { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  #experiment-a .input-panel .input { grid-template-columns: 106px; gap: var(--sp-1); }
-  #experiment-a .input-panel .resistance-lock { grid-column: 1; grid-row: 3; }
+  #experiment-a .input-panel-row { grid-template-columns: minmax(0, 1fr); }
+  #experiment-a .input-panel-row > .input-panel-section:first-child { padding-right: 0; }
+  #experiment-a .input-panel-row > .input-panel-section + .input-panel-section { padding-top: var(--sp-4); padding-left: 0; border-left: 0; border-top: 1px solid var(--border); }
 }
 @container input-controls (max-width: 341px) {
-  #experiment-a .input-panel .group { grid-template-columns: minmax(0, 1fr); }
+  #experiment-a .input-panel .group, #experiment-a .input-panel-row .temperature-inputs .group { grid-template-columns: minmax(0, 1fr); }
 }
 
 #experiment-a { --selected-convection-color: var(--series-conv); }
@@ -176,6 +191,13 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .power-coefficients { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); }
 #experiment-a .input-panel .power-coefficients { position: relative; gap: 0; }
 #experiment-a .input-panel .power-coefficients::before { content: ""; position: absolute; inset-block: 0; left: 50%; border-left: 1px solid var(--border); }
+#experiment-a .input-panel-analysis .coefficient-result { padding-inline: var(--sp-2); }
+@container analysis-controls (max-width: 519px) {
+  #experiment-a .input-panel-analysis .power-coefficients { grid-template-columns: minmax(0, 1fr); gap: var(--sp-3); }
+  #experiment-a .input-panel-analysis .power-coefficients::before { display: none; }
+  #experiment-a .input-panel-analysis .coefficient-result { padding-inline: 0; }
+  #experiment-a .input-panel-analysis .coefficient-result + .coefficient-result { border-top: 1px solid var(--border); padding-top: var(--sp-3); }
+}
 .coefficient-result {
   display: grid; align-content: start; gap: var(--sp-3); min-width: 0;
   padding: 0 var(--sp-4);
@@ -186,7 +208,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .coefficient-row { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-2); }
 .coefficient-title { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(60px, auto); align-items: center; gap: var(--sp-2); width: 100%; max-width: 100%; }
 #experiment-a .coefficient-title > :not(:first-child) { grid-column: 1; grid-row: 2; justify-self: stretch; }
-#experiment-a .katex { font-size: 1em; }
+.katex { font-size: 1em; }
 #experiment-a .coefficient-title [data-tex] { font-size: var(--fs-lg); padding-block: var(--sp-2); }
 #experiment-a .coefficient-title .katex-display { margin: 0; }
 #experiment-a .coefficient-title .katex-display > .katex { text-align: center; }
@@ -197,7 +219,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 #experiment-a .power-results-heading .sub { color: var(--muted-2); font-size: var(--fs-xs); white-space: nowrap; }
 .coefficient-rule strong { font-size: var(--fs-md); font-weight: var(--fw-medium); }
 .model-options { display: inline-flex; align-items: center; gap: var(--sp-3); }
-.model-options label { display: inline-flex; align-items: center; gap: var(--sp-1); color: var(--text); font-size: var(--fs-md); cursor: pointer; }
+.model-options label { display: inline-flex; align-items: center; gap: var(--sp-1); color: var(--text); font-size: var(--fs-md); font-weight: 400; cursor: pointer; }
 .model-options input { margin: 0; accent-color: var(--selected-convection-color); }
 .power-coefficients .note-inline { color: var(--text-2); font-family: inherit; font-weight: var(--fw-semi); white-space: normal; align-self: center; text-align: center; }
 @media (max-width: 680px) {
@@ -222,14 +244,14 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .keys { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-5); }
 .keys > div { display: flex; align-items: baseline; gap: var(--sp-2); }
 .keys .key { width: 9px; height: 9px; border-radius: var(--radius-sm); align-self: center; flex: 0 0 auto; }
-.keys .name { color: var(--muted); font-size: var(--fs-sm); }
-.keys .val { font-family: var(--font-mono); font-size: var(--fs-base); font-weight: var(--fw-semi); font-variant-numeric: tabular-nums; }
-.keys .val small { margin-left: 2px; color: var(--muted-2); font-size: var(--fs-xs); font-weight: 400; }
+.keys .name { color: var(--muted); font-size: var(--fs-md); }
+.keys .val { font-family: var(--font-mono); font-size: var(--fs-lg); font-weight: var(--fw-semi); font-variant-numeric: tabular-nums; }
+.keys .val small { margin-left: 2px; color: var(--muted-2); font-size: inherit; font-weight: 400; }
 .keys .val.conv { color: var(--series-conv); }
 .keys .val.rad { color: var(--series-rad); }
-.keys .pct { font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
+.keys .pct { font-family: var(--font-mono); font-size: var(--fs-md); color: var(--muted); font-variant-numeric: tabular-nums; }
 .keys .pct:empty { display: none; }
-.keys .note-inline { color: var(--muted-2); font-size: var(--fs-xs); font-family: var(--font-mono); }
+.keys .note-inline { color: var(--muted-2); font-size: var(--fs-sm); font-family: var(--font-mono); }
 
 #experiment-a .power-value, #experiment-a .split-value { font-size: var(--fs-lg); }
 #experiment-a .split-label { font-size: var(--fs-md); }
@@ -247,7 +269,9 @@ canvas.chart { display: block; width: 100%; height: 220px; }
 .heat-transfer-card .legend { width: 80%; min-width: min(100%, 360px); margin-inline: auto; justify-content: center; align-items: center; font-size: var(--fs-md); }
 .heat-transfer-card .legend sub, .heat-transfer-card .legend sup, .heat-transfer-card header sub { font-size: var(--fs-md); }
 canvas.chart--short { height: 150px; }   /* 한 화면에 그래프가 둘일 때 */
-.legend { display: flex; flex-wrap: wrap; gap: var(--sp-3); color: var(--muted); font-size: var(--fs-sm); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--sp-3); color: var(--muted); font-size: var(--fs-md); }
+.legend sub, .legend sup { font-size: inherit; }
+.view [data-lumped-legend] { justify-content: center; text-align: center; margin-block: var(--sp-2); font-size: var(--fs-md); }
 .legend > span { display: inline-flex; align-items: center; gap: var(--sp-1); }
 /* 색만으로 계열을 구분하지 않는다. 선 종류를 함께 보여준다. */
 .legend i { width: 16px; border-top: 3px solid; }
@@ -282,9 +306,9 @@ canvas.chart--short { height: 150px; }   /* 한 화면에 그래프가 둘일 �
 
 /* ── 수식 ─────────────────────────────────────
    MathML을 쓴다. 브라우저 내장이라 라이브러리가 필요 없다. */
-.formula { color: var(--text); text-align: center; margin: var(--sp-2) 0; }   /* 한 줄을 차지하는 식은 가운데 */
-.formula math { font-size: 20px; }
-.part-measure { font-size: 20px; color: var(--text); }
+.formula { color: var(--text); font-size: var(--fs-lg); text-align: center; margin: var(--sp-2) 0; }   /* 한 줄을 차지하는 식은 가운데 */
+.formula math, .formula[data-tex] { font-size: var(--fs-lg); }
+.part-measure { font-size: var(--fs-lg); color: var(--text); }
 
 /* ── 표 ─────────────────────────────────────── */
 .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-md); }
@@ -292,7 +316,7 @@ table { width: 100%; border-collapse: collapse; font-size: var(--fs-md); }
 thead th {
   padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid var(--border);
   background: var(--surface-2); color: var(--muted);
-  font-size: var(--fs-xs); font-weight: var(--fw-semi); text-align: left; white-space: nowrap;
+  font-size: var(--fs-md); font-weight: var(--fw-semi); text-align: left; white-space: nowrap;
 }
 tbody td { padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid var(--border-soft); font-variant-numeric: tabular-nums; }
 tbody tr:last-child td { border-bottom: 0; }
@@ -364,3 +388,9 @@ dialog::backdrop { background: rgba(18, 40, 63, .4); }
    계기의 판독창과 같은 뜻이다. 글이 놓이는 자리에는 쓰지 않는다. */
 .well { background: var(--well); border-radius: var(--radius-md); box-shadow: var(--inset); }
 .well--flush { overflow: hidden; }
+
+[data-lumped-results] td + td { font-family: var(--font-mono); font-size: var(--fs-lg); font-weight: var(--fw-semi); font-variant-numeric: tabular-nums; }
+
+.formula:not(.power-balance) { max-width: 100%; overflow-x: auto; }
+.formula > [data-tex] { display: block; width: max-content; min-width: 100%; }
+.formula .katex-display { margin: 0; }

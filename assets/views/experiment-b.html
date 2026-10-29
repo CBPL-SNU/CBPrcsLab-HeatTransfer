@@ -2,9 +2,9 @@
      벽 온도는 유속에 따라 함께 변하므로 셋이 한 벌이다. -->
 <div class="conditions">
   <div class="group">
-    <div class="input"><label for="bWallTemp">Wall T10</label>
+    <div class="input"><label for="bWallTemp">Wall T<sub>10</sub></label>
       <div class="with-unit"><input id="bWallTemp" type="number" value="165" min="-273.15" step="any"><span class="unit">°C</span></div></div>
-    <div class="input"><label for="bGasTemp">Inlet air T5</label>
+    <div class="input"><label for="bGasTemp">Inlet air T<sub>5</sub></label>
       <div class="with-unit"><input id="bGasTemp" type="number" value="25.5" min="-273.15" step="any"><span class="unit">°C</span></div></div>
   </div>
   <span class="divider"></span>
@@ -18,49 +18,56 @@
       <button class="btn b-velocity" data-value="1.6" type="button">1.6</button>
     </div>
   </div>
-  <span class="divider"></span>
-  <div class="input free"><label>Sensor</label>
-    <div class="btn-row segmented">
-      <button class="btn sensor-button" data-sensor="T6" type="button">T6 grey</button>
-      <button class="btn sensor-button is-active" data-sensor="T7" type="button">T7 black</button>
-      <button class="btn sensor-button" data-sensor="T8" type="button">T8 large</button>
+  <span class="divider sensor-divider" aria-hidden="true"></span>
+  <div class="sensor-specifications" role="group" aria-label="Sensor emissivity">
+    <div class="input sensor-emissivity"><label for="bT6Emissivity">T6 (0.5mm)</label>
+      <div class="with-unit"><span class="unit">ε</span><input id="bT6Emissivity" type="number" value="0.40" min="0.01" max="1" step="any" aria-label="T6 (small grey) emissivity"></div>
+    </div>
+    <div class="input sensor-emissivity"><label for="bT7Emissivity">T7 (0.5mm)</label>
+      <div class="with-unit"><span class="unit">ε</span><input id="bT7Emissivity" type="number" readonly aria-label="T7 (small black) emissivity, fixed"></div>
+    </div>
+    <div class="input sensor-emissivity"><label for="bT8Emissivity">T8 (3.0mm)</label>
+      <div class="with-unit"><span class="unit">ε</span><input id="bT8Emissivity" type="number" readonly aria-label="T8 (large black) emissivity, fixed"></div>
     </div>
   </div>
-  <span class="spacer"></span>
-  <div class="input"><label for="bT6Emissivity">T6 ε <em>assumed</em></label>
-    <div class="with-unit"><input id="bT6Emissivity" type="number" value="0.4" min="0.01" max="1" step="any"><span class="unit">—</span></div></div>
+  <div class="input free sensor-selection"><label>Sensor</label>
+    <div class="btn-row segmented" role="group" aria-label="Sensor">
+      <button class="btn sensor-button" data-sensor="T6" type="button" aria-pressed="false">T6 (small grey)</button>
+      <button class="btn sensor-button is-active" data-sensor="T7" type="button" aria-pressed="true">T7 (small black)</button>
+      <button class="btn sensor-button" data-sensor="T8" type="button" aria-pressed="false">T8 (large black)</button>
+    </div>
+  </div>
 </div>
 
 <div class="content">
 
-  <div class="card">
-    <header><h2>How far the reading sits from the true air temperature</h2><span class="badge">Course model</span></header>
+  <div class="card-grid two heat-balance-grid">
+  <div class="card heat-balance-card">
+    <header><h2>Temperatures</h2></header>
     <div class="card-body">
-      <div class="answer">
-        <span class="figure" id="bError">—</span>
-        <span class="caption">The thermocouple does not read the air. It sits between the hot wall and the cool air, so it settles above the air temperature — <span class="num" id="bSensorTemp">—</span> instead of the true value.</span>
+      <div class="temperature-results" role="status" aria-atomic="true">
+        <div class="values sensor-readout">
+          <div><span class="k">Sensor temperature (T<sub>c</sub>)</span><span class="v" id="bSensorTemp">—</span></div>
+          <div><span class="k">Inlet air temperature (T<sub>g</sub>)</span><span class="v" id="bGasTempReadout">—</span></div>
+          <div><span class="k">Wall temperature (T<sub>s</sub>)</span><span class="v" id="bWallTempReadout">—</span></div>
+        </div>
+        <div class="values sensor-error">
+          <div><span class="k">Error (T<sub>c</sub> − T<sub>g</sub>)</span><span class="v" id="bError">—</span></div>
+          <div><span class="k">Minimum air velocity for &lt;1% error</span><span class="v" id="bCritical">—</span></div>
+        </div>
       </div>
-      <p class="assumption" id="bSensorSub">—</p>
-    </div>
-  </div>
-
-  <div class="card-grid two">
-  <div class="card">
-    <header><h2>Why: radiation in balances convection out</h2></header>
-    <div class="card-body">
-      <p class="caption">At steady state the two flows are equal by definition, so their sizes say
-        nothing. What sets the error is the <em>ratio</em> of the two coefficients.</p>
-      <div class="values">
-        <div><span class="k">Radiation coefficient</span><span class="v rad" id="bHr">—</span></div>
-        <div><span class="k">Convection coefficient</span><span class="v conv" id="bH">—</span><span class="n" id="bRe">—</span></div>
-        <div><span class="k">H<sub>r</sub> / H<sub>c</sub></span><span class="v" id="bRatio">—</span><span class="n">multiplies T<sub>s</sub> − T<sub>c</sub></span></div>
-        <div><span class="k">Error below 1% of T<sub>g</sub> above</span><span class="v" id="bCritical">—</span><span class="n">rig reaches 1.6 m/s</span></div>
+      <div class="card-sub">
+        <h3>Heat transfer coefficients</h3>
+        <p class="formula">
+          <span data-display="block" data-tex="T_c-T_g ="></span>
+          <span data-display="block" data-tex="\frac{h_r}{h_c}\left(T_s-T_c\right)"></span>
+        </p>
+        <div class="values sensor-readout">
+          <div><span class="k">Radiation coefficient (h<sub>r</sub>)</span><span class="v rad" id="bHr">—</span></div>
+          <div><span class="k">Convection coefficient (h<sub>c</sub>)</span><span class="v conv" id="bH">—</span><span class="n" id="bRe">—</span></div>
+          <div><span class="k">h<sub>r</sub> / h<sub>c</sub></span><span class="v" id="bRatio">—</span></div>
+        </div>
       </div>
-      <p class="formula">
-        <math><mrow><msub><mi>T</mi><mi>c</mi></msub><mo>−</mo><msub><mi>T</mi><mi>g</mi></msub><mo>=</mo>
-        <mfrac><msub><mi>H</mi><mi>r</mi></msub><msub><mi>H</mi><mi>c</mi></msub></mfrac>
-        <mo>(</mo><msub><mi>T</mi><mi>s</mi></msub><mo>−</mo><msub><mi>T</mi><mi>c</mi></msub><mo>)</mo></mrow></math>
-      </p>
     </div>
   </div>
 
@@ -69,11 +76,11 @@
     <div class="card-body">
       <div class="chart-frame"><canvas class="chart" id="bChart"></canvas></div>
       <div class="legend">
-        <span><i class="dotted grey-body"></i>T6 · grey ε 0.4 · 0.5 mm</span>
-        <span><i class="black-body"></i>T7 · black ε 0.95 · 0.5 mm</span>
-        <span><i class="thick black-body"></i>T8 · black ε 0.95 · 3 mm</span>
+        <span><i class="dotted grey-body"></i>T6 (small grey)</span>
+        <span><i class="black-body"></i>T7 (small black)</span>
+        <span><i class="thick black-body"></i>T8 (large black)</span>
+        <span><i class="dotted air-temperature"></i>Air temperature (T<sub>5</sub>)</span>
       </div>
-      <p class="assumption">Raising the velocity raises the convection coefficient, which pulls the bead toward the air temperature. A larger bead has a lower coefficient for the same flow, so T8 stays hottest. T6 gains less radiation to begin with because its emissivity is lower.</p>
     </div>
   </div>
 
@@ -82,10 +89,12 @@
   <div class="card">
     <header><h2>What this assumed</h2></header>
     <div class="card-body">
-      <p class="assumption"><strong>Conduction along the thermocouple wire is not modelled.</strong> Real wires drain heat away from the bead, so the true error is smaller than what is shown here.</p>
-      <p class="assumption">Bead diameters, emissivities and the view factor are placeholder values. The T6 emissivity is yours to set because the course notes do not give it.</p>
+      <ul class="assumption assumptions-list">
+        <li><strong>Conduction along the thermocouple wire is not modelled.</strong> Real wires drain heat away from the bead, so the true error is smaller than what is shown here.</li>
+        <li>Bead diameters, emissivities and the view factor are placeholder values. The T6 (small grey) emissivity is yours to set because the course notes do not give it.</li>
+      </ul>
     </div>
   </div>
 
 </div>
-      
+

@@ -7,7 +7,7 @@
 /* 표 칸 자체가 입력칸이다. 칸 테두리와 입력 테두리가 겹치지 않게 입력은 테두리를 숨긴다 */
 .data-table th, .data-table td { padding: 0; }
 .data-table thead th { padding: var(--sp-2) var(--sp-3); white-space: nowrap; vertical-align: bottom; }
-.data-table thead th .unit { display: block; color: var(--muted-2); font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 400; }
+.data-table thead th .unit { display: block; color: var(--muted-2); font-family: var(--font-mono); font-size: var(--fs-md); font-weight: 400; }
 .data-table thead th:not(:first-child):not(.is-note) { text-align: right; }
 .data-table tbody th { width: 56px; padding: 0 var(--sp-3); color: var(--muted); font-family: var(--font-mono); font-weight: 400; }
 .data-table td { border-left: 1px solid var(--border-soft); }
@@ -18,7 +18,7 @@
 .data-table input {
   width: 100%; min-width: 84px; height: 40px; padding: 0 var(--sp-3);
   border: 0; border-radius: 0; background: transparent; box-shadow: none;
-  color: var(--text); font: inherit;
+  color: var(--text); font: inherit; font-size: var(--fs-input);
 }
 .data-table input.is-number { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .data-table input::placeholder { color: var(--muted-2); opacity: .55; }
@@ -28,15 +28,14 @@
 .data-table td:last-child input { min-width: 180px; }
 
 .data-comment { display: flex; flex-direction: column; gap: var(--sp-1); margin-top: var(--sp-4); }
-.data-comment label { color: var(--muted); font-size: var(--fs-sm); font-weight: var(--fw-semi); }
+.data-comment label { color: var(--muted); font-size: var(--fs-md); font-weight: var(--fw-semi); }
 .data-comment textarea {
   width: 100%; padding: var(--sp-2) var(--sp-3); resize: vertical;
   border: 1px solid var(--border); border-radius: var(--radius-md);
-  background: var(--surface); color: var(--text); font: inherit; line-height: 1.5;
+  background: var(--surface); color: var(--text); font: inherit; font-size: var(--fs-input); line-height: 1.5;
 }
-/* iOS Safari는 16px보다 작은 입력칸을 누르면 화면을 확대한다. 터치 기기에서만 키운다 */
+/* 공통 터치 입력 16px 규칙에 맞춰 행 높이도 확보한다. */
 @media (pointer: coarse) {
-  #data input, #data textarea { font-size: 16px; }
   .data-table input { height: 44px; }
 }
 

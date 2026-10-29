@@ -19,8 +19,8 @@ export const CHART_INK = { ink: "#5c6a76", grid: "#dbe2e8", mark: "#46525e", pla
 
 // 그래프 안에서 서체를 섞지 않는다. 축 숫자와 계열 이름이 달라 보이면 안 된다.
 const CHART_FONT_FAMILY = "'IBM Plex Sans', system-ui, sans-serif";
-export const CHART_FONT = "12.5px " + CHART_FONT_FAMILY;
-export const CHART_FONT_LARGE = "14px " + CHART_FONT_FAMILY;
+export const CHART_FONT = "14px " + CHART_FONT_FAMILY;
+export const CHART_FONT_LARGE = CHART_FONT;
 
 // 표시 크기와 devicePixelRatio에 맞춤. 화면이 숨겨져 크기를 못 재면 null
 export function setupCanvas(canvas) {
@@ -50,7 +50,7 @@ export function makeScales(w, h, xRange, yRange, margin = PLOT_MARGIN) {
 
 export function drawAxes(ctx, w, h, xLabel, yLabel, xTicks, yTicks, xMap, yMap, margin = PLOT_MARGIN, {
   font = CHART_FONT, gridWidth = 1, minorGridWidth = 0.5, minorXTicks = [], minorYTicks = [],
-  xTickOffset = 17, axisLabelInset = 1, yLabelY = 11
+  xTickOffset = 17, axisLabelInset = 1, yLabelY = 14
 } = {}) {
   const { left, right, top, bottom } = margin;
   ctx.clearRect(0, 0, w, h);
@@ -197,7 +197,8 @@ export function drawCrossing(ctx, x, y, label, h, { margin = PLOT_MARGIN, font =
 export function labelOnPlot(ctx, text, x, y, color, align = "left") {
   const width = ctx.measureText(text).width;
   ctx.fillStyle = CHART_INK.plate;
-  ctx.fillRect((align === "right" ? x - width : x) - 3, y - 9, width + 6, 12);
+  const fontSize = Number.parseFloat(ctx.font);
+  ctx.fillRect((align === "right" ? x - width : x) - 3, y - fontSize, width + 6, fontSize + 4);
   ctx.fillStyle = color;
   ctx.textAlign = align;
   ctx.fillText(text, x, y);
@@ -207,7 +208,7 @@ export function labelOnPlot(ctx, text, x, y, color, align = "left") {
 // 곡선 오른쪽 끝에 계열 이름을 붙인다. 범례로 눈을 왕복시키지 않기 위해서다.
 // 곡선이 서로 가까우면 이름표끼리 겹치므로 최소 간격을 두고 아래로 밀어낸다.
 // outside면 선 끝 오른쪽 여백에 쓴다. 그림 안에 쓰면 이름표가 선 끝을 가린다
-export function labelEnds(ctx, items, { outside = false, font = CHART_FONT, lineGap = 13 } = {}) {
+export function labelEnds(ctx, items, { outside = false, font = CHART_FONT, lineGap = 18 } = {}) {
   ctx.font = font;
   let lastY = -Infinity;
   [...items].sort((a, b) => a.y - b.y).forEach(item => {

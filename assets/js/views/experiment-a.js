@@ -1,7 +1,8 @@
 // 실험 A 화면: 정상상태 계산 결과와 그래프
 
 import { $, clamp, numberValue, formatW } from "../core/dom.js";
-import { renderFormula, renderFormulas } from "../core/math.js";
+import { renderFormula } from "../core/math.js";
+import { AIR_A_DEFAULT } from "../physics/constants.js";
 import { setupCanvas, drawAxes, drawLine, makeScales, drawVerticalMarker, drawCrossing, labelEnds, PLOT_MARGIN, SERIES_COLOR, SERIES_DASH, CHART_FONT_LARGE } from "../core/chart.js";
 
 // 세 선이 오른쪽 끝에서 모이므로 이름표는 그림 밖 여백에 둔다
@@ -9,18 +10,24 @@ const MARGIN = { ...PLOT_MARGIN, left: 50, right: 80, top: 24, bottom: 44 };
 import { experimentASteady, cylinderHeat, radiationCrossover, CROSSOVER_SEARCH_SPAN, morganCN } from "../physics/experiment-a.js";
 
 let defaultResistance;
+let lastValidAir = { k: AIR_A_DEFAULT.k, nu: AIR_A_DEFAULT.nu, pr: AIR_A_DEFAULT.Pr };
 
-// 화면 입력값을 물리 모델의 인자 형태로 변환
+function validAirInputs() {
+  return ["#aK", "#aNu", "#aPr"].every(id => Number.isFinite($(id).valueAsNumber) && $(id).valueAsNumber > 0);
+}
+
+// McAdams에서는 숨겨진 잘못된 Morgan 입력 대신 마지막 유효 물성으로 비교 곡선을 유지한다.
 function readInputs() {
+  if (validAirInputs()) {
+    lastValidAir = { k: numberValue("#aK"), nu: numberValue("#aNu") * 1e-6, pr: numberValue("#aPr") };
+  }
   return {
     V: numberValue("#aVoltage", 0),
     I: numberValue("#aCurrent", 0),
     taC: numberValue("#aAirTemp", 25),
     tsC: numberValue("#aSurfaceTemp", 90),
     model: $("#aModelMcadams").checked ? "mcadams" : "morgan",
-    k: numberValue("#aK", 0.027),
-    nu: numberValue("#aNu", 17.5) * 1e-6,
-    pr: numberValue("#aPr", 0.707)
+    ...lastValidAir
   };
 }
 
@@ -30,11 +37,11 @@ function chartTicks(min, max, step) {
 }
 
 export function drawAChart() {
-  if (["#aK", "#aNu", "#aPr"].some(id => !Number.isFinite($(id).valueAsNumber) || $(id).valueAsNumber <= 0)) return;
   const canvas = $("#aChart");
   const setup = setupCanvas(canvas);
   if (!setup) return;
   const { ctx, w, h } = setup;
+  if (!$("#aModelMcadams").checked && !validAirInputs()) return;
   const input = readInputs();
 
   const crossings = [
@@ -170,7 +177,10 @@ function showSplit(input, result) {
 }
 
 export function updateA() {
-  const invalid = ["#aK", "#aNu", "#aPr"].some(id => !Number.isFinite($(id).valueAsNumber) || $(id).valueAsNumber <= 0);
+  const morgan = !$("#aModelMcadams").checked;
+  $("#aAirProperties").hidden = !morgan;
+  if (!morgan) setAdvanced(false);
+  const invalid = morgan && !validAirInputs();
   $("#aAirError").hidden = !invalid;
   if (invalid) { $("#aAirError").textContent = "Enter positive finite k, ν and Pr. Displayed results belong to the previous valid inputs."; return; }
   const input = readInputs();
@@ -185,7 +195,6 @@ export function updateA() {
   $("#aResidual").innerHTML = formatW(result.residual);
   $("#aConvSub").textContent = `${result.hConv.toFixed(2)} W·m⁻²·K⁻¹`;
   $("#aRadSub").textContent = `${result.hRad.toFixed(2)} W·m⁻²·K⁻¹`;
-  const morgan = input.model === "morgan";
   $("#aMcadamsCoefficientFormula").hidden = morgan;
   $("#aMorganCoefficientFormula").hidden = !morgan;
   $("#experiment-a").dataset.convectionModel = input.model;
@@ -193,6 +202,9 @@ export function updateA() {
   renderFormula($("#aConvectionModelExponent"), String.raw`Q_c^{\mathrm{${modelName}}}`);
   $("#aConvectionLegend").textContent = "Convection (" + modelName + ")";
   const morganHeat = morgan ? result : cylinderHeat({ ...input, model: "morgan" });
+  const ra = morganHeat.ra ?? 0;
+  const [mantissa, power] = ra.toExponential(2).split("e");
+  renderFormula($("#aRayleighValue"), ra === 0 ? "0" : String.raw`${mantissa}\times10^{${Number(power)}}`);
   const exponent = $("#aMorganTemperatureExponent");
   if (morganHeat.ra > 0) {
     const { n } = morganCN(Math.log10(morganHeat.ra));
@@ -205,11 +217,6 @@ export function updateA() {
 
   showSplit(input, result);
 
-  if (result.model === "morgan") {
-    $("#aWarning").textContent = `Morgan correlation, Ra = ${result.ra ? result.ra.toExponential(2) : "0"}, using the k, ν and Pr you entered.${result.extrapolated ? " This Ra falls outside the table in the course notes." : ""}`;
-  } else {
-    $("#aWarning").textContent = "McAdams simple correlation. Cylinder dimensions and emissivity are still placeholder values.";
-  }
   drawAChart();
 }
 
@@ -220,7 +227,6 @@ function setAdvanced(open) {
 }
 
 export function initExperimentAView() {
-  renderFormulas($("#experiment-a"));
   const splitObserver = new ResizeObserver(fitSplitLabels);
   ["#aConvBar", "#aRadBar", "#aLossBar", "#aConvLabel", "#aRadLabel", "#aLossLabel"]
     .forEach(id => splitObserver.observe($(id)));
@@ -252,7 +258,10 @@ export function initExperimentAView() {
     ["#aVoltageUp", "#aVoltageDown", voltage, () => { electricalSource = "voltage"; syncElectricalInputs(); }, 0.1],
     ["#aCurrentUp", "#aCurrentDown", current, () => { electricalSource = "current"; syncElectricalInputs(); }, 0.1],
     ["#aAirTempUp", "#aAirTempDown", $("#aAirTemp"), updateA, 1],
-    ["#aSurfaceTempUp", "#aSurfaceTempDown", $("#aSurfaceTemp"), updateA, 1]
+    ["#aSurfaceTempUp", "#aSurfaceTempDown", $("#aSurfaceTemp"), updateA, 1],
+    ["#aKUp", "#aKDown", $("#aK"), updateA, 0.001],
+    ["#aNuUp", "#aNuDown", $("#aNu"), updateA, 0.1],
+    ["#aPrUp", "#aPrDown", $("#aPr"), updateA, 0.001]
   ]) {
     $(up).addEventListener("click", () => adjustSteppedInput(element, onStep, step, 1));
     $(down).addEventListener("click", () => adjustSteppedInput(element, onStep, step, -1));
@@ -263,38 +272,12 @@ export function initExperimentAView() {
     });
   }
 
-  ["#aK", "#aNu", "#aPr"].forEach(id => {
-    const input = $(id), increment = Number(input.dataset.increment);
-    const adjust = direction => {
-      const value = input.valueAsNumber;
-      if (!Number.isFinite(value)) { input.focus(); return; }
-      input.value = String(Number(Math.max(Number(input.min), value + direction * increment).toPrecision(12)));
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-    };
-    const buttons = document.createElement("div");
-    buttons.className = "air-step-buttons";
-    for (const [text, direction] of [["−", -1], ["+", 1]]) {
-      const button = document.createElement("button");
-      button.type = "button"; button.className = "btn btn--quiet"; button.textContent = text;
-      button.setAttribute("aria-label", (direction < 0 ? "Decrease " : "Increase ") + document.querySelector('label[for="' + input.id + '"]').textContent + ' by ' + increment);
-      button.addEventListener("click", () => adjust(direction));
-      buttons.append(button);
-    }
-    input.closest(".input").append(buttons);
-    input.addEventListener("keydown", event => {
-      if (event.key === "ArrowUp" || event.key === "ArrowDown") { event.preventDefault(); adjust(event.key === "ArrowUp" ? 1 : -1); }
-    });
-  });
   ["#aAirTemp", "#aSurfaceTemp", "#aK", "#aNu", "#aPr"]
     .forEach(id => $(id).addEventListener("input", updateA));
 
   $("#aAdvancedToggle").addEventListener("click", () => setAdvanced($("#aAdvanced").hidden));
 
-  // Morgan은 공기 물성 입력이 필요하므로 상세 패널을 펼침
-  $("#aModel").addEventListener("change", () => {
-    updateA();
-    if ($("#aModelMorgan").checked) setAdvanced(true);
-  });
+  $("#aModel").addEventListener("change", updateA);
 
   updateA();
 }

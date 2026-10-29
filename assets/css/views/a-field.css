@@ -46,7 +46,7 @@
 .colorbar { display: flex; gap: var(--sp-2); }
 
 .colorbar-scale { width: 10px; height: 160px; border: 1px solid var(--border); border-radius: var(--radius-sm); }
-.colorbar-labels { display: flex; flex-direction: column; justify-content: space-between; color: var(--chart-ink); font-family: var(--font-mono); font-size: var(--fs-xs); }
+.colorbar-labels { display: flex; flex-direction: column; justify-content: space-between; color: var(--chart-ink); font-family: var(--font-mono); font-size: var(--fs-md); }
 
 @media (max-width: 600px) { #fieldCanvas { height: 340px; } }
 #a-field .viewer-grid { --side: clamp(380px, 31vw, 440px); }

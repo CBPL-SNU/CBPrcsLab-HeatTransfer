@@ -11,8 +11,8 @@ pre-computed CFD results in dedicated screens.
 
 Every calculation runs in the browser. No input is sent to a server.
 
-Experiment A equations use LaTeX rendered by the locally bundled KaTeX 0.19.1.
-Edit `data-tex` in `assets/views/experiment-a.html`; the selected model’s power term
+Screen equations use LaTeX rendered by the locally bundled KaTeX 0.19.1.
+Edit `data-tex` in `assets/views/*.html`; the selected model’s power term
 is updated in `assets/js/views/experiment-a.js`. Fonts, renderer and license are
 under `assets/vendor/katex/`, so formulas do not require a CDN or build step.
 
@@ -71,8 +71,9 @@ properties can vary with the bead temperature.
 Both lumped graphs support inspection: hover near a solid curve or tap it to read
 a computed sample’s time, temperature and signed `dT/dt` in °C/s. The rate comes
 from the energy balance at that sample, not a difference between plotted points.
-The inspection box keeps a compact, single-line height when the readout clears.
-On narrow screens, its contents scroll horizontally. Experiment B
+The readout appears in a box beside the selected point, with separate lines for
+its time, temperature and rate. The box stays inside the graph and hides when
+inspection clears. Experiment B
 provides **Inspect curve** when curves overlap; A has a single curve and no selector.
 With the graph focused, left/right
 arrows select time, up/down select the curve, Home/End select endpoints and Escape
@@ -82,10 +83,15 @@ The model sections list fixed geometry, emissivities, view factors and the selec
 air-property assumptions. These assumptions still need checking against the apparatus; exposing
 thermal capacity does not calibrate the rest of the model.
 
-The lumped energy balances use native MathML for fractions, subscripts and powers,
-with no additional scripts, fonts or external services. On narrow screens, the
-equation region can scroll horizontally. MathML lives in the screen HTML; the
-introduction Markdown renderer is unchanged.
+Equations across the tabs use the same bundled KaTeX math font and include
+accessible MathML output. On narrow screens, long equations can scroll within
+their equation region. LaTeX sources live in screen HTML; the introduction
+Markdown renderer is unchanged.
+
+Typography is shared across tabs: section headings 15px, controls and chart
+labels 14px, equations and calculated values 18px, explanatory text 13px and
+small auxiliary labels 12px. Touch inputs use 16px throughout to avoid automatic
+zoom. The size tokens live in `assets/css/tokens.css`.
 
 ### Convection models and air properties
 
@@ -107,8 +113,8 @@ range for all properties. Automatic mode remains opt-in pending independent vali
 
 Morgan and both sphere correlations evaluate air at the body–air film temperature.
 Each RK4 stage, equilibrium solve and reported heat rate uses the same property
-policy. Results report initial/final evaluated air properties and correlation
-range notices. A steady-state guide is omitted if the Morgan segment boundary
+policy. Automatic mode reports initial/final evaluated air properties; manual
+values remain in the inputs. Results also report correlation range notices. A steady-state guide is omitted if the Morgan segment boundary
 prevents the energy residual from satisfying its tolerance.
 
 In A **Calculate**, Morgan fields are wider. Kinematic viscosity is entered in

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { renderFormula, renderFormulas } from "../assets/js/core/math.js";
 import { updateA } from "../assets/js/views/experiment-a.js";
+import { VIEWS } from "../assets/js/data/views.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const markup = readFileSync(join(root, "assets/views/experiment-a.html"), "utf8");
@@ -14,7 +15,7 @@ test("실험 A의 LaTeX 수식은 독립 수식과 접근성 MathML을 생성한
     dataset: { tex: match[1], display: match[0].includes('data-display="block"') ? "block" : "inline" },
     innerHTML: ""
   }));
-  assert.equal(elements.length, 12);
+  assert.equal(elements.length, 16);
   renderFormulas({ querySelectorAll: () => elements });
   assert.equal(elements.filter(element => element.innerHTML.includes('class="katex-display"')).length, 3);
   for (const element of elements) {
@@ -63,6 +64,8 @@ test("모델을 왕복 전환해도 LaTeX 위첨자와 계수 값이 갱신된�
     updateA();
     assert.ok(nodes.aConvectionModelExponent.innerHTML.includes("McAdams"));
     assert.match(nodes.aConvSub.textContent, /^16.16 /);
+    assert.ok(nodes.aRayleighValue.innerHTML.includes("1.25"));
+    assert.ok(nodes.aRayleighValue.innerHTML.includes("10^{4}"));
     const radiation = nodes.aRadSub.textContent;
     nodes.aModelMcadams.checked = false; nodes.aModelMorgan.checked = true;
     updateA();
@@ -81,6 +84,7 @@ test("모델을 왕복 전환해도 LaTeX 위첨자와 계수 값이 갱신된�
     assert.equal(nodes.aMcadamsCoefficientFormula.hidden, false);
     assert.equal(nodes.aMorganCoefficientFormula.hidden, true);
     assert.equal(nodes.aNu.value, "17.5");
+    nodes.aModelMcadams.checked = false; nodes.aModelMorgan.checked = true; updateA();
     const previousConvection = nodes.aConvSub.textContent;
     nodes.aK.value = ""; updateA();
     assert.equal(nodes.aAirError.hidden, false);
@@ -88,4 +92,22 @@ test("모델을 왕복 전환해도 LaTeX 위첨자와 계수 값이 갱신된�
     nodes.aK.value = "0.027"; updateA();
     assert.equal(nodes.aAirError.hidden, true);
   } finally { globalThis.document = previousDocument; }
+});
+
+test("모든 탭의 LaTeX 수식이 동일한 렌더러와 접근성 출력을 사용한다", () => {
+  let formulaCount = 0;
+  for (const view of VIEWS.filter(item => item.status === "ready")) {
+    const html = readFileSync(join(root, "assets/views", view.id + ".html"), "utf8");
+    const elements = [...html.matchAll(/<span[^>]*data-tex="([^"]+)"[^>]*>/g)].map(match => ({
+      dataset: { tex: match[1], display: match[0].includes('data-display="block"') ? "block" : "inline" },
+      innerHTML: ""
+    }));
+    renderFormulas({ querySelectorAll: () => elements });
+    formulaCount += elements.length;
+    for (const element of elements) {
+      assert.ok(element.innerHTML.includes('class="katex-html"'), view.id);
+      assert.ok(element.innerHTML.includes('class="katex-mathml"'), view.id);
+    }
+  }
+  assert.ok(formulaCount >= 22);
 });

@@ -1,0 +1,40 @@
+#experiment-b .heat-balance-grid { align-items: stretch; }
+#experiment-b .heat-balance-card { display: flex; flex-direction: column; min-width: 0; }
+#experiment-b .heat-balance-card > .card-body { flex: 1; display: grid; grid-template-rows: repeat(2, minmax(min-content, 1fr)); gap: 0; }
+#experiment-b .heat-balance-card > .card-body > .card-sub { padding-top: var(--sp-4); justify-content: space-evenly; }
+/* 좁은 폭에서는 등호 뒤에서 줄을 나누고, 첨자와 분수를 스크롤 없이 보여 준다. */
+#experiment-b .heat-balance-card .formula { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: .3em; row-gap: var(--sp-2); min-width: 0; margin: 0; padding-block: var(--sp-2); overflow: visible; flex: 0 0 auto; align-content: center; }
+#experiment-b .heat-balance-card .formula > [data-tex] { width: auto; min-width: 0; max-width: 100%; }
+
+#experiment-b .legend { justify-content: center; }
+#experiment-b .legend .air-temperature { border-color: var(--series-marker); }
+
+#experiment-b .heat-balance-grid > .card { min-width: 0; }
+#experiment-b #bChart { height: auto; aspect-ratio: 3 / 2; }
+
+#experiment-b .conditions { align-items: flex-start; }
+#experiment-b .sensor-specifications { display: flex; flex-wrap: wrap; gap: var(--sp-3); max-width: 100%; }
+#experiment-b .sensor-emissivity { width: 100px; }
+#experiment-b .sensor-emissivity .with-unit { display: grid; grid-template-columns: 12px minmax(0, 1fr); align-items: center; gap: var(--sp-1); height: 32px; }
+#experiment-b .sensor-emissivity input { width: 80px; max-width: 100%; min-width: 0; height: 32px; }
+#experiment-b .sensor-emissivity input[readonly] { background: var(--surface-2); color: var(--muted); box-shadow: none; cursor: default; }
+#experiment-b .sensor-selection { min-width: 0; max-width: 100%; }
+#experiment-b .sensor-selection .sensor-button { min-height: 32px; }
+#experiment-b .temperature-results { display: grid; align-content: space-evenly; gap: var(--sp-5); padding-block-end: var(--sp-4); }
+#experiment-b .sensor-readout { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-3); }
+#experiment-b .sensor-error { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px var(--sp-3); }
+#experiment-b .sensor-error > div { display: grid; grid-template-rows: subgrid; grid-row: span 2; min-width: 0; }
+#experiment-b .sensor-readout > div { gap: 2px; min-width: 0; }
+#experiment-b .sensor-readout .v { display: flex; align-items: center; min-height: 32px; }
+@media (max-width: 600px) {
+  #experiment-b .conditions .sensor-divider { display: block; flex-basis: 100%; width: 100%; height: 1px; }
+}
+@media (pointer: coarse) {
+  #experiment-b .sensor-selection .sensor-button { min-height: 40px; }
+}
+
+@media (max-width: 480px) {
+  #experiment-b .sensor-readout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+#experiment-b .assumptions-list { max-width: none; margin: 0; padding-inline-start: 1.4em; display: grid; gap: var(--sp-2); }

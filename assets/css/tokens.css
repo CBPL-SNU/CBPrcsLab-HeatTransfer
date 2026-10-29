@@ -70,10 +70,11 @@
   --fs-xs: 12px;
   --fs-sm: 13px;
   --fs-md: 14px;
+  --fs-input: var(--fs-md);
   --fs-base: 15px;
   --fs-lg: 18px;
-  --fs-num: 23px;   /* 값 묶음의 숫자 */
-  --fs-answer: 34px; /* 화면의 답 하나 */
+  --fs-num: var(--fs-lg);   /* 계산 결과 */
+  --fs-answer: var(--fs-lg); /* 주요 계산 결과도 같은 크기 */
 
   /* 굵기 — 400은 기본값이라 토큰을 두지 않는다.
      600 위로는 올라가지 않는다. 굵기로 강조하는 화면은 계측 도구로 안 읽힌다. */
@@ -102,4 +103,9 @@
   --sidebar-w: 236px;
   --header-h: 52px;
   --content-max: 1320px;
+}
+
+/* 터치 입력의 자동 확대를 막되 모든 탭에 같은 예외를 적용한다. */
+@media (pointer: coarse) {
+  :root { --fs-input: 16px; }
 }

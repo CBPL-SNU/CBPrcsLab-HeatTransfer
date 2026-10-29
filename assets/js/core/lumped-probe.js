@@ -9,3 +9,14 @@ export function nearestTimeIndex(points, time) {
   if (lo > 0 && Math.abs(points[lo - 1].t - time) <= Math.abs(points[lo].t - time)) return lo - 1;
   return lo;
 }
+
+// 점 옆에 두되 오른쪽·위쪽 공간이 부족하면 반대편으로 옮긴다.
+export function pointTooltipPosition(x, y, width, height, boundsWidth, boundsHeight) {
+  const inset = 8, gap = 14;
+  const preferredLeft = x + gap + width <= boundsWidth - inset ? x + gap : x - gap - width;
+  const preferredTop = y - gap - height >= inset ? y - gap - height : y + gap;
+  return {
+    left: Math.max(inset, Math.min(boundsWidth - width - inset, preferredLeft)),
+    top: Math.max(inset, Math.min(boundsHeight - height - inset, preferredTop))
+  };
+}

@@ -1,7 +1,7 @@
 import { simulateCylinder, simulateSensors } from "../physics/lumped.js";
 import { BEAD_MATERIAL, SENSOR_DEFS, AIR, CYLINDER } from "../physics/constants.js";
 import { setupCanvas, drawAxes, drawLine, makeScales, SERIES_COLOR, PLOT_MARGIN, labelEnds, CHART_INK, labelOnPlot } from "../core/chart.js";
-import { nearestTimeIndex } from "../core/lumped-probe.js";
+import { nearestTimeIndex, pointTooltipPosition } from "../core/lumped-probe.js";
 
 const states = {};
 const COLORS = ["#0072b2", "#d55e00", "#008060"];
@@ -79,6 +79,11 @@ export function drawLumpedView(kind) {
     const line = state.lines[lineIndex], p = line.points[pointIndex];
     marker(ctx, xMap(p.t), yMap(p.temp), line.color, lineIndex);
     ctx.beginPath(); ctx.arc(xMap(p.t), yMap(p.temp), 7, 0, Math.PI * 2); ctx.strokeStyle = line.color; ctx.stroke();
+    const tip = state.section.querySelector("[data-lumped-tooltip]");
+    const inspector = tip.parentElement;
+    const position = pointTooltipPosition(canvas.offsetLeft + xMap(p.t), canvas.offsetTop + yMap(p.temp), tip.offsetWidth, tip.offsetHeight, inspector.clientWidth, inspector.clientHeight);
+    tip.style.left = position.left + "px";
+    tip.style.top = position.top + "px";
   }
   canvas.setAttribute("aria-label", "Interactive temperature response. " + state.lines.map(line => line.name + ': ' + line.points[0].temp.toFixed(2) + ' to ' + line.points.at(-1).temp.toFixed(2) + ' °C' + (line.equilibrium === undefined ? '' : ', steady state ' + line.equilibrium.toFixed(2) + ' °C')).join('; ') + '. Use arrow keys to inspect samples.');
 }
@@ -90,7 +95,8 @@ function showPoint(kind, lineIndex, pointIndex) {
   const tip = state.section.querySelector("[data-lumped-tooltip]");
   tip.hidden = false;
   const rate = Math.abs(point.rate) < 1e-10 ? "0.000000" : point.rate.toPrecision(6);
-  tip.textContent = line.name + ' | t = ' + point.t.toFixed(3) + ' s | T = ' + point.temp.toFixed(3) + ' °C | dT/dt = ' + rate + ' °C/s';
+  tip.textContent = (kind === "b" ? line.name + '\n' : '') + 't = ' + point.t.toFixed(3) + ' s\nT = ' + point.temp.toFixed(3) + ' °C\ndT/dt = ' + rate + ' °C/s';
+  tip.style.borderColor = line.color;
 
   drawLumpedView(kind);
 }
@@ -99,12 +105,12 @@ function initInspection(kind, section) {
   const canvas = section.querySelector("[data-lumped-chart]");
   const pick = section.querySelector("[data-lumped-curve]");
   const tip = section.querySelector("[data-lumped-tooltip]");
-  // 이전 마크업의 hidden 속성이 남아 있어도 조회 영역은 항상 표시한다.
-  tip.hidden = false;
+  tip.hidden = true;
   function clear() {
     if (!states[kind]) return;
     states[kind].selected = null;
     tip.textContent = "";
+    tip.hidden = true;
     drawLumpedView(kind);
   }
   function inspect(event) {
@@ -220,7 +226,7 @@ export function initLumpedView(kind) {
         result = r;
         if (!Number.isFinite(r.finalTemp)) throw new Error("Please check the input conditions.");
         lines = [{ name: "Tₛ", points: r.points, equilibrium: r.equilibrium, color: SERIES_COLOR.surface }];
-        rows = [["Surface temperature at end of run", tableValue(r.finalTemp, "°C", 2)], ["Convection at end of run", tableValue(r.qConv, "W", 3)], ["Radiation at end of run", tableValue(r.qRad, "W", 3)]];
+        rows = [["Surface temperature", tableValue(r.finalTemp, "°C", 2)], ["Convection out", tableValue(r.qConv, "W", 3)], ["Radiation out", tableValue(r.qRad, "W", 3)]];
         section.querySelector("[data-lumped-fixed]").textContent = 'Fixed cylinder assumptions: diameter ' + CYLINDER.D * 1000 + ' mm; heated length ' + CYLINDER.L * 1000 + ' mm; emissivity ' + CYLINDER.epsilon + '; view factor ' + CYLINDER.F + '. Effective capacity includes the cylinder and heater.';
       } else {
         const beadProperties = Object.fromEntries(Object.keys(SENSOR_DEFS).map(name => [name, Object.fromEntries(["density", "cp", "thermalCapacity"].filter(key => p[name + '-' + key] !== undefined).map(key => [key, p[name + '-' + key]]))]));
@@ -230,9 +236,9 @@ export function initLumpedView(kind) {
         rows = r.sensors.flatMap(sensor => {
           const last = r.finalResults[sensor.name];
           return [
-            [sensor.name + " · Temperature at end of run", tableValue(last.temp, "°C", 2)],
-            [sensor.name + " · Convection at end of run", tableValue(last.qConv, "W")],
-            [sensor.name + " · Radiation at end of run", tableValue(last.qRad, "W")]
+            [sensor.name + " · Temperature", tableValue(last.temp, "°C", 2)],
+            [sensor.name + " · Convection out", tableValue(last.qConv, "W")],
+            [sensor.name + " · Radiation in", tableValue(last.qRad, "W")]
           ];
         });
         section.querySelector("[data-lumped-fixed]").textContent = 'Fixed assumptions: T6/T7 diameter ' + SENSOR_DEFS.T6.d * 1000 + '/' + SENSOR_DEFS.T7.d * 1000 + ' mm; T8 diameter ' + SENSOR_DEFS.T8.d * 1000 + ' mm; T7/T8 emissivity ' + SENSOR_DEFS.T7.epsilon + '/' + SENSOR_DEFS.T8.epsilon + '; view factor ' + AIR.F + '. Convection uses the selected correlation and air-property settings.';
@@ -241,8 +247,12 @@ export function initLumpedView(kind) {
       const warning = section.querySelector("[data-lumped-warnings]");
       warning.textContent = result.warnings.join(" ");
       warning.hidden = result.warnings.length === 0;
-      const airText = value => value ? 'T = ' + value.temperatureK.toFixed(2) + ' K, k = ' + value.k.toPrecision(5) + ' W/(m·K), ν = ' + value.nu.toExponential(4) + ' m²/s, Pr = ' + value.pr.toPrecision(5) : 'not used';
-      section.querySelector("[data-lumped-air]").textContent = 'Calculated with ' + form.elements.model.selectedOptions[0].textContent + ' · ' + p.airMode + ' air properties. ' + (kind === "a" ? 'Air evaluation, start: ' + airText(result.airStart) + '; end: ' + airText(result.airEnd) : result.sensors.map(sensor => sensor.name + ' air evaluation, start: ' + airText(result.airStart[sensor.name]) + '; end: ' + airText(result.airEnd[sensor.name])).join(' | '));
+      const airSummary = section.querySelector("[data-lumped-air]");
+      airSummary.hidden = p.airMode !== "auto" || (kind === "a" && p.model === "mcadams");
+      const airText = value => 'T = ' + value.temperatureK.toFixed(2) + ' K, k = ' + value.k.toPrecision(5) + ' W/(m·K), ν = ' + value.nu.toExponential(4) + ' m²/s, Pr = ' + value.pr.toPrecision(5);
+      airSummary.textContent = airSummary.hidden ? "" : kind === "a"
+        ? 'Air properties, start: ' + airText(result.airStart) + '; end: ' + airText(result.airEnd)
+        : result.sensors.map(sensor => sensor.name + ' air properties, start: ' + airText(result.airStart[sensor.name]) + '; end: ' + airText(result.airEnd[sensor.name])).join(' | ');
       const body = section.querySelector("[data-lumped-results]");
       body.replaceChildren(...rows.map(([label, value]) => {
         const row = document.createElement("tr");
@@ -250,30 +260,45 @@ export function initLumpedView(kind) {
         return row;
       }));
       const legend = section.querySelector("[data-lumped-legend]");
-      legend.replaceChildren(...lines.map(line => {
+      const legendItem = (label, color, dashed = false) => {
         const item = document.createElement("span");
-        item.style.color = line.color;
-        item.textContent = '— ' + line.name + '   ';
+        const swatch = document.createElement("i");
+        swatch.setAttribute("aria-hidden", "true");
+        swatch.style.borderColor = color;
+        if (dashed) swatch.className = "dashed";
+        item.append(swatch, document.createTextNode(label));
         return item;
-      }));
-      legend.append(document.createTextNode('Solid: transient response · Dashed horizontal: steady state'));
+      };
+      const lineColor = kind === "a" ? lines[0].color : CHART_INK.ink;
+      legend.replaceChildren(
+        ...(kind === "b" ? lines.map(line => legendItem(line.name, line.color)) : []),
+        legendItem("Transient response", lineColor),
+        legendItem("Steady state", lineColor, true)
+      );
       const pick = section.querySelector("[data-lumped-curve]");
       if (pick) {
       const selected = pick.value;
       pick.replaceChildren(...[...((kind === "b") ? [["all", "Nearest curve"]] : []), ...lines.map((line, index) => [String(index), line.name])].map(([value, text]) => { const option = document.createElement("option"); option.value = value; option.textContent = text; return option; }));
       if ([...pick.options].some(o => o.value === selected)) pick.value = selected;
       }
-      section.querySelector("[data-lumped-tooltip]").textContent = "";
+      const tip = section.querySelector("[data-lumped-tooltip]");
+      tip.textContent = "";
+      tip.hidden = true;
       states[kind] = { section, lines, duration: p.duration };
-      status.textContent = p.duration + " s response calculated. After changing the inputs, press Calculate to update the results.";
+      status.textContent = "";
+      status.hidden = true;
       drawLumpedView(kind);
     } catch (cause) {
       error.textContent = "Could not calculate the response. " + cause.message;
       error.hidden = false;
       status.textContent = "Calculation failed. Any displayed graph and table still belong to the previous successful run.";
+      status.hidden = false;
     }
   }
   form.addEventListener("submit", update);
-  form.addEventListener("input", () => { status.textContent = "Inputs have changed. Press Calculate to update the graph and results."; });
+  form.addEventListener("input", () => {
+    status.textContent = "Inputs have changed. Press Calculate to update the graph and results.";
+    status.hidden = false;
+  });
   update();
 }

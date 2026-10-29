@@ -4,8 +4,9 @@
    그림은 JS가 치수에서 만든다. 여기는 색과 굵기뿐이다.
    흐르는 점선은 공기의 방향을, 강조는 어느 부품을 보고 있는지를 나타낸다. 장식이 아니다. */
 .apparatus-stage { display: grid; align-items: center; justify-items: start; min-width: 0; overflow-x: auto; }
-/* 도식에서 가장 작은 13px 글자가 화면에서도 12px 이상이 되도록 축소 폭을 제한한다. */
-.apparatus-diagram { width: 100%; height: auto; min-width: calc(var(--diagram-width) * 12 / 13); }
+/* 표시 폭을 뷰박스와 같게 해 도식 글자도 14px을 유지한다. 좁으면 도식 안에서 이동한다. */
+.apparatus-diagram { width: var(--diagram-width); height: auto; min-width: var(--diagram-width); margin-inline: auto; }
+.apparatus-diagram text { font-size: var(--fs-md); }
 
 .duct-air { fill: var(--well); }
 .duct-air--squeezed { fill: url(#squeezeHatch); }   /* 줄인 구간은 빗금. 축척 구간과 같은 확신으로 읽히면 안 된다 */
@@ -13,10 +14,10 @@
 .cfd-cut { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 4 3; }
 .duct-wall { fill: var(--surface-3); stroke: var(--chart-ink); stroke-width: 1; }
 .break-line { fill: none; stroke: var(--chart-ink); stroke-width: 1; }
-.break-label, .window-label, .legend-note { fill: var(--muted-2); font-size: 13px; }
+.break-label, .window-label, .legend-note { fill: var(--muted-2); font-size: var(--fs-md); }
 .window-box { fill: rgba(var(--accent-rgb), .06); stroke: var(--accent); stroke-width: 1; stroke-dasharray: 4 3; }
 .scale-bar path { stroke: var(--chart-ink); stroke-width: 1.5; }
-.scale-bar text { fill: var(--chart-ink); font-size: 13px; }
+.scale-bar text { fill: var(--chart-ink); font-size: var(--fs-md); }
 
 /* 히터: 관 안쪽 가열 구간만 표면 온도 색을 옅게 띤다. 밖의 조립체는 윤곽뿐이다 */
 .heater-support { fill: var(--surface); stroke: var(--chart-ink); stroke-width: 1; }
@@ -42,7 +43,7 @@
 
 /* 이름표 */
 .part-leader { stroke: var(--chart-grid); stroke-width: 1; fill: none; pointer-events: none; }
-.part-label { fill: var(--text-2); font-size: 14px; font-weight: var(--fw-medium); pointer-events: none; }
+.part-label { fill: var(--text-2); font-size: var(--fs-md); font-weight: var(--fw-medium); pointer-events: none; }
 .part-kind { fill: var(--muted); font-weight: var(--fw-regular, 400); }
 /* 줄인 구간의 부품은 리더선을 점선으로. 축척 구간과 같은 확신으로 읽히면 안 된다 */
 .apparatus-part--squeezed .part-leader { stroke-dasharray: 3 3; }
@@ -77,9 +78,25 @@
   display: flex; align-items: baseline; gap: var(--sp-2); padding: 6px var(--sp-2);
   border: 0; border-radius: var(--radius-md); background: none; font: inherit; text-align: left; cursor: pointer; color: var(--text-2);
 }
+.part-row { font-size: var(--fs-md); }
 .part-row b { font-weight: var(--fw-semi); }
-.part-row span { color: var(--muted); font-size: var(--fs-sm); }
+.part-row span { color: var(--muted); font-size: var(--fs-md); }
 .part-row:hover { background: var(--surface-2); }
 .part-row.is-active { background: rgba(var(--accent-rgb), .1); color: var(--accent-ink); }
 .part-row:focus-visible { outline: 2px solid rgba(var(--accent-rgb), .6); outline-offset: 1px; }
-.click-hint { color: var(--muted); font-size: var(--fs-base); }
+.click-hint { color: var(--muted); font-size: var(--fs-sm); }
+
+/* 오른쪽 마지막 카드를 늘려 단면도 패널과 아래 경계를 맞춘다. */
+@media (min-width: 1081px) {
+  #a-apparatus .card-grid { align-items: stretch; }
+  #a-apparatus .card-stack > .card:last-child { flex: 1; }
+}
+
+.apparatus-balance { display: flex; flex-direction: column; min-width: 0; }
+.apparatus-balance > .card-body { flex: 1; display: grid; grid-template-rows: repeat(2, minmax(min-content, 1fr)); align-items: center; gap: var(--sp-4); padding-block: var(--sp-3); }
+/* 등호 뒤에서만 줄을 나눠 좁은 폭에서도 수식과 첨자를 온전히 보여 준다. */
+#a-apparatus .apparatus-balance .formula { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: .3em; row-gap: var(--sp-2); min-width: 0; margin: 0; overflow: visible; }
+#a-apparatus .apparatus-balance .formula > [data-tex] { width: auto; min-width: 0; max-width: 100%; }
+
+.part-detail-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--sp-2); }
+.part-detail-heading > h3 { flex: 1; }
