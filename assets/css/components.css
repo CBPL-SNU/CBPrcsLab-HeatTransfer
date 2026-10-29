@@ -100,6 +100,125 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   background: repeating-linear-gradient(135deg, rgba(255,255,255,.55) 0 3px, transparent 3px 7px);
 }
 
+.input.stepped-input { width: 110px; }
+.number-stepper { display: flex; flex: 1; min-width: 0; }
+.number-stepper input { min-width: 0; appearance: textfield; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.number-stepper input::-webkit-inner-spin-button, .number-stepper input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.number-step-buttons { display: grid; grid-template-rows: 1fr 1fr; flex: 0 0 18px; }
+.number-step-buttons button { padding: 0; border: 1px solid var(--border); border-left: 0; background: var(--surface); color: var(--text); font-size: var(--fs-xs); line-height: 1; }
+.number-step-buttons button:first-child { border-top-right-radius: var(--radius-md); border-bottom: 0; }
+.number-step-buttons button:last-child { border-bottom-right-radius: var(--radius-md); }
+.number-step-buttons button:hover { background: var(--accent-soft); color: var(--accent-ink); }
+
+#experiment-a .input-panel > .card-body { container: input-controls / inline-size; width: min(var(--content-max), 100%); margin-inline: auto; padding: var(--sp-4); gap: 0; }
+#experiment-a .input-panel-section { display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; padding-block: var(--sp-4); }
+#experiment-a .input-panel-section:first-child { padding-top: 0; }
+#experiment-a .input-panel-section:last-child { padding-bottom: 0; }
+#experiment-a .input-panel-section + .input-panel-section { border-top: 1px solid var(--border); }
+#experiment-a h2 { margin: 0; color: var(--text-2); font-size: var(--fs-base); font-weight: var(--fw-semi); line-height: 1.35; }
+#experiment-a .condition-section, #experiment-a .temperature-inputs { min-width: 0; max-width: 100%; margin: 0; padding: 0; border: 0; }
+#experiment-a .input-panel { background: var(--surface); border-bottom: 1px solid var(--border); }
+#experiment-a .input-panel .group { display: grid; grid-template-columns: repeat(2, minmax(202px, 1fr)) minmax(254px, 1fr); align-items: start; gap: var(--sp-3); }
+#experiment-a .input-panel .input { display: grid; grid-template-columns: 88px 106px; grid-auto-columns: max-content; align-items: center; justify-content: start; min-width: 0; width: 100%; gap: var(--sp-2); }
+#experiment-a .input-panel .with-unit { display: grid; grid-template-columns: 80px 22px; align-items: center; width: 106px; gap: var(--sp-1); }
+#experiment-a .input-panel .input > label,
+#experiment-a .input-panel .unit,
+#experiment-a .input-panel input:not([type="checkbox"]):not([type="radio"]) { font-size: var(--fs-md); line-height: 1.4; }
+#experiment-a .input-panel .input > label { white-space: nowrap; }
+#experiment-a .input-panel .number-stepper,
+#experiment-a .input-panel .with-unit > input { width: 80px; height: 32px; }
+#experiment-a .input-panel .number-stepper input { width: 62px; min-height: 32px; height: 32px; padding-inline: var(--sp-1); }
+#experiment-a .input-panel .number-step-buttons { flex-basis: 18px; }
+#experiment-a .input-panel input[readonly] { padding-left: var(--sp-1); padding-right: 22px; }
+#experiment-a .input-panel .resistance-lock { display: inline-flex; grid-column: 3; grid-row: 1; align-items: center; gap: var(--sp-1); font-weight: 400; cursor: pointer; }
+.resistance-lock input { margin: 0; accent-color: var(--accent); }
+#experiment-a input[readonly] { background: var(--surface-2); box-shadow: none; color: var(--muted); font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; cursor: default; }
+
+/* 좁은 패널에서는 라벨을 위로 올려 입력값의 세 열 정렬을 유지한다. */
+@container input-controls (max-width: 681px) {
+  #experiment-a .input-panel .group { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #experiment-a .input-panel .input { grid-template-columns: 106px; gap: var(--sp-1); }
+  #experiment-a .input-panel .resistance-lock { grid-column: 1; grid-row: 3; }
+}
+@container input-controls (max-width: 341px) {
+  #experiment-a .input-panel .group { grid-template-columns: minmax(0, 1fr); }
+}
+
+#experiment-a { --selected-convection-color: var(--series-conv); }
+#experiment-a[data-convection-model="morgan"] { --selected-convection-color: var(--series-morgan); }
+#experiment-a .seg-conv { background: var(--selected-convection-color); }
+
+#experiment-a .power-balance {
+  --power-operator-width: 20px;
+  --power-bar-height: 64px;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-5); padding-block: var(--sp-3) 0; margin-bottom: 0; text-align: center;
+}
+.power-addend { display: grid; grid-template-columns: var(--power-operator-width) minmax(0, 1fr); align-items: start; gap: var(--sp-2); min-width: 0; }
+.power-total { grid-column: 1; grid-row: 2; display: flex; justify-content: center; align-items: center; align-self: start; min-height: var(--power-bar-height); }
+.power-distribution {
+  grid-column: 2 / -1; grid-row: 2; min-width: 0; margin-inline-start: calc(var(--power-operator-width) + var(--sp-2));
+  display: flex; flex-direction: column; gap: var(--sp-4);
+}
+#experiment-a .power-keys { justify-content: center; text-align: center; gap: var(--sp-1) var(--sp-4); }
+.power-operator { justify-self: center; }
+.power-term { display: grid; grid-template-rows: auto; align-items: center; min-height: 40px; justify-items: center; gap: var(--sp-1); min-width: 0; }
+.power-value { font-family: var(--font-mono); font-weight: var(--fw-semi); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.power-value small { margin-left: 2px; font-size: inherit; font-weight: inherit; color: inherit; }
+@media (max-width: 680px) {
+  #experiment-a .power-balance { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-5) var(--sp-3); }
+  .power-total { grid-column: 1; grid-row: 3; justify-self: start; width: 80px; }
+  .power-distribution { grid-column: 1 / -1; grid-row: 3; margin-inline-start: calc(80px + var(--sp-3)); }
+}
+#experiment-a .power-balance .conv, #aConvectionHeading [data-tex], #aConvSub, #aConvPctFallback, #aConvectionValue { color: var(--selected-convection-color); }
+#experiment-a .power-balance .rad, #aRadiationHeading [data-tex], #aRadSub, #aRadiationValue { color: var(--series-rad); }
+#experiment-a .power-balance .residual { color: var(--series-residual); }
+.power-coefficients { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); }
+#experiment-a .input-panel .power-coefficients { position: relative; gap: 0; }
+#experiment-a .input-panel .power-coefficients::before { content: ""; position: absolute; inset-block: 0; left: 50%; border-left: 1px solid var(--border); }
+.coefficient-result {
+  display: grid; align-content: start; gap: var(--sp-3); min-width: 0;
+  padding: 0 var(--sp-4);
+}
+.coefficient-label { color: var(--text-2); font-size: var(--fs-md); font-weight: var(--fw-semi); }
+.coefficient-rule { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); }
+.coefficient-value { display: flex; justify-content: center; align-items: baseline; gap: var(--sp-1); margin: 0; text-align: center; font-family: "KaTeX_Main", serif; font-size: var(--fs-lg); font-weight: var(--fw-semi); }
+.coefficient-row { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-2); }
+.coefficient-title { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(60px, auto); align-items: center; gap: var(--sp-2); width: 100%; max-width: 100%; }
+#experiment-a .coefficient-title > :not(:first-child) { grid-column: 1; grid-row: 2; justify-self: stretch; }
+#experiment-a .katex { font-size: 1em; }
+#experiment-a .coefficient-title [data-tex] { font-size: var(--fs-lg); padding-block: var(--sp-2); }
+#experiment-a .coefficient-title .katex-display { margin: 0; }
+#experiment-a .coefficient-title .katex-display > .katex { text-align: center; }
+#experiment-a .power-balance [data-tex] { font-size: var(--fs-lg); }
+#experiment-a .coefficient-title [hidden] { display: none; }
+#experiment-a .power-results-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--sp-2); }
+#experiment-a .power-results-heading h2 { flex: 1; }
+#experiment-a .power-results-heading .sub { color: var(--muted-2); font-size: var(--fs-xs); white-space: nowrap; }
+.coefficient-rule strong { font-size: var(--fs-md); font-weight: var(--fw-medium); }
+.model-options { display: inline-flex; align-items: center; gap: var(--sp-3); }
+.model-options label { display: inline-flex; align-items: center; gap: var(--sp-1); color: var(--text); font-size: var(--fs-md); cursor: pointer; }
+.model-options input { margin: 0; accent-color: var(--selected-convection-color); }
+.power-coefficients .note-inline { color: var(--text-2); font-family: inherit; font-weight: var(--fw-semi); white-space: normal; align-self: center; text-align: center; }
+@media (max-width: 680px) {
+  .power-coefficients { grid-template-columns: minmax(0, 1fr); }
+  #experiment-a .input-panel .power-coefficients { gap: var(--sp-4); }
+  #experiment-a .input-panel .power-coefficients::before { display: none; }
+  .coefficient-result { padding-inline: 0; }
+  .coefficient-result + .coefficient-result { border-top: 1px solid var(--border); padding-top: var(--sp-4); }
+}
+
+/* 비율은 막대 안에 쓰고, 칸이 좁으면 범례의 숫자로 옮긴다. */
+.split-bar--labeled { height: var(--power-bar-height); }
+.split-bar--labeled i { display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 0; overflow: hidden; }
+.split-label {
+  position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; flex: none; padding: 1px var(--sp-1);
+  color: #fff; font-weight: var(--fw-semi); text-shadow: 0 1px 2px rgba(0, 0, 0, .65);
+  font-family: var(--font-mono); font-size: var(--fs-xs); font-style: normal; font-variant-numeric: tabular-nums;
+  line-height: 1.35; white-space: nowrap;
+}
+.split-value small { margin-left: 2px; font-size: inherit; font-weight: inherit; color: inherit; }
+
 .keys { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-5); }
 .keys > div { display: flex; align-items: baseline; gap: var(--sp-2); }
 .keys .key { width: 9px; height: 9px; border-radius: var(--radius-sm); align-self: center; flex: 0 0 auto; }
@@ -109,11 +228,24 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .keys .val.conv { color: var(--series-conv); }
 .keys .val.rad { color: var(--series-rad); }
 .keys .pct { font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
+.keys .pct:empty { display: none; }
 .keys .note-inline { color: var(--muted-2); font-size: var(--fs-xs); font-family: var(--font-mono); }
+
+#experiment-a .power-value, #experiment-a .split-value { font-size: var(--fs-lg); }
+#experiment-a .split-label { font-size: var(--fs-md); }
+#experiment-a .power-coefficients .note-inline { font-size: inherit; }
+#experiment-a .power-keys .name, #experiment-a .power-keys .pct { font-size: var(--fs-md); }
+#experiment-a .power-keys .name.conv { color: var(--selected-convection-color); }
+.power-keys .name.rad { color: var(--series-rad); }
+.power-keys .name.residual { color: var(--series-residual); }
 
 /* ── 그래프 ───────────────────────────────────── */
 .chart-frame { position: relative; }   /* 그래프는 카드 바탕 그대로. 틀을 하나 더 두면 층이 늘어 산만하다 */
 canvas.chart { display: block; width: 100%; height: 220px; }
+#experiment-a #aChart { height: auto; aspect-ratio: 3 / 2; }
+.heat-transfer-card .chart-frame { width: 80%; min-width: min(100%, 360px); margin-inline: auto; }
+.heat-transfer-card .legend { width: 80%; min-width: min(100%, 360px); margin-inline: auto; justify-content: center; align-items: center; font-size: var(--fs-md); }
+.heat-transfer-card .legend sub, .heat-transfer-card .legend sup, .heat-transfer-card header sub { font-size: var(--fs-md); }
 canvas.chart--short { height: 150px; }   /* 한 화면에 그래프가 둘일 때 */
 .legend { display: flex; flex-wrap: wrap; gap: var(--sp-3); color: var(--muted); font-size: var(--fs-sm); }
 .legend > span { display: inline-flex; align-items: center; gap: var(--sp-1); }
@@ -123,6 +255,8 @@ canvas.chart--short { height: 150px; }   /* 한 화면에 그래프가 둘일 �
 .legend i.dotted { border-top-style: dotted; }
 .legend i.conv { border-color: var(--series-conv); }
 .legend i.rad { border-color: var(--series-rad); }
+.legend i.morgan { border-color: var(--series-morgan); }
+.legend i.total { border-color: var(--series-total); }
 .legend i.marker { border-color: var(--series-marker); }
 .legend i.residual { border-color: var(--series-residual); }
 /* 센서 견본은 굵기까지 보여준다. 그래프에서 굵기가 비드 지름을 뜻하기 때문이다. */

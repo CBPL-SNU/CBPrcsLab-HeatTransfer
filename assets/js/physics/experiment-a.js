@@ -1,6 +1,7 @@
 // 실험 A: 수평 가열 실린더의 정상상태 자연대류·복사 열전달
 
 import { SIGMA, GRAVITY, toK, CYLINDER, AIR_A_DEFAULT } from "./constants.js";
+import { bisect } from "../core/numeric.js";
 import { airProperties } from "./air-properties.js";
 
 // 가열 구간 표면적 [m²]
@@ -63,4 +64,30 @@ export function experimentASteady({ V, I, tsC, taC, model, k, nu, pr, air }) {
   const qIn = V * I;
   const total = heat.qConv + heat.qRad;
   return { ...heat, qIn, total, residual: qIn - total };
+}
+
+// 표시 범위·측정 T10과 독립적으로 고온 측의 대류→복사 교차를 찾는다.
+export const CROSSOVER_SEARCH_SPAN = 10000;
+export function radiationCrossover(input) {
+  const difference = delta => {
+    const heat = cylinderHeat({ ...input, tsC: input.taC + delta });
+    return heat.hConv - heat.hRad;
+  };
+  const minDelta = 1e-6, samples = 500;
+  let previousDelta = minDelta, previous = difference(minDelta), crossing = null;
+  for (let i = 1; i <= samples; i += 1) {
+    const delta = minDelta * (CROSSOVER_SEARCH_SPAN / minDelta) ** (i / samples);
+    const current = difference(delta);
+    if (previous > 0 && current <= 0) {
+      const root = bisect(difference, previousDelta, delta, 60);
+      const heat = cylinderHeat({ ...input, tsC: input.taC + root });
+      // Morgan 계수표의 불연속 점프를 등호가 성립하는 교차점으로 오인하지 않는다.
+      if (Math.abs(heat.hConv - heat.hRad) <= 1e-8 * Math.max(heat.hConv, heat.hRad)) {
+        crossing = { t: input.taC + root, q: heat.qConv };
+      }
+    }
+    previousDelta = delta;
+    previous = current;
+  }
+  return crossing;
 }
