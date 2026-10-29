@@ -19,6 +19,15 @@
 }
 .brand-name { display: block; color: #e8edf2; font-size: var(--fs-base); font-weight: var(--fw-semi); }
 .brand-sub { display: block; color: var(--frame-ink-2); font-size: var(--fs-xs); }
+/* 소속은 화면마다 바뀌지 않으므로 메뉴 아래 끝에 둔다. 엠블럼은 남색 원본을 흰색으로 바꾼 사본 */
+/* 사이드바가 좁아 엠블럼을 옆에 두면 이름이 두 줄로 꺾인다. 엠블럼을 위에 둔다 */
+.affiliation { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: auto; padding: 18px 20px 20px; border-top: 1px solid var(--frame-line); }
+.affiliation img { flex: none; width: 36px; height: auto; opacity: .85; }
+.affiliation { color: inherit; text-decoration: none; transition: background 120ms ease; }
+.affiliation:hover { background: rgba(255,255,255,.06); }
+.affiliation:hover .affiliation-name { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.affiliation-name { display: block; color: var(--frame-ink); font-size: var(--fs-sm); font-weight: var(--fw-semi); }
+.affiliation-sub { display: block; color: var(--frame-ink-2); font-size: var(--fs-xs); }
 
 .nav { display: flex; flex-direction: column; }
 .nav-section { padding: 14px 0; border-bottom: 1px solid var(--frame-line); }
@@ -104,6 +113,10 @@
   .nav { gap: var(--sp-1); }
   .nav-section { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; padding: 0; border: 0; }
   .brand { padding: 0 0 var(--sp-2); }
+  /* 메뉴가 화면 위로 올라오면 소속은 한 줄로 줄여 메뉴 아래에 둔다 */
+  .affiliation { flex-direction: row; align-items: center; gap: var(--sp-2); padding: var(--sp-2) 0 0; }
+  .affiliation img { width: 20px; height: auto; }
+  .affiliation > span { display: flex; flex-wrap: wrap; column-gap: var(--sp-2); }
   .nav-group { flex: none; width: 92px; margin: 0; }
   .nav-items { flex-direction: row; overflow-x: auto; min-width: 0; }
   .nav-item { width: auto; white-space: nowrap; padding: var(--sp-1) var(--sp-2); }
