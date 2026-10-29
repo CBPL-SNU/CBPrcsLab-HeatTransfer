@@ -64,11 +64,13 @@ function layout(w) {
     const bars = own ? panels.map(p => ({ x: p.x + s + 8, y: p.y, h: s })) : [{ x: x + s + 8, y: margin, h: 2 * s + labelH + gap }];
     return { panels, bars, height: 2 * s + 2 * labelH + gap + 2 * margin };
   }
-  const s = Math.max(1, Math.min(360, (w - 2 * margin - gap - (own ? 2 : 1) * side) / 2));
-  const total = 2 * s + gap + (own ? 2 : 1) * side, left = (w - total) / 2;
-  const x2 = left + s + (own ? side : 0) + gap;
+  // 그림 크기와 자리는 색 범위 방식과 무관하게 막대 둘 기준으로 정한다. 바꿀 때 카드가 줄었다 늘었다 하지 않는다.
+  // 공유 막대는 두 그림 사이에 둔다. 양쪽에 같이 적용된다는 뜻이 자리로도 보인다
+  const s = Math.max(1, Math.min(360, (w - 2 * margin - gap - 2 * side) / 2));
+  const total = 2 * s + gap + 2 * side, left = (w - total) / 2;
+  const x2 = left + s + side + gap;
   const panels = [{ x: left, y: margin, w: s, h: s }, { x: x2, y: margin, w: s, h: s }];
-  const bars = own ? panels.map(p => ({ x: p.x + s + 8, y: margin, h: s })) : [{ x: x2 + s + 8, y: margin, h: s }];
+  const bars = own ? panels.map(p => ({ x: p.x + s + 8, y: margin, h: s })) : [{ x: left + s + 8, y: margin, h: s }];
   return { panels, bars, height: s + labelH + 2 * margin };
 }
 
@@ -190,11 +192,13 @@ function updateLabels() {
   }).join("; ") + ` at ${now().toFixed(1)} s.`);
 }
 
-// 범례는 고른 두 case에 따라 바뀐다. 선 굵기가 구 지름, 실선·점선이 왼쪽·오른쪽이다
+// 범례는 고른 두 case에 따라 바뀐다. 선 굵기가 구 지름, 실선·점선이 왼쪽·오른쪽이고
+// 막대는 같은 짝으로 채움·빗금이다. 막대마다 이름을 달지 않고 이 범례 하나로 읽는다
 function renderLegend() {
   $("#cLegend").innerHTML = cases.map(c =>
-    `<span><i style="border-color:${SIDE_COLOR[c.side]};border-top-width:${c.line + 1}px;border-top-style:${c.side === "left" ? "solid" : "dashed"}"></i>${c.label}</span>`).join("");
-  const rows = cases.map(c => `<div class="bar-row bar-row--${c.side}"><span class="bar-name">${c.label}</span>` +
+    `<span><i style="border-color:${SIDE_COLOR[c.side]};border-top-width:${c.line + 1}px;border-top-style:${c.side === "left" ? "solid" : "dashed"}"></i>` +
+    `<b class="bar-swatch bar-swatch--${c.side}" aria-hidden="true"></b>${c.label}</span>`).join("");
+  const rows = cases.map(c => `<div class="bar-row bar-row--${c.side}" aria-label="${c.label}">` +
     `<span class="bar-track"><i></i></span><span class="bar-val num">—</span></div>`).join("");
   $("#cRadBars").innerHTML = rows;
   $("#cErrLeftName").textContent = cases[0].label;

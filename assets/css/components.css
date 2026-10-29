@@ -42,6 +42,29 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 
 .btn-row { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
 
+/* 하나만 고르는 묶음. 실행 버튼과 구분되도록 오목한 홈 안에 놓고,
+   고른 칸만 흰 면으로 떠오르게 한다. 색은 글자에만 써서 조용하게 둔다 */
+.segmented {
+  display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 2px;
+  border-radius: var(--radius-md); background: var(--surface-3); box-shadow: var(--inset);
+}
+.segmented > .btn {
+  min-height: 28px; padding: 3px 10px;
+  border-color: transparent; border-radius: var(--radius-sm);
+  background: transparent; color: var(--text-2);
+  transition: background .15s, color .15s, box-shadow .15s;
+}
+.segmented > .btn:hover { background: rgba(255, 255, 255, .55); color: var(--text); }
+.segmented > .btn.is-active {
+  background: var(--surface); color: var(--accent-ink); font-weight: var(--fw-semi);
+  box-shadow: 0 1px 2px rgba(21, 29, 38, .12), 0 0 0 1px rgba(21, 29, 38, .05);
+}
+@media (pointer: coarse) { .segmented > .btn { min-height: 40px; } }
+@media (prefers-reduced-motion: reduce) { .segmented > .btn { transition: none; } }
+
+/* 카드 머리의 출처 표시(OpenFOAM, Course model). 상자를 씌우면 옆 토글과 같은 버튼처럼 보인다 */
+.card > header .badge { padding: 0; background: none; color: var(--muted-2); font-weight: var(--fw-medium); }
+
 /* ── 답 ───────────────────────────────────────
    화면에서 가장 큰 것. 학생이 알고 싶은 하나의 숫자. */
 .answer { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); }
@@ -189,6 +212,19 @@ dialog::backdrop { background: rgba(18, 40, 63, .4); }
 .card-grid.wide-left { grid-template-columns: minmax(0, 1.5fr) minmax(240px, 1fr); }
 .card-stack { display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; }   /* 한 칸에 카드 여럿을 세로로 */
 @media (max-width: 1080px) { .card-grid.two, .card-grid.wide-left { grid-template-columns: 1fr; } }
+
+/* CFD 화면. 오른쪽 숫자 칸은 폭을 고정하고 남는 폭을 그림에 준다.
+   두 열 높이를 맞추고 남는 높이는 그림 영역이 받아 그림과 숫자가 한 화면에 들어온다.
+   그림이 높이에 막히는 화면은 --side를 넓혀 숫자 칸이 길어지지 않게 한다 */
+@media (min-width: 1081px) {
+  .card-grid.viewer-grid { grid-template-columns: minmax(0, 1fr) var(--side, 350px); align-items: stretch; }
+}
+.viewer-grid > .card:first-child { display: flex; flex-direction: column; }
+.viewer-grid > .card:first-child .card-body { flex: 1; }
+.viewer-grid > .card:first-child .card-body > :first-child { flex: 1; display: grid; align-content: center; }
+/* 카드 안의 두 번째 묶음. 카드를 하나 더 두는 대신 선으로 나눈다 */
+.card-sub { display: flex; flex-direction: column; gap: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--border-soft); }
+.card-sub h3 { margin: 0; color: var(--text-2); font-size: var(--fs-base); font-weight: var(--fw-semi); }
 
 /* ── 표시부 — 값이 담기는 자리는 표면보다 안쪽으로 넣는다 ──
    계기의 판독창과 같은 뜻이다. 글이 놓이는 자리에는 쓰지 않는다. */
