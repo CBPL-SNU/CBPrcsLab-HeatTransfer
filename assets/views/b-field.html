@@ -1,7 +1,7 @@
 <div class="conditions">
   <!-- 유동 조건과 구 크기를 따로 고른다. CFD의 두 구는 크기만 다른 흑체다 -->
   <div class="input free"><label>Air flow</label>
-    <div class="btn-row">
+    <div class="btn-row segmented">
       <button class="btn b-flow" data-case-large="B00V5L" data-case-small="B00V5S" type="button">Fan off · 5 V</button>
       <button class="btn b-flow" data-case-large="B00V17L" data-case-small="B00V17S" type="button">Fan off · 17 V</button>
       <button class="btn b-flow" data-case-large="B02L" data-case-small="B02S" type="button">0.2 m/s</button>
@@ -10,7 +10,7 @@
   </div>
   <span class="divider"></span>
   <div class="input free"><label>Bead</label>
-    <div class="btn-row">
+    <div class="btn-row segmented">
       <button class="btn b-bead" data-bead="large" type="button" aria-pressed="false">Large black</button>
       <button class="btn b-bead" data-bead="small" type="button" aria-pressed="false">Small black</button>
     </div>
@@ -23,7 +23,7 @@
 
   <div class="card-grid wide-left">
   <div class="card">
-    <header><h2>The heated section and the bead</h2><div class="btn-row field-switch" role="group" aria-label="Field"><button class="btn b-field-type is-active" data-field="temperature" type="button" aria-pressed="true">Temperature</button><button class="btn b-field-type" data-field="speed" type="button" aria-pressed="false">Speed</button></div><span class="badge">OpenFOAM</span></header>
+    <header><h2>The heated section and the bead</h2><div class="btn-row segmented field-switch" role="group" aria-label="Field"><button class="btn b-field-type is-active" data-field="temperature" type="button" aria-pressed="true">Temperature</button><button class="btn b-field-type" data-field="speed" type="button" aria-pressed="false">Speed</button></div><span class="badge">OpenFOAM</span></header>
     <div class="card-body">
       <!-- 같은 xz 단면을 두 창으로. 창마다 색 범위가 따로라 구 주변의 수 K도 보인다 -->
       <div class="b-viewer">
@@ -47,7 +47,7 @@
           <span class="unit num transport-time" id="bFieldTimeValue">0 / 0 s</span>
         </div>
         <div class="transport-foot">
-          <div class="btn-row rate-row" role="group" aria-label="Playback speed relative to real time">
+          <div class="btn-row segmented rate-row" role="group" aria-label="Playback speed relative to real time">
           <button class="btn play-rate" data-rate="1" type="button" aria-pressed="false">1×</button>
           <button class="btn play-rate" data-rate="2" type="button" aria-pressed="false">2×</button>
           <button class="btn play-rate" data-rate="5" type="button" aria-pressed="false">5×</button>

@@ -1,6 +1,6 @@
 <div class="conditions">
   <div class="input free"><label>Heater voltage</label>
-    <div class="btn-row">
+    <div class="btn-row segmented">
       <button class="btn case-pick" data-case="A5" type="button">5 V</button>
       <button class="btn case-pick" data-case="A11" type="button">11 V</button>
       <button class="btn case-pick" data-case="A17" type="button">17 V</button>
@@ -15,7 +15,7 @@
   <!-- 애니메이션과 두 그래프가 한 화면에 들어와야 같은 시각을 따라간다는 것이 보인다. -->
   <div class="card-grid wide-left">
   <div class="card">
-    <header><h2>The 18 cm around the heater, cut along two planes</h2><div class="btn-row field-switch" role="group" aria-label="Field"><button class="btn field-type is-active" data-field="temperature" type="button" aria-pressed="true">Temperature</button><button class="btn field-type" data-field="speed" type="button" aria-pressed="false">Speed</button></div><span class="badge">OpenFOAM</span></header>
+    <header><h2>The 18 cm around the heater, cut along two planes</h2><div class="btn-row segmented field-switch" role="group" aria-label="Field"><button class="btn field-type is-active" data-field="temperature" type="button" aria-pressed="true">Temperature</button><button class="btn field-type" data-field="speed" type="button" aria-pressed="false">Speed</button></div><span class="badge">OpenFOAM</span></header>
     <div class="card-body">
       <div class="viewer well">
         <!-- 두 단면이 관의 어디를 자르는지. 값은 옆의 띠에서 읽고, 여기서는 위치만 본다. -->
@@ -53,7 +53,7 @@
           <span class="unit num transport-time" id="fieldTimeValue">0 / 0 s</span>
         </div>
         <div class="transport-foot">
-          <div class="btn-row rate-row" role="group" aria-label="Playback speed relative to real time">
+          <div class="btn-row segmented rate-row" role="group" aria-label="Playback speed relative to real time">
           <button class="btn play-rate" data-rate="1" type="button" aria-pressed="false">1×</button>
           <button class="btn play-rate" data-rate="2" type="button" aria-pressed="false">2×</button>
           <button class="btn play-rate" data-rate="5" type="button" aria-pressed="false">5×</button>
