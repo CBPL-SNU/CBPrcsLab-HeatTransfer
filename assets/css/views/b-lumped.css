@@ -16,3 +16,10 @@
 #b-lumped .lumped-materials summary { cursor: pointer; }
 #b-lumped .lumped-materials fieldset { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin: var(--sp-3) 0; border: 1px solid var(--border); }
 #b-lumped .lumped-materials label { display: flex; flex-direction: column; width: 190px; max-width: 100%; }
+
+#b-lumped .lumped-air { flex-basis: 100%; min-width: 0; }
+#b-lumped .lumped-air summary { cursor: pointer; }
+#b-lumped .lumped-air fieldset { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-block: var(--sp-3); border: 1px solid var(--border); }
+#b-lumped .lumped-air label { display: flex; flex-direction: column; width: 220px; max-width: 100%; }
+#b-lumped select[name="model"] { width: 100%; }
+#b-lumped .lumped-air select { max-width: 100%; }

@@ -177,6 +177,25 @@ function materialInputs(section) {
   }
 }
 
+function initAirControls(kind, form) {
+  const model = form.elements.model, mode = form.elements.airMode;
+  const manual = form.querySelector("[data-air-manual]");
+  function sync() {
+    const unused = kind === "a" && model.value === "mcadams";
+    mode.disabled = unused;
+    manual.disabled = unused || mode.value === "auto";
+    if (kind === "b") form.elements.velocity.disabled = model.value === "churchill";
+    form.querySelector("[data-air-policy]").textContent = unused
+      ? "McAdams does not use these air-property inputs. Choose Morgan to enable them."
+      : model.value === "ranz-marshall"
+        ? "Ranz–Marshall evaluates air at the mean bead–air film temperature. Velocity is used; buoyancy is not included."
+        : "Air is evaluated at the mean body–air film temperature (K); β = 1/Tfilm. Natural convection does not use imposed velocity. Natural and forced convection are not combined.";
+  }
+  model.addEventListener("change", sync);
+  mode.addEventListener("change", sync);
+  sync();
+}
+
 export function initLumpedView(kind) {
   const section = document.getElementById(kind + "-lumped");
   const form = section.querySelector("[data-lumped-form]");
@@ -184,16 +203,21 @@ export function initLumpedView(kind) {
   const status = section.querySelector("[data-lumped-status]");
   if (kind === "b") materialInputs(section);
   initInspection(kind, section);
+  initAirControls(kind, form);
   function update(event) {
     event?.preventDefault();
     if (!form.reportValidity()) return;
     const raw = Object.fromEntries(new FormData(form));
-    const p = Object.fromEntries(Object.entries(raw).filter(([, value]) => value !== "").map(([key, value]) => [key, Number(value)]));
+    const p = Object.fromEntries(Object.entries(raw).filter(([, value]) => value !== "").map(([key, value]) => [key, ["model", "airMode"].includes(key) ? value : Number(value)]));
+    p.airMode ??= "manual";
+    p.air = { mode: p.airMode, k: p.airK, nu: p.airNu === undefined ? undefined : p.airNu * 1e-6, pr: p.airPr };
+    if (kind === "b" && p.model === "churchill") p.velocity = 0;
     error.hidden = true;
     try {
-      let lines, rows;
+      let lines, rows, result;
       if (kind === "a") {
         const r = simulateCylinder({ ...p, dt: Math.min(0.5, p.capacity / (20 * (1 + p.ua))) });
+        result = r;
         if (!Number.isFinite(r.finalTemp)) throw new Error("Please check the input conditions.");
         lines = [{ name: "Tₛ", points: r.points, equilibrium: r.equilibrium, color: SERIES_COLOR.surface }];
         rows = [["Surface temperature at end of run", tableValue(r.finalTemp, "°C", 2)], ["Convection at end of run", tableValue(r.qConv, "W", 3)], ["Radiation at end of run", tableValue(r.qRad, "W", 3)]];
@@ -201,6 +225,7 @@ export function initLumpedView(kind) {
       } else {
         const beadProperties = Object.fromEntries(Object.keys(SENSOR_DEFS).map(name => [name, Object.fromEntries(["density", "cp", "thermalCapacity"].filter(key => p[name + '-' + key] !== undefined).map(key => [key, p[name + '-' + key]]))]));
         const r = simulateSensors({ ...p, beadProperties, samples: 1200 });
+        result = r;
         lines = r.sensors.map((sensor, i) => ({ name: sensor.name, points: r.series[sensor.name], equilibrium: sensor.equilibrium, color: COLORS[i] }));
         rows = r.sensors.flatMap(sensor => {
           const last = r.finalResults[sensor.name];
@@ -210,9 +235,14 @@ export function initLumpedView(kind) {
             [sensor.name + " · Radiation at end of run", tableValue(last.qRad, "W")]
           ];
         });
-        section.querySelector("[data-lumped-fixed]").textContent = 'Fixed assumptions: T6/T7 diameter ' + SENSOR_DEFS.T6.d * 1000 + '/' + SENSOR_DEFS.T7.d * 1000 + ' mm; T8 diameter ' + SENSOR_DEFS.T8.d * 1000 + ' mm; T7/T8 emissivity ' + SENSOR_DEFS.T7.epsilon + '/' + SENSOR_DEFS.T8.epsilon + '; view factor ' + AIR.F + '; air k = ' + AIR.k + ' W/(m·K), ν = ' + AIR.nu + ' m²/s, Pr = ' + AIR.Pr + '. Convection uses the Ranz–Marshall form with fixed air properties.';
+        section.querySelector("[data-lumped-fixed]").textContent = 'Fixed assumptions: T6/T7 diameter ' + SENSOR_DEFS.T6.d * 1000 + '/' + SENSOR_DEFS.T7.d * 1000 + ' mm; T8 diameter ' + SENSOR_DEFS.T8.d * 1000 + ' mm; T7/T8 emissivity ' + SENSOR_DEFS.T7.epsilon + '/' + SENSOR_DEFS.T8.epsilon + '; view factor ' + AIR.F + '. Convection uses the selected correlation and air-property settings.';
         section.querySelector("[data-lumped-capacities]").textContent = 'Capacities used: ' + r.sensors.map(s => s.name + ' = ' + s.thermalCapacity.toPrecision(5) + ' J/K' + (beadProperties[s.name].thermalCapacity === undefined ? ' (ρcₚV)' : ' (override)')).join('; ') + '.';
       }
+      const warning = section.querySelector("[data-lumped-warnings]");
+      warning.textContent = result.warnings.join(" ");
+      warning.hidden = result.warnings.length === 0;
+      const airText = value => value ? 'T = ' + value.temperatureK.toFixed(2) + ' K, k = ' + value.k.toPrecision(5) + ' W/(m·K), ν = ' + value.nu.toExponential(4) + ' m²/s, Pr = ' + value.pr.toPrecision(5) : 'not used';
+      section.querySelector("[data-lumped-air]").textContent = 'Calculated with ' + form.elements.model.selectedOptions[0].textContent + ' · ' + p.airMode + ' air properties. ' + (kind === "a" ? 'Air evaluation, start: ' + airText(result.airStart) + '; end: ' + airText(result.airEnd) : result.sensors.map(sensor => sensor.name + ' air evaluation, start: ' + airText(result.airStart[sensor.name]) + '; end: ' + airText(result.airEnd[sensor.name])).join(' | '));
       const body = section.querySelector("[data-lumped-results]");
       body.replaceChildren(...rows.map(([label, value]) => {
         const row = document.createElement("tr");
@@ -240,6 +270,7 @@ export function initLumpedView(kind) {
     } catch (cause) {
       error.textContent = "Could not calculate the response. " + cause.message;
       error.hidden = false;
+      status.textContent = "Calculation failed. Any displayed graph and table still belong to the previous successful run.";
     }
   }
   form.addEventListener("submit", update);

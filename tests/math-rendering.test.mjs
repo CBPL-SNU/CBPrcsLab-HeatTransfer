@@ -40,6 +40,7 @@ test("LaTeX 오류를 조용히 원문으로 출력하지 않는다", () => {
 
 class Element {
   constructor() { this.dataset = {}; this.style = {}; this.checked = false; this.attributes = {}; this._text = ""; this._html = ""; this.classList = { remove() {}, toggle() {} }; this.clientWidth = 1000; this.scrollWidth = 100; }
+  get valueAsNumber() { return this.value === "" ? NaN : Number(this.value); }
   get textContent() { return this._text; }
   set textContent(value) { this._text = value; }
   get innerHTML() { return this._html; }
@@ -79,5 +80,12 @@ test("모델을 왕복 전환해도 LaTeX 위첨자와 계수 값이 갱신된�
     assert.ok(nodes.aConvectionModelExponent.innerHTML.includes("McAdams"));
     assert.equal(nodes.aMcadamsCoefficientFormula.hidden, false);
     assert.equal(nodes.aMorganCoefficientFormula.hidden, true);
+    assert.equal(nodes.aNu.value, "17.5");
+    const previousConvection = nodes.aConvSub.textContent;
+    nodes.aK.value = ""; updateA();
+    assert.equal(nodes.aAirError.hidden, false);
+    assert.equal(nodes.aConvSub.textContent, previousConvection);
+    nodes.aK.value = "0.027"; updateA();
+    assert.equal(nodes.aAirError.hidden, true);
   } finally { globalThis.document = previousDocument; }
 });

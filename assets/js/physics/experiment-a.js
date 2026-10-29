@@ -2,6 +2,7 @@
 
 import { SIGMA, GRAVITY, toK, CYLINDER, AIR_A_DEFAULT } from "./constants.js";
 import { bisect } from "../core/numeric.js";
+import { airProperties } from "./air-properties.js";
 
 // 가열 구간 표면적 [m²]
 export const cylinderArea = () => Math.PI * CYLINDER.D * CYLINDER.L;
@@ -19,22 +20,24 @@ export function morganCN(logRa) {
 }
 
 // model은 "mcadams" 또는 "morgan". morgan일 때만 공기 물성 k, nu, pr를 사용
-export function cylinderHeat({ tsC, taC, model = "mcadams", k, nu, pr }) {
+export function cylinderHeat({ tsC, taC, model = "mcadams", k, nu, pr, air }) {
   const tsK = toK(tsC);
   const taK = toK(taC);
   const dT = tsC - taC;
   const area = cylinderArea();
   const hRad = SIGMA * CYLINDER.epsilon * CYLINDER.F * (tsK + taK) * (tsK * tsK + taK * taK);
 
+  if (!["mcadams", "morgan"].includes(model)) throw new RangeError("Unknown cylinder correlation.");
+  const airUsed = model === "morgan" ? airProperties((tsK + taK) / 2, air ?? { k, nu, pr }, AIR_A_DEFAULT) : null;
   let hConv = 0;
   let ra = null;
   let extrapolated = false;
 
   if (Math.abs(dT) > 1e-12) {
     if (model === "morgan") {
-      const kAir = Math.max(k ?? AIR_A_DEFAULT.k, 1e-8);
-      const nuAir = Math.max(nu ?? AIR_A_DEFAULT.nu, 1e-12);
-      const prAir = Math.max(pr ?? AIR_A_DEFAULT.Pr, 1e-8);
+      const kAir = airUsed.k;
+      const nuAir = airUsed.nu;
+      const prAir = airUsed.pr;
       const film = (tsK + taK) / 2;      // 물성을 평가하는 film 온도
       const beta = 1 / film;             // 이상기체 가정의 열팽창계수
       const gr = GRAVITY * beta * Math.abs(dT) * Math.pow(CYLINDER.D, 3) / (nuAir * nuAir);
@@ -51,13 +54,13 @@ export function cylinderHeat({ tsC, taC, model = "mcadams", k, nu, pr }) {
   return {
     qConv: hConv * area * dT,
     qRad: hRad * area * dT,
-    hConv, hRad, area, ra, extrapolated, model, tsC, taC
+    hConv, hRad, area, ra, extrapolated, model, tsC, taC, airUsed
   };
 }
 
 // residual은 실험 오차가 아니라 '모델에 포함되지 않은 열량'
-export function experimentASteady({ V, I, tsC, taC, model, k, nu, pr }) {
-  const heat = cylinderHeat({ tsC, taC, model, k, nu, pr });
+export function experimentASteady({ V, I, tsC, taC, model, k, nu, pr, air }) {
+  const heat = cylinderHeat({ tsC, taC, model, k, nu, pr, air });
   const qIn = V * I;
   const total = heat.qConv + heat.qRad;
   return { ...heat, qIn, total, residual: qIn - total };

@@ -19,7 +19,7 @@ function readInputs() {
     tsC: numberValue("#aSurfaceTemp", 90),
     model: $("#aModelMcadams").checked ? "mcadams" : "morgan",
     k: numberValue("#aK", 0.027),
-    nu: numberValue("#aNu", 1.75e-5),
+    nu: numberValue("#aNu", 17.5) * 1e-6,
     pr: numberValue("#aPr", 0.707)
   };
 }
@@ -30,6 +30,7 @@ function chartTicks(min, max, step) {
 }
 
 export function drawAChart() {
+  if (["#aK", "#aNu", "#aPr"].some(id => !Number.isFinite($(id).valueAsNumber) || $(id).valueAsNumber <= 0)) return;
   const canvas = $("#aChart");
   const setup = setupCanvas(canvas);
   if (!setup) return;
@@ -169,6 +170,9 @@ function showSplit(input, result) {
 }
 
 export function updateA() {
+  const invalid = ["#aK", "#aNu", "#aPr"].some(id => !Number.isFinite($(id).valueAsNumber) || $(id).valueAsNumber <= 0);
+  $("#aAirError").hidden = !invalid;
+  if (invalid) { $("#aAirError").textContent = "Enter positive finite k, ν and Pr. Displayed results belong to the previous valid inputs."; return; }
   const input = readInputs();
   const result = experimentASteady(input);
 
@@ -259,6 +263,28 @@ export function initExperimentAView() {
     });
   }
 
+  ["#aK", "#aNu", "#aPr"].forEach(id => {
+    const input = $(id), increment = Number(input.dataset.increment);
+    const adjust = direction => {
+      const value = input.valueAsNumber;
+      if (!Number.isFinite(value)) { input.focus(); return; }
+      input.value = String(Number(Math.max(Number(input.min), value + direction * increment).toPrecision(12)));
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+    const buttons = document.createElement("div");
+    buttons.className = "air-step-buttons";
+    for (const [text, direction] of [["−", -1], ["+", 1]]) {
+      const button = document.createElement("button");
+      button.type = "button"; button.className = "btn btn--quiet"; button.textContent = text;
+      button.setAttribute("aria-label", (direction < 0 ? "Decrease " : "Increase ") + document.querySelector('label[for="' + input.id + '"]').textContent + ' by ' + increment);
+      button.addEventListener("click", () => adjust(direction));
+      buttons.append(button);
+    }
+    input.closest(".input").append(buttons);
+    input.addEventListener("keydown", event => {
+      if (event.key === "ArrowUp" || event.key === "ArrowDown") { event.preventDefault(); adjust(event.key === "ArrowUp" ? 1 : -1); }
+    });
+  });
   ["#aAirTemp", "#aSurfaceTemp", "#aK", "#aNu", "#aPr"]
     .forEach(id => $(id).addEventListener("input", updateA));
 

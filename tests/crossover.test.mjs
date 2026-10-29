@@ -22,10 +22,11 @@ function draw({ tsC = 100, taC = 19.6, model = "mcadams", w = 700, h = 440 } = {
     fillText(text, x, y) { log.texts.push({ text: String(text), x, y, font: this.font, opacity: this.globalAlpha ?? 1 }); }
   };
   const note = { hidden: true, textContent: "" };
+  const numeric = value => ({ value: String(value), get valueAsNumber() { return this.value === "" ? NaN : Number(this.value); } });
   const nodes = { aChart: canvas, aCrossoverNote: note,
     aVoltage: { value: "11" }, aCurrent: { value: "1.87" },
     aAirTemp: { value: String(taC) }, aSurfaceTemp: { value: String(tsC) },
-    aK: { value: "0.027" }, aNu: { value: "0.0000175" }, aPr: { value: "0.707" },
+    aK: numeric(0.027), aNu: numeric(17.5), aPr: numeric(0.707),
     aModelMcadams: { checked: model === "mcadams" } };
   const previousDocument = globalThis.document, previousWindow = globalThis.window;
   globalThis.document = { querySelector: selector => nodes[selector.slice(1)] };
