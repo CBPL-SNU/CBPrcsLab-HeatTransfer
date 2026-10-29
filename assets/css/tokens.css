@@ -37,7 +37,9 @@
 
   /* 데이터 계열 — 물리량 전용. 장치 도식도 이 토큰을 그대로 읽는다.
      assets/js/core/chart.js의 SERIES_COLOR와 값이 같아야 하며 테스트가 검사한다. */
-  --series-conv: #2f6fed;      /* 대류 */
+  --series-conv: #2f6fed;      /* 대류 · McAdams */
+  --series-morgan: #24834f;    /* Morgan 대류 */
+  --series-total: #111111;     /* 선택한 대류 모델 + 복사 */
   --series-rad: #d94f5c;       /* 복사 */
   --series-surface: #e66b37;   /* 표면 온도 */
   --series-surface-rgb: 230, 107, 55;   /* 위와 같은 색. 옅게 채울 때 rgba()에 쓴다 */

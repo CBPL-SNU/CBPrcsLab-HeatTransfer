@@ -7,6 +7,7 @@
 <title>Heat Transfer Lab · CBPrcsLab</title>
 
 <link rel="stylesheet" href="assets/css/fonts.css" />
+<link rel="stylesheet" href="assets/vendor/katex/katex.min.css" />
 <link rel="stylesheet" href="assets/css/tokens.css" />
 <link rel="stylesheet" href="assets/css/base.css" />
 <link rel="stylesheet" href="assets/css/app.css" />
@@ -44,6 +45,10 @@
     <header class="topbar">
       <h1 id="pageTitle"></h1>
       <span class="spacer"></span>
+      <div class="intro-language" id="introductionLanguage" role="group" aria-label="소개 언어" hidden lang="ko">
+        <button type="button" data-language="ko" lang="ko" aria-label="한국어" aria-pressed="true" aria-controls="introductionContent">KOR</button>
+        <button type="button" data-language="en" lang="en" aria-label="English" aria-pressed="false" aria-controls="introductionContent">ENG</button>
+      </div>
       <button class="btn" id="openAssumptions" type="button">Models &amp; assumptions</button>
     </header>
       <section class="view is-active" id="introduction"></section>

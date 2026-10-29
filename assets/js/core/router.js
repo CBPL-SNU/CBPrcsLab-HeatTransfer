@@ -105,6 +105,7 @@ export async function switchView(viewId, updateHash = true) {
   });
 
   $("#pageTitle").textContent = view.title;
+  $("#introductionLanguage").hidden = target !== "introduction";
   if (updateHash) history.replaceState(null, "", `#${target}`);
   window.scrollTo({ top: 0 });
   // 화면이 보이기 전에는 캔버스 크기가 0이므로 표시 직후에 다시 그린다.

@@ -1,70 +1,135 @@
 <!-- 기본값은 HT14에서 실제로 측정된 11 V 조건이다 (2026-04-30, 7조).
      네 값은 한 벌로 움직인다. 하나만 바꾸면 성립하지 않는 조합이 된다. -->
-<div class="conditions">
-  <div class="group">
-    <div class="input"><label for="aVoltage">Voltage</label>
-      <div class="with-unit"><input id="aVoltage" type="number" value="11" min="0" step="any"><span class="unit">V</span></div></div>
-    <div class="input"><label for="aCurrent">Current</label>
-      <div class="with-unit"><input id="aCurrent" type="number" value="1.87" min="0" step="any"><span class="unit">A</span></div></div>
+<div class="input-panel">
+  <div class="card-body">
+    <section class="input-panel-section" aria-labelledby="aSettingsHeading">
+      <h2 id="aSettingsHeading">Input settings</h2>
+      <fieldset class="condition-section" aria-labelledby="aSettingsHeading">
+        <div class="group">
+          <div class="input stepped-input"><label for="aVoltage">Voltage</label>
+            <div class="with-unit"><div class="number-stepper"><input id="aVoltage" type="number" value="11" min="0" step="any"><div class="number-step-buttons"><button id="aVoltageUp" type="button" aria-label="Increase voltage by 0.1 V">+</button><button id="aVoltageDown" type="button" aria-label="Decrease voltage by 0.1 V">−</button></div></div><span class="unit">V</span></div></div>
+          <div class="input stepped-input"><label for="aCurrent">Current</label>
+            <div class="with-unit"><div class="number-stepper"><input id="aCurrent" type="number" value="1.87" min="0" step="any"><div class="number-step-buttons"><button id="aCurrentUp" type="button" aria-label="Increase current by 0.1 A">+</button><button id="aCurrentDown" type="button" aria-label="Decrease current by 0.1 A">−</button></div></div><span class="unit">A</span></div></div>
+          <div class="input">
+            <label for="aResistance">Resistance</label>
+            <div class="with-unit"><input id="aResistance" type="text" value="5.88" readonly><span class="unit">Ω</span></div>
+            <label class="resistance-lock"><input id="aLockResistance" type="checkbox" aria-label="Fix resistance to default (5.88 Ω)"><span>Fix</span></label>
+          </div>
+        </div>
+      </fieldset>
+    </section>
+    <section class="input-panel-section" aria-labelledby="aTemperatureHeading">
+      <h2 id="aTemperatureHeading">Measured temperatures</h2>
+      <fieldset class="temperature-inputs" aria-labelledby="aTemperatureHeading">
+        <div class="group">
+          <div class="input stepped-input"><label for="aAirTemp">Air (T<sub>8</sub>)</label>
+            <div class="with-unit"><div class="number-stepper"><input id="aAirTemp" type="number" value="19.6" min="-273.15" step="any"><div class="number-step-buttons"><button id="aAirTempUp" type="button" aria-label="Increase air temperature by 1 °C">+</button><button id="aAirTempDown" type="button" aria-label="Decrease air temperature by 1 °C">−</button></div></div><span class="unit">°C</span></div></div>
+          <div class="input stepped-input"><label for="aSurfaceTemp">Surface (T<sub>10</sub>)</label>
+            <div class="with-unit"><div class="number-stepper"><input id="aSurfaceTemp" type="number" value="244" min="-273.15" step="any"><div class="number-step-buttons"><button id="aSurfaceTempUp" type="button" aria-label="Increase surface temperature by 1 °C">+</button><button id="aSurfaceTempDown" type="button" aria-label="Decrease surface temperature by 1 °C">−</button></div></div><span class="unit">°C</span></div></div>
+        </div>
+      </fieldset>
+    </section>
+    <section class="input-panel-section" aria-labelledby="aAnalysisHeading">
+      <h2 id="aAnalysisHeading">Analysis models</h2>
+      <div class="power-coefficients">
+        <section class="coefficient-result" aria-label="Convection">
+          <div class="coefficient-rule" id="aModel" role="radiogroup" aria-labelledby="aConvectionModelLabel">
+            <h3 class="coefficient-label" id="aConvectionModelLabel">Convection model</h3>
+            <div class="model-options">
+              <label><input id="aModelMcadams" type="radio" name="aConvectionModel" value="mcadams" checked>McAdams</label>
+              <label><input id="aModelMorgan" type="radio" name="aConvectionModel" value="morgan">Morgan</label>
+            </div>
+          </div>
+          <div class="coefficient-row">
+            <h3 class="coefficient-label coefficient-title" id="aConvectionHeading"><span>Heat transfer coefficient</span>
+              <span id="aMcadamsCoefficientFormula" data-display="block" data-tex="h_c = 1.32\,\left(\frac{\lvert T_{10}-T_8\rvert}{D}\right)^{1/4}"></span>
+              <span id="aMorganCoefficientFormula" hidden data-display="block" data-tex="h_c = \frac{k}{D}\,C\,\mathrm{Ra}_D^{n}"></span>
+            </h3>
+          </div>
+        </section>
+        <section class="coefficient-result" aria-label="Radiation">
+          <div class="coefficient-rule">
+            <h3 class="coefficient-label">Radiation law</h3>
+            <strong>Stefan–Boltzmann</strong>
+          </div>
+          <div class="coefficient-row">
+            <h3 class="coefficient-label coefficient-title" id="aRadiationHeading"><span>Heat transfer coefficient</span><span id="aRadiationCoefficientFormula" data-display="block" data-tex="h_r = \epsilon\,\sigma\,F\,\frac{T_{10}^{4}-T_8^{4}}{T_{10}-T_8}"></span></h3>
+          </div>
+        </section>
+      </div>
+    </section>
   </div>
-  <span class="divider"></span>
-  <div class="group">
-    <div class="input"><label for="aAirTemp">Air T8</label>
-      <div class="with-unit"><input id="aAirTemp" type="number" value="19.6" min="-273.15" step="any"><span class="unit">°C</span></div></div>
-    <div class="input"><label for="aSurfaceTemp">Surface T10</label>
-      <div class="with-unit"><input id="aSurfaceTemp" type="number" value="244" min="-273.15" step="any"><span class="unit">°C</span></div></div>
-  </div>
-  <span class="divider"></span>
-  <div class="input wide"><label for="aModel">Correlation</label>
-    <select id="aModel"><option value="mcadams">McAdams</option><option value="morgan">Morgan</option></select></div>
 </div>
 
 <div class="content">
 
   <div class="card">
-    <header><h2>Where the supplied power goes</h2><span class="badge">Course model</span></header>
     <div class="card-body">
-      <div class="answer">
-        <span class="figure" id="aPower">—</span>
-        <span class="caption">of electrical power enters the cylinder. The model accounts for part of it as convection and radiation; the rest is not described by these two terms.</span>
-      </div>
+      <section class="card-body" aria-labelledby="aCoefficientResultsHeading">
+        <h2 id="aCoefficientResultsHeading">Heat transfer coefficients</h2>
+        <div class="power-coefficients">
+          <p class="coefficient-value" id="aConvectionValue"><span data-tex="h_c ="></span><span class="note-inline" id="aConvSub">—</span></p>
+          <p class="coefficient-value" id="aRadiationValue"><span data-tex="h_r ="></span><span class="note-inline" id="aRadSub">—</span></p>
+        </div>
+      </section>
+      <section class="card-sub" aria-labelledby="aPowerResultsHeading">
+        <header class="power-results-heading"><h2 id="aPowerResultsHeading">Input power and heat transfer rates</h2><span class="sub">Using inputs above</span></header>
+        <div class="formula power-balance">
+          <div class="power-term">
+            <span data-tex="Q_{\mathrm{in}} = VI"></span>
+          </div>
+          <div class="power-addend">
+            <span class="power-operator" data-tex="="></span>
+            <div class="power-term conv">
+              <span id="aConvectionModelExponent" data-tex="Q_c^{\mathrm{McAdams}}"></span>
+            </div>
+          </div>
+          <div class="power-addend">
+            <span class="power-operator" data-tex="+"></span>
+            <div class="power-term rad">
+              <span data-tex="Q_r"></span>
+            </div>
+          </div>
+          <div class="power-addend">
+            <span class="power-operator" data-tex="+"></span>
+            <div class="power-term residual">
+              <span data-tex="Q_{\mathrm{unmodelled}}"></span>
+            </div>
+          </div>
+          <div class="power-total"><span class="power-value" id="aPower">—</span></div>
+          <div class="power-distribution">
+            <div class="split-bar split-bar--labeled" id="aStackBar" role="img" aria-label="Electrical power distribution">
+              <i class="seg-conv" id="aConvBar" style="width:0"><span class="split-label" id="aConvLabel" aria-hidden="true"><span class="split-value" id="aConv">—</span><span id="aConvPct">—</span></span></i><i class="seg-rad" id="aRadBar" style="width:0"><span class="split-label" id="aRadLabel" aria-hidden="true"><span class="split-value" id="aRad">—</span><span id="aRadPct">—</span></span></i><i class="seg-etc" id="aLossBar" style="width:0"><span class="split-label" id="aLossLabel" aria-hidden="true"><span class="split-value" id="aResidual">—</span><span id="aLossPct">—</span></span></i>
+            </div>
 
-      <div class="split-bar" id="aStackBar">
-        <i class="seg-conv" id="aConvBar" style="width:0"></i><i class="seg-rad" id="aRadBar" style="width:0"></i><i class="seg-etc" id="aLossBar" style="width:0"></i>
-      </div>
+            <div class="keys power-keys">
+              <div><span class="key seg-conv"></span><span class="name conv" id="aConvectionLegend">Convection (McAdams)</span><span class="pct" id="aConvPctFallback" aria-hidden="true"></span></div>
+              <div><span class="key seg-rad"></span><span class="name rad">Radiation</span><span class="pct" id="aRadPctFallback" aria-hidden="true"></span></div>
+              <div><span class="key seg-etc"></span><span class="name residual">Unmodelled</span><span class="pct" id="aLossPctFallback" aria-hidden="true"></span></div>
+            </div>
+          </div>
+        </div>
 
-      <div class="keys">
-        <div><span class="key seg-conv"></span><span class="name">Convection</span><span class="val conv" id="aConv">—</span><span class="pct" id="aConvPct">—</span><span class="note-inline" id="aConvSub">h = —</span></div>
-        <div><span class="key seg-rad"></span><span class="name">Radiation</span><span class="val rad" id="aRad">—</span><span class="pct" id="aRadPct">—</span><span class="note-inline" id="aRadSub">hr = —</span></div>
-        <div><span class="key seg-etc"></span><span class="name">Unmodelled</span><span class="val" id="aResidual">—</span><span class="pct" id="aLossPct">—</span></div>
-      </div>
+        <p class="caution" id="aSplitNote" role="status" hidden></p>
 
-      <p class="assumption" id="aCompare">—</p>
+        <p class="caution" id="aOverflowNote" role="status" hidden>The hatched part sits above the supplied power: the two terms already add up to more than went in. Check the surface temperature, the emissivity, and which correlation you picked.</p>
 
-      <p class="caution" id="aSplitNote" role="status" hidden></p>
-
-      <p class="caution" id="aOverflowNote" role="status" hidden>The hatched part sits above the supplied power: the two terms already add up to more than went in. Check the surface temperature, the emissivity, and which correlation you picked.</p>
-
-      <p class="formula">
-        <math><mrow><msub><mi>Q</mi><mtext>in</mtext></msub><mo>=</mo><mi>V</mi><mi>I</mi><mo>=</mo>
-        <msub><mi>Q</mi><mtext>conv</mtext></msub><mo>+</mo><msub><mi>Q</mi><mtext>rad</mtext></msub><mo>+</mo>
-        <msub><mi>Q</mi><mtext>unmodelled</mtext></msub></mrow></math>
-      </p>
+      </section>
     </div>
   </div>
 
   <div class="card-grid wide-left">
-  <div class="card">
-    <header><h2>How the split changes with surface temperature</h2></header>
+  <div class="card heat-transfer-card">
+    <header><h2>Heat components vs. surface temperature (T<sub>10</sub>)</h2></header>
     <div class="card-body">
       <div class="chart-frame"><canvas class="chart" id="aChart"></canvas></div>
       <div class="legend">
-        <span><i class="conv"></i>Convection · McAdams</span>
-        <span><i class="dotted conv"></i>Convection · Morgan</span>
-        <span><i class="dashed rad"></i>Radiation</span>
-        <span><i class="dotted marker"></i>Your T10</span>
+        <span><i class="conv"></i><span>McAdams (~ΔT<sup>1.25</sup>)</span></span>
+        <span><i class="morgan"></i><span>Morgan (~ΔT<sup id="aMorganTemperatureExponent">1.25</sup>)</span></span>
+        <span><i class="rad"></i><span>Radiation (~T<sup>4</sup>)</span></span>
+        <span><i class="dashed marker"></i><span>Measured T<sub>10</sub></span></span>
       </div>
-      <p class="assumption">Radiation grows with <math><msup><mi>T</mi><mn>4</mn></msup></math> while convection grows roughly with <math><msup><mrow><mo>Δ</mo><mi>T</mi></mrow><mn>1.25</mn></msup></math>, so radiation eventually overtakes it. The marked temperature is where that happens for the current air temperature and emissivity.</p>
+      <p class="caution" id="aCrossoverNote" role="status" hidden></p>
     </div>
   </div>
 
@@ -86,4 +151,4 @@
   </div>
 
 </div>
-      
+

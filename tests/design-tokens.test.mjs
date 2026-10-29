@@ -38,6 +38,8 @@ function contrast(a, b) {
 describe("디자인 토큰 · 데이터 색의 단일 출처", () => {
   const pairs = [
     ["series-conv", "conv"],
+    ["series-morgan", "morgan"],
+    ["series-total", "total"],
     ["series-rad", "rad"],
     ["series-surface", "surface"],
     ["series-marker", "marker"],

@@ -1,6 +1,33 @@
 import { switchView } from "../core/router.js";
 import { VIEWS } from "../data/views.js";
 
+const LANGUAGE_KEY = "cbprcslab-introduction-language";
+const COPY = {
+  ko: {
+    file: "assets/views/introduction.ko.md",
+    title: "열전달 실험 · 소개",
+    languageLabel: "소개 언어",
+    toc: "이 페이지의 목차",
+    loading: "소개를 불러오는 중입니다.",
+    retry: "다시 시도",
+    error: "소개를 불러오지 못했습니다. 다시 시도해 주세요.",
+    topics: {
+      "Experiment A": "대류와 복사에 의한 복합 열전달",
+      "Experiment B": "온도 측정에서의 복사 오차"
+    }
+  },
+  en: {
+    file: "assets/views/introduction.md",
+    title: "Heat Transfer Lab · Introduction",
+    languageLabel: "Introduction language",
+    toc: "On this page",
+    loading: "Loading the introduction.",
+    retry: "Try again",
+    error: "Could not load the introduction. Please try again."
+  }
+};
+let language = "ko";
+
 const LINK = /\[([^\]]+)\]\(([^\s)]+)\)/g;
 
 // 외부 웹 링크, 등록된 화면 링크, 저장소 docs/ 안의 파일만 허용한다.
@@ -31,7 +58,8 @@ const ICON = {
 };
 
 // 실험 묶음의 주제. Calculate 화면 제목의 "·" 뒤를 쓴다
-function groupTopic(group) {
+function groupTopic(group, language) {
+  if (language === "ko" && COPY.ko.topics[group]) return COPY.ko.topics[group];
   const title = VIEWS.find(view => view.group === group)?.title ?? "";
   return title.split("·").slice(1).join("·").trim();
 }
@@ -42,7 +70,7 @@ function formatBytes(bytes) {
 
 // 링크만 있는 문단은 본문 속 밑줄 링크 대신 버튼 줄로 보인다.
 // 파일은 내려받기 카드, 화면은 실험 표지를 단 이동 버튼이 된다.
-function linkRow(text) {
+function linkRow(text, language) {
   const matches = [...text.matchAll(LINK)];
   if (!matches.length || text.replace(LINK, "").replace(/[·|\s]/g, "")) return null;
   const row = document.createElement("div");
@@ -74,7 +102,7 @@ function linkRow(text) {
       const letter = /Experiment (\w+)$/.exec(view.group ?? "")?.[1];
       if (letter) { lead.textContent = letter; lead.classList.add("is-letter"); }
       else lead.innerHTML = ICON.arrow;
-      meta.textContent = groupTopic(view.group) || view.sub;
+      meta.textContent = groupTopic(view.group, language) || view.sub;
       trail = ICON.arrow;
     } else {
       lead.innerHTML = ICON.external;
@@ -110,7 +138,7 @@ function inline(parent, text) {
   parent.append(document.createTextNode(text.slice(end)));
 }
 
-export function renderIntroductionMarkdown(source) {
+export function renderIntroductionMarkdown(source, language = "en") {
   const fragment = document.createDocumentFragment();
   const lines = source.replace(/\r\n?/g, "\n").split("\n");
   let paragraph = [];
@@ -118,7 +146,7 @@ export function renderIntroductionMarkdown(source) {
   const flush = () => {
     if (!paragraph.length) return;
     const text = paragraph.join(" ");
-    const row = linkRow(text);
+    const row = linkRow(text, language);
     const node = row ?? document.createElement("p");
     if (!row) inline(node, text);
     fragment.append(node);
@@ -158,13 +186,13 @@ export function renderIntroductionMarkdown(source) {
 // 목차는 본문의 절 제목(md의 ##)으로 만든다. 소절 제목은 길어서 넣지 않는다.
 // 주소의 #은 router가 화면 전환에 쓰므로, 목차는 주소를 바꾸지 않고 스크롤만 한다.
 let onScroll = null;
-function buildToc(content, toc) {
+function buildToc(content, toc, label) {
   if (onScroll) window.removeEventListener("scroll", onScroll);
   const headings = [...content.querySelectorAll("h3")];
   if (!headings.length) { toc.replaceChildren(); return; }
   const title = document.createElement("div");
   title.className = "intro-toc-title";
-  title.textContent = "On this page";
+  title.textContent = label;
   const list = document.createElement("ul");
 
   const activate = current => links.forEach((link, index) => link.classList.toggle("is-active", headings[index] === current));
@@ -206,25 +234,73 @@ function buildToc(content, toc) {
   mark();
 }
 
+export function redrawIntroductionView() {
+  if (!document.querySelector("#introduction").classList.contains("is-active")) return;
+  const title = document.createElement("span");
+  title.lang = language;
+  title.textContent = COPY[language].title;
+  document.querySelector("#pageTitle").replaceChildren(title);
+}
+
 export function initIntroductionView() {
   const content = document.querySelector("#introductionContent");
   const toc = document.querySelector("#introductionToc");
   const retry = document.querySelector("#retryIntroduction");
+  const controls = document.querySelector("#introductionLanguage");
+  const buttons = [...controls.querySelectorAll("button")];
+  // 브라우저에서 저장소 접근을 막아도 언어 전환은 사용할 수 있다.
+  try { language = localStorage.getItem(LANGUAGE_KEY) === "en" ? "en" : "ko"; }
+  catch { language = "ko"; }
+  let requestId = 0;
+
   async function load() {
-    content.setAttribute("aria-busy", "true");
+    const request = ++requestId;
+    const selectedLanguage = language;
+    const copy = COPY[selectedLanguage];
+    content.lang = selectedLanguage;
+    content.parentElement.lang = selectedLanguage;
+    toc.lang = selectedLanguage;
+    toc.setAttribute("aria-label", copy.toc);
+    toc.replaceChildren();
+    if (onScroll) window.removeEventListener("scroll", onScroll);
+    onScroll = null;
+    controls.lang = selectedLanguage;
+    controls.setAttribute("aria-label", copy.languageLabel);
+    buttons.forEach(button => button.setAttribute("aria-pressed", String(button.dataset.language === selectedLanguage)));
+    retry.lang = selectedLanguage;
+    retry.textContent = copy.retry;
     retry.hidden = true;
+    redrawIntroductionView();
+    content.setAttribute("aria-busy", "true");
+    const status = document.createElement("p");
+    status.setAttribute("role", "status");
+    status.textContent = copy.loading;
+    content.replaceChildren(status);
     try {
-      const response = await fetch("assets/views/introduction.md");
+      const response = await fetch(copy.file);
       if (!response.ok) throw new Error('HTTP ' + response.status);
-      content.replaceChildren(renderIntroductionMarkdown(await response.text()));
-      buildToc(content, toc);
+      const source = await response.text();
+      // 늦게 도착한 이전 언어의 응답이 현재 선택을 덮어쓰지 않게 한다.
+      if (request !== requestId) return;
+      content.replaceChildren(renderIntroductionMarkdown(source, selectedLanguage));
+      buildToc(content, toc, copy.toc);
     } catch (error) {
-      content.textContent = 'Could not load the introduction. Please try again. (' + error.message + ')';
+      if (request !== requestId) return;
+      status.textContent = copy.error + ' (' + error.message + ')';
+      content.replaceChildren(status);
       retry.hidden = false;
     } finally {
-      content.setAttribute("aria-busy", "false");
+      if (request === requestId) content.setAttribute("aria-busy", "false");
     }
   }
+  controls.addEventListener("click", event => {
+    const button = event.target.closest("button[data-language]");
+    if (!button || button.dataset.language === language) return;
+    language = button.dataset.language;
+    try { localStorage.setItem(LANGUAGE_KEY, language); }
+    catch { /* 저장이 제한된 환경에서는 현재 방문 동안만 유지한다. */ }
+    load();
+  });
   retry.addEventListener("click", load);
   content.addEventListener("click", event => {
     const link = event.target.closest('a[href^="#"]');

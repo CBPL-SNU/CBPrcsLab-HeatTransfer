@@ -11,6 +11,11 @@ pre-computed CFD results in dedicated screens.
 
 Every calculation runs in the browser. No input is sent to a server.
 
+Experiment A equations use LaTeX rendered by the locally bundled KaTeX 0.19.1.
+Edit `data-tex` in `assets/views/experiment-a.html`; the selected model’s power term
+is updated in `assets/js/views/experiment-a.js`. Fonts, renderer and license are
+under `assets/vendor/katex/`, so formulas do not require a CDN or build step.
+
 > **Prototype.** Several dimensions and material properties remain example values,
 > and transient parameters need calibration against measurements. Each model screen
 > describes its assumptions.
@@ -18,7 +23,7 @@ Every calculation runs in the browser. No input is sent to a server.
 ## Screens
 
 The site opens on **Introduction**, with a short guide to the experiments and how to
-use the tool. The introduction and both lumped screens are in English. Existing screen links such as `#experiment-a` still open directly.
+use the tool. The introduction supports Korean and English; both lumped screens are in English. Existing screen links such as `#experiment-a` still open directly.
 
 Each experiment has **Calculate**, **Lumped parameter**, **Watch the flow**, and
 **Apparatus** screens. Experiment B also has **Compare** for two CFD cases side by
@@ -81,7 +86,12 @@ introduction Markdown renderer is unchanged.
 
 ### Editing the introduction
 
-Edit `assets/views/introduction.md` to change the text, then reload the page. It
+Use the **KOR / ENG** toggle on Introduction to select a language. Korean is shown
+by default, and the selection is saved in the browser when local storage is available.
+Only the Introduction screen is translated.
+
+Edit `assets/views/introduction.ko.md` for Korean or `assets/views/introduction.md`
+for English, then reload the page. Keep the two versions in sync. Each file
 supports headings (`#` through `###`), paragraphs, flat ordered and unordered lists,
 bold text, inline code, blockquotes, HTTP(S) links, and links to registered screens
 such as `[Experiment A](#experiment-a)`. Tables, nested lists, images, code blocks,

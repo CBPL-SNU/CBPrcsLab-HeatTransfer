@@ -31,3 +31,8 @@ button { cursor: pointer; }
 .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
 math { font-family: var(--font-sans); }
+
+/* 브라우저의 첨자·분수 축소에도 최소 글자 크기를 유지한다. */
+small, sub, sup { font-size: max(var(--fs-xs), 0.8em); }
+math :is(msub, msup, msubsup, munder, mover, munderover, mroot) > :not(:first-child),
+math mfrac > * { font-size: max(var(--fs-xs), 0.8em); math-depth: 0; }

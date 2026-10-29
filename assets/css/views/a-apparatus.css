@@ -3,8 +3,9 @@
 /* ── 단면도 ─────────────────────────────────────
    그림은 JS가 치수에서 만든다. 여기는 색과 굵기뿐이다.
    흐르는 점선은 공기의 방향을, 강조는 어느 부품을 보고 있는지를 나타낸다. 장식이 아니다. */
-.apparatus-stage { display: grid; place-items: center; }
-.apparatus-diagram { width: 100%; height: auto; }
+.apparatus-stage { display: grid; align-items: center; justify-items: start; min-width: 0; overflow-x: auto; }
+/* 도식에서 가장 작은 13px 글자가 화면에서도 12px 이상이 되도록 축소 폭을 제한한다. */
+.apparatus-diagram { width: 100%; height: auto; min-width: calc(var(--diagram-width) * 12 / 13); }
 
 .duct-air { fill: var(--well); }
 .duct-air--squeezed { fill: url(#squeezeHatch); }   /* 줄인 구간은 빗금. 축척 구간과 같은 확신으로 읽히면 안 된다 */
