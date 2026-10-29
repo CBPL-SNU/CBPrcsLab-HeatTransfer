@@ -1,108 +1,64 @@
-// Lumped-parameter 시간응답 모델.
-// 유효 열용량과 추가 열손실 계수는 교안에 없으므로 실측 시간 기록으로 보정 필요.
-
-import { rk4Scalar, bisect } from "../core/numeric.js";
+import { bisect } from "../core/numeric.js";
+import { integrateTransient } from "../core/transient.js";
 import { cylinderHeat } from "./experiment-a.js";
-import { SIGMA, AIR, toK } from "./constants.js";
-import { solveSensor } from "./experiment-b.js";
+import { AIR_AUTO, toK } from "./constants.js";
+import { solveSensor, sensorHeat } from "./experiment-b.js";
 
-// 실린더·히터 1-node: C dTs/dt = V·I - Qconv(Ts) - Qrad(Ts) - UA·(Ts - Ta)
-export function simulateCylinder({ V, I, ta, initial, capacity, ua, duration, model = "mcadams", dt = Math.min(0.5, duration / 1200) }) {
+export function simulateCylinder({ V, I, ta, initial, capacity, ua, duration, model = "mcadams", air, dt = 0.5 }) {
+  if (![V, I, ta, initial, capacity, ua, duration, dt].every(Number.isFinite) || V < 0 || I < 0 || capacity <= 0 || ua < 0 || duration < 0 || dt <= 0 || Math.min(ta, initial) <= -273.15) throw new RangeError("Invalid cylinder conditions.");
+  const warnings = new Set();
+  const heatAt = value => {
+    const heat = cylinderHeat({ tsC: value, taC: ta, model, air });
+    if (heat.extrapolated) warnings.add("Morgan: Ra outside the tabulated correlation range.");
+    return heat;
+  };
   const input = V * I;
-  const outputEvery = Math.max(1, Math.round((duration / dt) / 300));  // 그래프에 남길 점의 개수를 제한합니다
-
-  const derivative = value => {
-    const heat = cylinderHeat({ tsC: value, taC: ta, model });
-    return (input - heat.qConv - heat.qRad - ua * (value - ta)) / capacity;
-  };
-
-  // 종료 시각과 무관하게 순열량이 0인 온도를 구한다. 추가 손실 UA도 포함한다.
-  let upper = ta + 1;
-  let expansions = 0;
-  while (derivative(upper) > 0 && expansions < 60) {
-    upper = ta + 2 * (upper - ta);
-    expansions += 1;
-  }
-  if (!Number.isFinite(derivative(upper)) || derivative(upper) > 0) {
-    throw new RangeError("Could not bracket the cylinder steady-state temperature.");
-  }
-  const equilibrium = input === 0 ? ta : bisect(derivative, ta, upper);
-
-  let temp = initial;
-  const points = [{ t: 0, temp, rate: derivative(temp) }];
-  let step = 0;
-
-  for (let t = 0; t < duration - 1e-9; t += dt) {
-    // dt가 duration을 정확히 나누지 못하면 마지막 구간을 잘라 duration에 맞춘다.
-    // 그러지 않으면 마지막 점의 라벨과 실제 적분 시각이 어긋난다.
-    const h = Math.min(dt, duration - t);
-    temp = rk4Scalar(temp, h, derivative);
-    step += 1;
-    if (step % outputEvery === 0 || t + h >= duration - 1e-9) points.push({ t: t + h, temp, rate: derivative(temp) });
-  }
-
-  const finalHeat = cylinderHeat({ tsC: temp, taC: ta, model });
-  const target = initial + 0.95 * (temp - initial);
-  const t95Point = points.find(point => (temp >= initial ? point.temp >= target : point.temp <= target));
-
-  return {
-    points, equilibrium, finalTemp: temp, t95: t95Point?.t ?? duration,
-    qConv: finalHeat.qConv, qRad: finalHeat.qRad, ta, duration, input
-  };
+  const net = value => { const heat = heatAt(value); return input - heat.qConv - heat.qRad - ua * (value - ta); };
+  const derivative = value => net(value) / capacity;
+  const limit = model === "morgan" && air?.mode === "auto" ? 2 * AIR_AUTO.maxK - toK(ta) - 273.15 : 100000;
+  let upper = Math.min(ta + 1, limit);
+  while (net(upper) > 0 && upper < limit) upper = Math.min(ta + 2 * (upper - ta), limit);
+  if (net(upper) > 0) throw new RangeError("Steady state lies outside the supported temperature range. Use manual air properties or reduce power.");
+  const root = input === 0 ? ta : bisect(net, ta, upper);
+  const residual = net(root);
+  const equilibrium = Math.abs(residual) <= 1e-7 * Math.max(1, input) ? root : undefined;
+  if (equilibrium === undefined) warnings.add("Morgan segment boundary: steady balance did not meet the residual tolerance; the steady-state guide is omitted.");
+  const integration = integrateTransient({ initial, duration, derivative, maxStep: Math.min(dt, capacity / (20 * (1 + ua))) });
+  const points = integration.points, finalTemp = points.at(-1).temp;
+  const finalHeat = heatAt(finalTemp), initialHeat = heatAt(initial);
+  const target = initial + 0.95 * (finalTemp - initial);
+  const t95 = points.find(p => finalTemp >= initial ? p.temp >= target : p.temp <= target)?.t ?? duration;
+  return { points, finalTemp, equilibrium, steadyResidual: residual, t95, qConv: finalHeat.qConv, qRad: finalHeat.qRad,
+    ta, duration, input, integration, warnings: [...warnings], airStart: initialHeat.airUsed, airEnd: finalHeat.airUsed };
 }
 
-// 비드 1-node: C dTb/dt = εσFA(Tw⁴ - Tb⁴) - hA(Tb - Tg). 벽·공기·유속은 시간에 대해 일정하다.
-export function simulateSensors({ wall, gas, velocity, initial, t6Emissivity, duration = 600, names = ["T6", "T7", "T8"], samples = 600, dt, beadProperties = {} } = {}) {
-  if (![wall, gas, velocity, initial, duration].every(Number.isFinite)
-      || Math.min(wall, gas, initial) <= -273.15 || velocity < 0 || duration < 0
-      || !Number.isInteger(samples) || samples < 1
-      || (dt !== undefined && (!Number.isFinite(dt) || dt <= 0))) {
-    throw new RangeError("Invalid sensor transient conditions or integration step");
+export function simulateSensors({ wall, gas, velocity = 0, initial, t6Emissivity, duration = 600, names = ["T6", "T7", "T8"], samples = 600, dt = 0.1, beadProperties = {}, model = "ranz-marshall", air } = {}) {
+  if (![wall, gas, velocity, initial, duration, dt].every(Number.isFinite) || Math.min(wall, gas, initial) <= -273.15 || velocity < 0 || duration < 0 || dt <= 0 || !Number.isInteger(samples) || samples < 1) throw new RangeError("Invalid sensor transient conditions.");
+  const sensors = names.map(name => solveSensor(name, { wallC: wall, gasC: gas, velocity, t6Emissivity, material: beadProperties[name], model, air }));
+  const series = {}, integration = {}, finalResults = {}, airStart = {}, airEnd = {};
+  const warnings = new Set();
+  for (const sensor of sensors) {
+    const heatAt = beadC => {
+      const heat = sensorHeat(sensor, { wallC: wall, gasC: gas, velocity, beadC, model, air });
+      if (heat.extrapolated) warnings.add(model === "churchill" ? "Churchill: outside the recommended Pr ≥ 0.7 / Ra ≤ 10¹¹ range; results are extrapolations." : "Ranz–Marshall: Re exceeds the original low-Re range (200); results are extrapolations.");
+      return heat;
+    };
+    const derivative = value => { const heat = heatAt(value); return (heat.qRad - heat.qConv) / sensor.thermalCapacity; };
+    // 온도 구간의 기울기로 간격 상한을 잡고, 각 단계에서 오차도 추정한다.
+    let maxSlope = 0;
+    const lo = Math.min(initial, wall, gas), hi = Math.max(initial, wall, gas);
+    for (let i = 0; i < 32; i++) {
+      const a = lo + (hi - lo) * i / 32, b = lo + (hi - lo) * (i + 1) / 32;
+      if (b > a) maxSlope = Math.max(maxSlope, Math.abs((derivative(b) - derivative(a)) / (b - a)));
+    }
+    const maxStep = Math.min(dt, maxSlope > 0 ? 0.05 / maxSlope : dt);
+    const result = integrateTransient({ initial, duration, derivative, samples, maxStep });
+    series[sensor.name] = result.points;
+    integration[sensor.name] = { maxStep, steps: result.steps, rejected: result.rejected };
+    const temp = result.points.at(-1).temp;
+    finalResults[sensor.name] = { temp, ...heatAt(temp) };
+    airStart[sensor.name] = heatAt(initial).airUsed;
+    airEnd[sensor.name] = finalResults[sensor.name].airUsed;
   }
-  const sensors = names.map(name => solveSensor(name, { wallC: wall, gasC: gas, velocity, t6Emissivity, material: beadProperties[name] }));
-  const series = {};
-  const integration = {};
-  const finalResults = {};
-  const wallK = toK(wall);
-
-  names.forEach((name, index) => {
-    const sensor = sensors[index];
-    const radiation = sensor.epsilon * SIGMA * AIR.F;
-    // 도달 가능한 최고 온도에서 가장 짧은 시간상수를 잡아 작은 비드도 안정적으로 적분한다.
-    const maxK = toK(Math.max(initial, wall, gas));
-    const minTau = sensor.thermalCapacity / (sensor.area * (sensor.h + 4 * radiation * maxK ** 3));
-    const maxStep = Math.min(dt ?? 0.1, minTau / 20);
-    if (duration / maxStep + samples > 2000000) {
-      throw new RangeError("This heat capacity requires too many integration steps. Increase it or shorten the duration.");
-    }
-    const heatAt = temp => {
-      const beadK = toK(temp);
-      // T⁴의 차를 인수분해해 온도차가 작을 때의 유효 숫자 손실을 줄인다.
-      const qRad = radiation * sensor.area * (wall - temp) * (wallK + beadK) * (wallK ** 2 + beadK ** 2);
-      const qConv = sensor.h * sensor.area * (temp - gas);
-      return { qRad, qConv };
-    };
-    const derivative = temp => {
-      const { qRad, qConv } = heatAt(temp);
-      return (qRad - qConv) / sensor.thermalCapacity;
-    };
-    let temp = initial;
-    let previous = 0;
-    let steps = 0;
-    series[name] = [{ t: 0, temp, rate: derivative(temp) }];
-    for (let i = 1; i <= samples && duration > 0; i += 1) {
-      const target = duration * i / samples;
-      // 그래프 저장 간격과 적분 간격을 분리하고 각 저장 시각에 정확히 도달한다.
-      const count = Math.ceil((target - previous) / maxStep);
-      const step = (target - previous) / count;
-      for (let j = 0; j < count; j += 1) temp = rk4Scalar(temp, step, derivative);
-      steps += count;
-      series[name].push({ t: target, temp, rate: derivative(temp) });
-      previous = target;
-    }
-    finalResults[name] = { temp, ...heatAt(temp) };
-    integration[name] = { maxStep, steps };
-  });
-
-  return { wall, gas, velocity, initial, duration, sensors, series, integration, finalResults };
+  return { wall, gas, velocity, initial, duration, sensors, series, integration, finalResults, airStart, airEnd, warnings: [...warnings] };
 }

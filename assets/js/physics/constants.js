@@ -34,3 +34,6 @@ export const SENSOR_DEFS = {
 
 // 비드 열용량 계산용 재료 물성 (보정 대상)
 export const BEAD_MATERIAL = { density: 8000, cp: 500 };
+
+// 자동 공기 물성: COMSOL Sutherland 계수(SI), 건조 이상기체 근사.
+export const AIR_AUTO = { pressure: 101325, gasConstant: 287.05, cp: 1006, minK: 250, maxK: 600, referenceK: 273, mu0: 1.716e-5, muS: 111, k0: 0.0241, kS: 194 };

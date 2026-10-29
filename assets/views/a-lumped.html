@@ -8,10 +8,26 @@
 <div class="input wide"><label for="a-lumped-capacity">Heat capacity (J/K)</label><input id="a-lumped-capacity" name="capacity" type="number" value="18" min="0.1" max="1000" step="0.1" required></div>
 <div class="input wide"><label for="a-lumped-ua">Extra loss UA (W/K)</label><input id="a-lumped-ua" name="ua" type="number" value="0.006" min="0" max="2" step="0.001" required></div>
 <div class="input wide"><label for="a-lumped-duration">Duration (s)</label><input id="a-lumped-duration" name="duration" type="number" value="600" min="10" max="3600" step="1" required></div>
+
+    <div class="input wide"><label for="a-lumped-model">Correlation</label><select id="a-lumped-model" name="model"><option value="mcadams">McAdams (natural convection)</option><option value="morgan">Morgan (natural convection)</option></select></div>
+    <details class="lumped-air"><summary>Air properties</summary>
+      <label for="a-lumped-air-mode">Property mode</label>
+      <select id="a-lumped-air-mode" name="airMode"><option value="manual">Manual (constant properties)</option><option value="auto">Automatic (temperature-dependent approximation)</option></select>
+      <fieldset data-air-manual><legend>Constant air properties</legend>
+        <label>Thermal conductivity k (W/m·K)<input name="airK" type="number" value="0.027" min="0.000001" step="any" required></label>
+        <label>Kinematic viscosity ν (10⁻⁶ m²/s)<input name="airNu" type="number" value="17.5" min="0.000001" step="any" required></label>
+        <label>Prandtl number Pr<input name="airPr" type="number" value="0.707" min="0.000001" step="any" required></label>
+      </fieldset>
+      <p class="assumption" data-air-policy></p>
+      <p class="assumption">Automatic mode: dry ideal air at 101325 Pa; Sutherland viscosity and conductivity, constant cₚ = 1006 J/(kg·K). This is an engineering approximation, restricted here to evaluation temperatures of 250–600 K. No online lookup. Manual mode keeps k, ν and Pr constant. Bead heat capacity is a separate property.</p>
+      <p class="assumption"><a href="https://doc.comsol.com/6.4/doc/com.comsol.help.cfd/cfd_ug_fluidflow_high_mach.08.46.html" target="_blank" rel="noopener noreferrer">Sutherland coefficient source</a>. Automatic mode is opt-in; independent validation of this implementation is pending.</p>
+    </details>
     <button class="btn btn--primary" type="submit">Calculate</button>
   </form>
   <p class="caution" data-lumped-error role="status" hidden></p>
   <p class="assumption" data-lumped-status role="status"></p>
+  <p class="caution" data-lumped-warnings role="status" hidden></p>
+  <p class="assumption" data-lumped-air></p>
   <article class="card"><header><h2>Mean temperature over time</h2><span class="badge">Lumped model</span></header>
     <div class="lumped-inspector">
       <canvas class="chart" data-lumped-chart role="img" tabindex="0" aria-label="Interactive temperature response. Left and right arrows select time; up and down arrows select a curve."></canvas>
@@ -22,5 +38,5 @@
   </article>
   
   <article class="card"><header><h2>Results at the end of the run</h2></header><div class="table-wrap"><table><thead><tr><th>Quantity</th><th>Value</th></tr></thead><tbody data-lumped-results></tbody></table></div><p class="assumption">The table shows the integrated end-of-run temperature and heat transfer rates. Positive convection and radiation values represent heat leaving the cylinder. The dashed horizontal line solves the steady energy balance, including extra loss UA, independently of the run duration.</p></article>
-  <article class="card"><header><h2>Model and assumptions</h2></header><div class="card-body"><div class="formula" tabindex="0" role="region" aria-label="Energy balance"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Cylinder heat capacity times temperature rate equals electrical power minus convection, radiation and additional heat loss."><mrow><msub><mi>C</mi><mi>s</mi></msub><mfrac><mrow><mi mathvariant="normal">d</mi><msub><mi>T</mi><mi>s</mi></msub></mrow><mrow><mi mathvariant="normal">d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mi>V</mi><mi>I</mi><mo>−</mo><msub><mi>Q</mi><mtext>conv</mtext></msub><mo>(</mo><msub><mi>T</mi><mi>s</mi></msub><mo>)</mo><mo>−</mo><msub><mi>Q</mi><mtext>rad</mtext></msub><mo>(</mo><msub><mi>T</mi><mi>s</mi></msub><mo>)</mo><mo>−</mo><mi mathvariant="normal">UA</mi><mo>(</mo><msub><mi>T</mi><mi>s</mi></msub><mo>−</mo><msub><mi>T</mi><mi>a</mi></msub><mo>)</mo></mrow></math></div><p data-lumped-fixed></p><p>Calibrate the effective heat capacity and additional heat loss coefficient UA against measured temperature histories. Convection uses the McAdams correlation.</p><p>Some material properties, dimensions and emissivities are example values. Check these inputs and assumptions before comparing with measurements. Temperatures in the radiation term are absolute temperatures (K).</p></div></article>
+  <article class="card"><header><h2>Model and assumptions</h2></header><div class="card-body"><div class="formula" tabindex="0" role="region" aria-label="Energy balance"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Cylinder heat capacity times temperature rate equals electrical power minus convection, radiation and additional heat loss."><mrow><msub><mi>C</mi><mi>s</mi></msub><mfrac><mrow><mi mathvariant="normal">d</mi><msub><mi>T</mi><mi>s</mi></msub></mrow><mrow><mi mathvariant="normal">d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mi>V</mi><mi>I</mi><mo>−</mo><msub><mi>Q</mi><mtext>conv</mtext></msub><mo>(</mo><msub><mi>T</mi><mi>s</mi></msub><mo>)</mo><mo>−</mo><msub><mi>Q</mi><mtext>rad</mtext></msub><mo>(</mo><msub><mi>T</mi><mi>s</mi></msub><mo>)</mo><mo>−</mo><mi mathvariant="normal">UA</mi><mo>(</mo><msub><mi>T</mi><mi>s</mi></msub><mo>−</mo><msub><mi>T</mi><mi>a</mi></msub><mo>)</mo></mrow></math></div><p data-lumped-fixed></p><p>Calibrate the effective heat capacity and additional heat loss coefficient UA against measured temperature histories. Convection uses the selected correlation. Morgan evaluates buoyancy using the cylinder–air film temperature.</p><p>Some material properties, dimensions and emissivities are example values. Check these inputs and assumptions before comparing with measurements. Temperatures in the radiation term are absolute temperatures (K).</p></div></article>
 </div>

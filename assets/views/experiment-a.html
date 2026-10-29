@@ -74,11 +74,13 @@
       <p class="assumption" id="aWarning">—</p>
       <p class="assumption">Cylinder diameter, heated length, emissivity and view factor are <strong>placeholder values</strong> until the rig is measured. They scale every number above.</p>
       <div><button class="btn btn--quiet" id="aAdvancedToggle" type="button" aria-expanded="false" aria-controls="aAdvanced">Air properties for Morgan</button></div>
+      <p class="caution" id="aAirError" role="status" hidden></p>
       <div id="aAdvanced" hidden>
+        <p class="assumption">Enter positive air properties. ν is shown in 10⁻⁶ m²/s: 17.5 means 0.0000175 m²/s. Use the −/+ buttons or up/down keys for small changes; finer values can be typed directly.</p>
         <div class="values">
-          <div class="input"><label for="aK">k</label><div class="with-unit"><input id="aK" type="number" value="0.027" step="any"><span class="unit">W/mK</span></div></div>
-          <div class="input"><label for="aNu">ν</label><div class="with-unit"><input id="aNu" type="number" value="0.0000175" step="any"><span class="unit">m²/s</span></div></div>
-          <div class="input"><label for="aPr">Pr</label><div class="with-unit"><input id="aPr" type="number" value="0.707" step="any"><span class="unit">—</span></div></div>
+          <div class="input"><label for="aK">k</label><div class="with-unit"><input id="aK" type="number" value="0.027" min="0.000001" step="any" data-increment="0.001"><span class="unit">W/mK</span></div></div>
+          <div class="input"><label for="aNu">ν</label><div class="with-unit"><input id="aNu" type="number" value="17.5" min="0.000001" step="any" data-increment="0.1"><span class="unit">10<sup>−6</sup> m²/s</span></div></div>
+          <div class="input"><label for="aPr">Pr</label><div class="with-unit"><input id="aPr" type="number" value="0.707" min="0.000001" step="any" data-increment="0.001"><span class="unit">—</span></div></div>
         </div>
       </div>
     </div>

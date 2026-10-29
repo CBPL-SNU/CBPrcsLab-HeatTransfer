@@ -125,3 +125,13 @@ python tools/verify_physics.py
 - Moved grey temperature ticks next to the vertical axis and coloured steady-state values to the outer left column. Kept separate label spacing and connector lines, with a wider left margin for both columns.
 - Extended scientific notation to nonzero absolute values below 0.1 (previously 0.01). Removed unnecessary mantissa trailing zeros: 0.0999 is displayed as 9.99 × 10⁻². The large-value threshold remains 1,000,000.
 - Updated README. Tests and browser checks were not run for this update.
+
+## 2026-10-29 · Selectable convection and automatic air properties
+
+- Added A McAdams/Morgan and B Ranz–Marshall/Churchill selectors. Churchill disables velocity while preserving the entered value for switching back.
+- Added expandable manual/automatic air controls. Manual defaults remain unchanged; automatic mode is opt-in pending independent validation.
+- Implemented local Sutherland viscosity/conductivity with ideal-gas density and constant cp approximation. Film-temperature evaluation is used for Morgan and both sphere correlations; automatic evaluation is limited to 250–600 K. See AIR_PROPERTIES_MODEL.md for sources and limits.
+- Unified steady/transient/final heat evaluation and added RK4 step-doubling error estimation, effort limits, correlation-range notices and a Morgan equilibrium residual check.
+- Wider A Calculate Morgan fields, micro-unit viscosity entry, small −/+ and keyboard increments, and positive-input validation.
+- Updated README and recorded implementation decisions in the plan. Optional B Calculate model-selector expansion remains deferred; its original forced-convection/manual settings are preserved.
+- Eight JavaScript modules passed syntax checks. Numerical regression, independent verification, benchmark and browser tests were not run.

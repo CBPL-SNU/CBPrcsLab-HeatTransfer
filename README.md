@@ -48,17 +48,20 @@ to the corresponding air temperature. Calculate’s measured surface temperature
 is not an initial condition for the heating simulation. Transient-only capacity,
 extra loss and duration defaults remain editable model assumptions.
 
-Both models integrate nonlinear energy balances using RK4. Experiment B evaluates
+Both models integrate nonlinear energy balances using RK4 with step doubling for
+local error estimation. Experiment B evaluates
 the radiation and convection terms throughout the response, rather than fitting an
-exponential curve to the equilibrium temperature. Its step size is limited by the
-shortest thermal time scale for each sensor, independently of the graph sampling
-interval. Sensor capacity is configurable independently for T6, T7 and T8. Expand **Bead
+exponential curve to the equilibrium temperature. Step sizes are independent of
+graph sampling; B also limits the step using heat-balance slopes across the
+temperature interval. This estimates integration error; it does not validate the
+physical correlations. Sensor capacity is configurable independently for T6, T7 and T8. Expand **Bead
 material and effective heat capacity** to enter density and specific heat, or an
 effective capacity directly. A blank override uses `C = ρ cₚ πd³/6`; an entered
 capacity takes precedence. Capacity affects the response speed, but not the
 steady-state temperature under these fixed boundary conditions.
-Wall temperature, air temperature, velocity and material properties remain constant
-during each B run; wire conduction is not included.
+Wall temperature, air temperature, velocity and bead material properties remain
+constant during each B run; wire conduction is not included. Automatic air
+properties can vary with the bead temperature.
 
 Both lumped graphs support inspection: hover near a solid curve or tap it to read
 a computed sample’s time, temperature and signed `dT/dt` in °C/s. The rate comes
@@ -70,14 +73,49 @@ With the graph focused, left/right
 arrows select time, up/down select the curve, Home/End select endpoints and Escape
 clears the readout. Inspection and resizing reuse the computed response.
 
-The model sections list fixed geometry, emissivities, view factors and air
-properties. These assumptions still need checking against the apparatus; exposing
+The model sections list fixed geometry, emissivities, view factors and the selected
+air-property assumptions. These assumptions still need checking against the apparatus; exposing
 thermal capacity does not calibrate the rest of the model.
 
 The lumped energy balances use native MathML for fractions, subscripts and powers,
 with no additional scripts, fonts or external services. On narrow screens, the
 equation region can scroll horizontally. MathML lives in the screen HTML; the
 introduction Markdown renderer is unchanged.
+
+### Convection models and air properties
+
+In **Lumped parameter**, Experiment A offers **McAdams (natural convection)** and
+**Morgan (natural convection)**. Experiment B offers **Ranz–Marshall (forced
+convection)** and **Churchill (natural convection)**. The previous model defaults
+are retained. Churchill disables the velocity input; the tool does not switch
+models automatically or combine natural and forced convection.
+
+Expand **Air properties** to choose constant manual inputs or opt-in automatic
+properties. McAdams does not use these inputs. Manual defaults preserve the
+previous values, including different A/B viscosities. Automatic properties use
+local Sutherland formulas for viscosity and conductivity, dry ideal air at
+101325 Pa and constant specific heat of 1006 J/(kg·K). This is an engineering
+approximation, not a reference-quality air-property database. Its evaluation
+temperature is restricted by this tool to 250–600 K; outside that range, use
+manual inputs. The range is an application restriction, not a claimed validation
+range for all properties. Automatic mode remains opt-in pending independent validation.
+
+Morgan and both sphere correlations evaluate air at the body–air film temperature.
+Each RK4 stage, equilibrium solve and reported heat rate uses the same property
+policy. Results report initial/final evaluated air properties and correlation
+range notices. A steady-state guide is omitted if the Morgan segment boundary
+prevents the energy residual from satisfying its tolerance.
+
+In A **Calculate**, Morgan fields are wider. Kinematic viscosity is entered in
+10⁻⁶ m²/s (17.5 represents 0.0000175 m²/s). The −/+ buttons and up/down keys
+adjust k by 0.001, displayed viscosity by 0.1 and Pr by 0.001; finer values may
+still be typed. B **Calculate** retains its existing Ranz–Marshall and constant
+properties; matching a Lumped result requires matching those settings.
+
+See [air-property assumptions and sources](docs/AIR_PROPERTIES_MODEL.md) for
+formulas, limits and the validation status. The new implementation has passed
+JavaScript syntax checks; regression, independent numerical and browser checks
+have not yet been run.
 
 ### Editing the introduction
 

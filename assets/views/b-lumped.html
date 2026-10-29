@@ -11,10 +11,26 @@
       <p class="assumption">For each spherical bead, C = ρ cₚ πd³/6. Leave the effective capacity blank to use density and specific heat, or enter a calibrated capacity directly. An override takes precedence over density and specific heat. Capacity changes the response speed, not the steady-state temperature.</p>
       <div data-lumped-materials></div>
     </details>
+
+    <div class="input wide"><label for="b-lumped-model">Correlation</label><select id="b-lumped-model" name="model"><option value="ranz-marshall">Ranz–Marshall (forced convection)</option><option value="churchill">Churchill (natural convection)</option></select></div>
+    <details class="lumped-air"><summary>Air properties</summary>
+      <label for="b-lumped-air-mode">Property mode</label>
+      <select id="b-lumped-air-mode" name="airMode"><option value="manual">Manual (constant properties)</option><option value="auto">Automatic (temperature-dependent approximation)</option></select>
+      <fieldset data-air-manual><legend>Constant air properties</legend>
+        <label>Thermal conductivity k (W/m·K)<input name="airK" type="number" value="0.027" min="0.000001" step="any" required></label>
+        <label>Kinematic viscosity ν (10⁻⁶ m²/s)<input name="airNu" type="number" value="17" min="0.000001" step="any" required></label>
+        <label>Prandtl number Pr<input name="airPr" type="number" value="0.707" min="0.000001" step="any" required></label>
+      </fieldset>
+      <p class="assumption" data-air-policy></p>
+      <p class="assumption">Automatic mode: dry ideal air at 101325 Pa; Sutherland viscosity and conductivity, constant cₚ = 1006 J/(kg·K). This is an engineering approximation, restricted here to evaluation temperatures of 250–600 K. No online lookup. Manual mode keeps k, ν and Pr constant. Bead heat capacity is a separate property.</p>
+      <p class="assumption"><a href="https://doc.comsol.com/6.4/doc/com.comsol.help.cfd/cfd_ug_fluidflow_high_mach.08.46.html" target="_blank" rel="noopener noreferrer">Sutherland coefficient source</a>. Automatic mode is opt-in; independent validation of this implementation is pending.</p>
+    </details>
     <button class="btn btn--primary" type="submit">Calculate</button>
   </form>
   <p class="caution" data-lumped-error role="status" hidden></p>
   <p class="assumption" data-lumped-status role="status"></p>
+  <p class="caution" data-lumped-warnings role="status" hidden></p>
+  <p class="assumption" data-lumped-air></p>
   <article class="card"><header><h2>Mean temperature over time</h2><span class="badge">Lumped model</span></header>
     <div class="lumped-inspector">
       <canvas class="chart" data-lumped-chart role="img" tabindex="0" aria-label="Interactive temperature response. Left and right arrows select time; up and down arrows select a curve."></canvas>

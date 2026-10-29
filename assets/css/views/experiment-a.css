@@ -1,0 +1,8 @@
+#experiment-a #aAdvanced .values { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: var(--sp-3); }
+#experiment-a #aAdvanced .input { width: 100%; min-width: 0; }
+#experiment-a #aAdvanced .with-unit { width: 100%; }
+#experiment-a #aAdvanced input { width: 100%; min-width: 110px; appearance: textfield; -moz-appearance: textfield; }
+#experiment-a #aAdvanced input::-webkit-inner-spin-button, #experiment-a #aAdvanced input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+#experiment-a #aAdvanced .unit { white-space: nowrap; }
+#experiment-a #aAdvanced .air-step-buttons { display: flex; gap: var(--sp-2); margin-top: var(--sp-2); }
+#experiment-a #aAdvanced .air-step-buttons button { min-width: 44px; min-height: 36px; }
