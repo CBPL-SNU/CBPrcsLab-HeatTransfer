@@ -49,3 +49,4 @@
 .colorbar-labels { display: flex; flex-direction: column; justify-content: space-between; color: var(--chart-ink); font-family: var(--font-mono); font-size: var(--fs-xs); }
 
 @media (max-width: 600px) { #fieldCanvas { height: 340px; } }
+#a-field .viewer-grid { --side: clamp(380px, 31vw, 440px); }

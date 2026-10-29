@@ -13,7 +13,7 @@
   <p class="caution" id="fieldPending" role="status" hidden></p>
 
   <!-- 애니메이션과 두 그래프가 한 화면에 들어와야 같은 시각을 따라간다는 것이 보인다. -->
-  <div class="card-grid wide-left">
+  <div class="card-grid wide-left viewer-grid">
   <div class="card">
     <header><h2>The 18 cm around the heater, cut along two planes</h2><div class="btn-row segmented field-switch" role="group" aria-label="Field"><button class="btn field-type is-active" data-field="temperature" type="button" aria-pressed="true">Temperature</button><button class="btn field-type" data-field="speed" type="button" aria-pressed="false">Speed</button></div><span class="badge">OpenFOAM</span></header>
     <div class="card-body">
@@ -66,7 +66,7 @@
     </div>
   </div>
 
-  <div class="card-stack">
+  <!-- 오른쪽은 카드 하나. 열수지와 표면 온도는 선으로만 나눈다 -->
   <div class="card">
     <header><h2>Where the supplied power goes</h2></header>
     <div class="card-body">
@@ -79,23 +79,20 @@
       </div>
       <div class="chart-frame"><canvas class="chart chart--short" id="powerChart"></canvas></div>
       <div class="legend">
-        <span><i class="conv"></i>Convection to air</span>
-        <span><i class="rad"></i>Radiation to duct</span>
+        <span><i class="conv"></i>Convection</span>
+        <span><i class="rad"></i>Radiation</span>
         <span><i class="residual"></i>Warming the heater</span>
       </div>
-    </div>
-  </div>
 
-  <div class="card">
-    <header><h2>Surface temperature from 20 °C</h2></header>
-    <div class="card-body">
-      <div class="values">
-        <div><span class="k">Surface T10</span><span class="v" id="cfdT10">—</span></div>
-        <div><span class="k">Still rising at</span><span class="v" id="cfdSlope">—</span></div>
+      <div class="card-sub">
+        <h3>Surface temperature from 20 °C</h3>
+        <div class="values">
+          <div><span class="k">Surface T10</span><span class="v" id="cfdT10">—</span></div>
+          <div><span class="k">Still rising at</span><span class="v" id="cfdSlope">—</span></div>
+        </div>
+        <div class="chart-frame"><canvas class="chart chart--short" id="historyChart"></canvas></div>
       </div>
-      <div class="chart-frame"><canvas class="chart chart--short" id="historyChart"></canvas></div>
     </div>
-  </div>
   </div>
   </div>
 

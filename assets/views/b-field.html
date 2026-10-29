@@ -21,7 +21,7 @@
 
   <p class="caution" id="bFieldPending" role="status" hidden></p>
 
-  <div class="card-grid wide-left">
+  <div class="card-grid wide-left viewer-grid">
   <div class="card">
     <header><h2>The heated section and the bead</h2><div class="btn-row segmented field-switch" role="group" aria-label="Field"><button class="btn b-field-type is-active" data-field="temperature" type="button" aria-pressed="true">Temperature</button><button class="btn b-field-type" data-field="speed" type="button" aria-pressed="false">Speed</button></div><span class="badge">OpenFOAM</span></header>
     <div class="card-body">
@@ -60,7 +60,7 @@
     </div>
   </div>
 
-  <div class="card-stack">
+  <!-- 오른쪽은 카드 하나. 읽는 값과 그 값을 만드는 열수지를 선으로만 나눈다 -->
   <div class="card">
     <header><h2>What the bead reads</h2></header>
     <div class="card-body">
@@ -75,25 +75,22 @@
         <span><i class="black-body"></i>Bead</span>
         <span><i class="residual dashed"></i>Inlet air</span>
       </div>
-    </div>
-  </div>
 
-  <div class="card">
-    <header><h2>Radiation in, convection out</h2></header>
-    <div class="card-body">
-      <div class="values">
-        <div><span class="k">Radiation in</span><span class="v rad" id="bCfdRad">—</span></div>
-        <div><span class="k">Convection out</span><span class="v conv" id="bCfdConv">—</span></div>
-        <div><span class="k">Warming the bead</span><span class="v" id="bCfdNet">—</span></div>
-      </div>
-      <div class="chart-frame"><canvas class="chart chart--short" id="bHeatChart"></canvas></div>
-      <div class="legend">
-        <span><i class="rad"></i>Radiation from the wall</span>
-        <span><i class="conv"></i>Convection to the air</span>
-        <span><i class="residual"></i>Warming the bead</span>
+      <div class="card-sub">
+        <h3>Radiation in, convection out</h3>
+        <div class="values">
+          <div><span class="k">Radiation in</span><span class="v rad" id="bCfdRad">—</span></div>
+          <div><span class="k">Convection out</span><span class="v conv" id="bCfdConv">—</span></div>
+          <div><span class="k">Warming the bead</span><span class="v" id="bCfdNet">—</span></div>
+        </div>
+        <div class="chart-frame"><canvas class="chart chart--short" id="bHeatChart"></canvas></div>
+        <div class="legend">
+          <span><i class="rad"></i>Radiation</span>
+          <span><i class="conv"></i>Convection</span>
+          <span><i class="residual"></i>Warming the bead</span>
+        </div>
       </div>
     </div>
-  </div>
   </div>
   </div>
 

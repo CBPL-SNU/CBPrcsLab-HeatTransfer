@@ -213,6 +213,19 @@ dialog::backdrop { background: rgba(18, 40, 63, .4); }
 .card-stack { display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; }   /* 한 칸에 카드 여럿을 세로로 */
 @media (max-width: 1080px) { .card-grid.two, .card-grid.wide-left { grid-template-columns: 1fr; } }
 
+/* CFD 화면. 오른쪽 숫자 칸은 폭을 고정하고 남는 폭을 그림에 준다.
+   두 열 높이를 맞추고 남는 높이는 그림 영역이 받아 그림과 숫자가 한 화면에 들어온다.
+   그림이 높이에 막히는 화면은 --side를 넓혀 숫자 칸이 길어지지 않게 한다 */
+@media (min-width: 1081px) {
+  .card-grid.viewer-grid { grid-template-columns: minmax(0, 1fr) var(--side, 350px); align-items: stretch; }
+}
+.viewer-grid > .card:first-child { display: flex; flex-direction: column; }
+.viewer-grid > .card:first-child .card-body { flex: 1; }
+.viewer-grid > .card:first-child .card-body > :first-child { flex: 1; display: grid; align-content: center; }
+/* 카드 안의 두 번째 묶음. 카드를 하나 더 두는 대신 선으로 나눈다 */
+.card-sub { display: flex; flex-direction: column; gap: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--border-soft); }
+.card-sub h3 { margin: 0; color: var(--text-2); font-size: var(--fs-base); font-weight: var(--fw-semi); }
+
 /* ── 표시부 — 값이 담기는 자리는 표면보다 안쪽으로 넣는다 ──
    계기의 판독창과 같은 뜻이다. 글이 놓이는 자리에는 쓰지 않는다. */
 .well { background: var(--well); border-radius: var(--radius-md); box-shadow: var(--inset); }

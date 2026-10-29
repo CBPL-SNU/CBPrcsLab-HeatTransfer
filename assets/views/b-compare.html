@@ -15,9 +15,9 @@
 
   <p class="caution" id="cPending" role="status" hidden></p>
 
-  <div class="card-grid wide-left">
+  <div class="card-grid wide-left viewer-grid">
   <div class="card">
-    <header><h2>Each window is five bead diameters wide</h2><div class="btn-row segmented field-switch" role="group" aria-label="Field"><button class="btn c-field-type is-active" data-field="temperature" type="button" aria-pressed="true">Temperature</button><button class="btn c-field-type" data-field="speed" type="button" aria-pressed="false">Speed</button></div><span class="badge">OpenFOAM</span></header>
+    <header><h2>Around each bead</h2><div class="btn-row segmented field-switch" role="group" aria-label="Field"><button class="btn c-field-type is-active" data-field="temperature" type="button" aria-pressed="true">Temperature</button><button class="btn c-field-type" data-field="speed" type="button" aria-pressed="false">Speed</button></div><span class="badge">OpenFOAM</span></header>
     <div class="card-body">
       <!-- 두 창은 같은 색 범위다. 같은 색이면 같은 온도다 -->
       <div class="b-viewer">
@@ -53,7 +53,8 @@
     </div>
   </div>
 
-  <div class="card-stack">
+  <!-- 오른쪽은 카드 하나. 그림 카드와 높이가 비슷해야 그림과 숫자가 한 화면에 같이 들어온다.
+       범례 하나가 그래프의 실선·점선과 막대의 채움·빗금을 함께 설명한다 -->
   <div class="card">
     <header><h2>How far above the inlet air each bead reads</h2></header>
     <div class="card-body">
@@ -62,24 +63,21 @@
         <div><span class="k" id="cErrRightName">—</span><span class="v" id="cErrRight">—</span></div>
       </div>
       <div class="chart-frame"><canvas class="chart chart--short" id="cTempChart"></canvas></div>
+
+      <!-- 받는 복사는 비슷하고 h가 다르다는 것을 숫자를 읽지 않고 보이게 한다 -->
+      <div class="card-sub">
+        <h3>Heat on the bead</h3>
+        <div class="bar-group--rad">
+          <div class="bar-head">Radiation absorbed <span class="unit">W/m²</span></div>
+          <div id="cRadBars"></div>
+        </div>
+        <div class="bar-group--conv">
+          <div class="bar-head">Cooling by air, h <span class="unit">W/m²K</span></div>
+          <div id="cHBars"></div>
+        </div>
+      </div>
       <div class="legend" id="cLegend"></div>
     </div>
-  </div>
-
-  <div class="card">
-    <header><h2>Heat on the bead</h2></header>
-    <div class="card-body">
-      <!-- 받는 복사는 비슷하고 h가 다르다는 것을 숫자를 읽지 않고 보이게 한다 -->
-      <div class="bar-group bar-group--rad">
-        <div class="bar-head">Radiation absorbed <span class="unit">W/m²</span></div>
-        <div id="cRadBars"></div>
-      </div>
-      <div class="bar-group bar-group--conv">
-        <div class="bar-head">Cooling by air, h <span class="unit">W/m²K</span></div>
-        <div id="cHBars"></div>
-      </div>
-    </div>
-  </div>
   </div>
   </div>
 
