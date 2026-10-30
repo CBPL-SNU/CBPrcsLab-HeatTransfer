@@ -41,3 +41,7 @@ Morgan’s tabulated segments can have small discontinuities. Its equilibrium so
 ## Verification status
 
 Eight edited/new JavaScript modules passed node --check on 2026-10-29. No regression suite, independent integration comparison, performance benchmark or browser test was run in this update. Previous verification records concern earlier models and do not validate this implementation. Follow-up numerical comparisons and property-reference checks remain necessary before treating automatic mode as validated.
+
+## 2026-10-30: Additional heat path
+
+Both lumped models now default to UA = 0 W/K; A defaults to C = 6.5 J/K. B uses a shared user-entered conductance per bead and subtracts UA(Tb − Tg) from net heat input, independently of the convection correlation. This term is included in equilibrium, instantaneous slopes and local time constants; it is reported separately as extra loss. The constant-property forced-convection time constant is C/[A(h + hRadLocal) + UA]. The variable-property version differentiates the full balance. B Calculate omits the parameter and therefore retains UA = 0.

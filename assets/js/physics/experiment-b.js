@@ -28,23 +28,25 @@ export function beadConvection(spec, velocity, { model = "ranz-marshall", beadC 
     extrapolated: model === "churchill" ? airUsed.pr < 0.7 || ra > 1e11 : re > 200 };
 }
 
-export function sensorHeat(spec, { wallC, gasC, velocity, beadC, model, air }) {
+export function sensorHeat(spec, { wallC, gasC, velocity, beadC, model, air, ua = 0 }) {
+  if (!Number.isFinite(ua) || ua < 0) throw new RangeError("Extra loss UA must be a non-negative finite value.");
   const convection = beadConvection(spec, velocity, { beadC, gasC, model, air });
   const wallK = toK(wallC), beadK = toK(beadC);
   const qRad = spec.epsilon * SIGMA * AIR.F * convection.area * (wallC - beadC) * (wallK + beadK) * (wallK ** 2 + beadK ** 2);
   const qConv = convection.h * convection.area * (beadC - gasC);
-  return { ...convection, qRad, qConv };
+  const qExtra = ua * (beadC - gasC);
+  return { ...convection, qRad, qConv, qExtra };
 }
 
-// 열수지 Qrad = Qconv 를 풀어 Tc를 구함. 전선 전도 손실은 미포함
-export function solveSensor(name, { wallC, gasC, velocity, t6Emissivity, model = "ranz-marshall", air, material = {} } = {}) {
+// 추가 손실은 공기 온도를 기준으로 하며, UA=0이면 기존 열수지와 같다.
+export function solveSensor(name, { wallC, gasC, velocity, t6Emissivity, model = "ranz-marshall", air, ua = 0, material = {} } = {}) {
   const spec = sensorSpec(name, { t6Emissivity });
-  const heatAt = beadC => sensorHeat(spec, { wallC, gasC, velocity, beadC, model, air });
+  const heatAt = beadC => sensorHeat(spec, { wallC, gasC, velocity, beadC, model, air, ua });
   const wallK = toK(wallC);
 
   const balance = tcC => {
-    const { qRad, qConv } = heatAt(tcC);
-    return qRad - qConv;
+    const { qRad, qConv, qExtra } = heatAt(tcC);
+    return qRad - qConv - qExtra;
   };
 
   const tcC = Math.abs(wallC - gasC) < 1e-12
@@ -71,10 +73,10 @@ export function solveSensor(name, { wallC, gasC, velocity, t6Emissivity, model =
   const lower = air?.mode === "auto" && filmK <= 250 + delta ? tcC : tcC - delta;
   const upper = air?.mode === "auto" && filmK >= 600 - delta ? tcC : tcC + delta;
   const slope = (balance(upper) - balance(lower)) / (upper - lower);
-  const tau = model === "ranz-marshall" && air?.mode !== "auto" ? thermalCapacity / (area * (h + hRadLocal)) : slope < 0 ? -thermalCapacity / slope : null;
+  const tau = model === "ranz-marshall" && air?.mode !== "auto" ? thermalCapacity / (area * (h + hRadLocal) + ua) : slope < 0 ? -thermalCapacity / slope : null;
 
   return {
-    ...spec, ...heat, model, wallC, gasC, velocity, re, Nu, h, hRad, hRadLocal, area,
+    ...spec, ...heat, model, ua, wallC, gasC, velocity, re, Nu, h, hRad, hRadLocal, area,
     tcC, equilibrium: tcC, error: tcC - gasC, qRad, qConv, tau, thermalCapacity, density, cp, volume
   };
 }

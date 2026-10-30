@@ -226,7 +226,7 @@ export function initLumpedView(kind) {
         result = r;
         if (!Number.isFinite(r.finalTemp)) throw new Error("Please check the input conditions.");
         lines = [{ name: "Tₛ", points: r.points, equilibrium: r.equilibrium, color: SERIES_COLOR.surface }];
-        rows = [["Surface temperature", tableValue(r.finalTemp, "°C", 2)], ["Convection out", tableValue(r.qConv, "W", 3)], ["Radiation out", tableValue(r.qRad, "W", 3)]];
+        rows = [["Surface temperature", tableValue(r.finalTemp, "°C", 2)], ["Convection out", tableValue(r.qConv, "W", 3)], ["Radiation out", tableValue(r.qRad, "W", 3)], ["Extra loss out", tableValue(r.qExtra, "W", 3)]];
         section.querySelector("[data-lumped-fixed]").textContent = 'Fixed cylinder assumptions: diameter ' + CYLINDER.D * 1000 + ' mm; heated length ' + CYLINDER.L * 1000 + ' mm; emissivity ' + CYLINDER.epsilon + '; view factor ' + CYLINDER.F + '. Effective capacity includes the cylinder and heater.';
       } else {
         const beadProperties = Object.fromEntries(Object.keys(SENSOR_DEFS).map(name => [name, Object.fromEntries(["density", "cp", "thermalCapacity"].filter(key => p[name + '-' + key] !== undefined).map(key => [key, p[name + '-' + key]]))]));
@@ -238,7 +238,8 @@ export function initLumpedView(kind) {
           return [
             [sensor.name + " · Temperature", tableValue(last.temp, "°C", 2)],
             [sensor.name + " · Convection out", tableValue(last.qConv, "W")],
-            [sensor.name + " · Radiation in", tableValue(last.qRad, "W")]
+            [sensor.name + " · Radiation in", tableValue(last.qRad, "W")],
+            [sensor.name + " · Extra loss out", tableValue(last.qExtra, "W")]
           ];
         });
         section.querySelector("[data-lumped-fixed]").textContent = 'Fixed assumptions: T6/T7 diameter ' + SENSOR_DEFS.T6.d * 1000 + '/' + SENSOR_DEFS.T7.d * 1000 + ' mm; T8 diameter ' + SENSOR_DEFS.T8.d * 1000 + ' mm; T7/T8 emissivity ' + SENSOR_DEFS.T7.epsilon + '/' + SENSOR_DEFS.T8.epsilon + '; view factor ' + AIR.F + '. Convection uses the selected correlation and air-property settings.';

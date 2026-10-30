@@ -34,11 +34,11 @@ press the calculate button to update the graph and results; the duration can be 
 from 10 to 3,600 seconds. Experiment A shows the cylinder temperature and final
 convection and radiation rates. Experiment B shows T6, T7 and T8 on one graph for
 the selected duration. Both results tables show end-of-run temperatures and
-convection and radiation rates evaluated at those temperatures. B rates are signed:
+convection, radiation and extra-loss rates evaluated at those temperatures. B rates are signed:
 positive convection leaves the bead and positive radiation enters it.
 Each sensor has a distinct colour; solid curves show the transient response.
 Both graphs include matching dashed horizontal lines for steady-state temperatures.
-A’s steady balance includes the extra loss UA. Coloured temperature labels in the outer left column identify the steady-state
+Both steady balances include the extra loss UA. Coloured temperature labels in the outer left column identify the steady-state
 guides; grey tick labels sit closer to the vertical axis. Nearby steady-state
 labels are separated and connected to their actual heights. Only the inspected sample is marked.
 Result tables use scientific notation with superscript exponents for nonzero
@@ -51,7 +51,14 @@ Shared input defaults match the Calculate screens: A uses 11 V, 1.87 A and
 emissivity 0.4. A allows current up to 4 A. Initial transient temperatures default
 to the corresponding air temperature. Calculate’s measured surface temperature
 is not an initial condition for the heating simulation. Transient-only capacity,
-extra loss and duration defaults remain editable model assumptions.
+extra loss and duration defaults remain editable model assumptions. A heat capacity
+defaults to 6.5 J/K; extra-loss UA defaults to 0 W/K in both experiments.
+
+B applies the same UA separately to each bead: `Qextra = UA (Tb − Tg)`,
+relative to air temperature. It is an empirical additional heat path and is
+reported separately from convection. Positive extra loss leaves the bead; a bead
+colder than the air gains heat through this path. UA affects both the transient
+response and steady state. A uses the corresponding `UA (Ts − Ta)` term.
 
 Both models integrate nonlinear energy balances using RK4 with step doubling for
 local error estimation. Experiment B evaluates
@@ -65,7 +72,8 @@ effective capacity directly. A blank override uses `C = ρ cₚ πd³/6`; an ent
 capacity takes precedence. Capacity affects the response speed, but not the
 steady-state temperature under these fixed boundary conditions.
 Wall temperature, air temperature, velocity and bead material properties remain
-constant during each B run; wire conduction is not included. Automatic air
+constant during each B run; wire conduction is not spatially resolved. The optional
+extra-loss conductance provides a lumped additional path to air temperature. Automatic air
 properties can vary with the bead temperature.
 
 Both lumped graphs support inspection: hover near a solid curve or tap it to read

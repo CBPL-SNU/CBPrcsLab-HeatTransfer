@@ -135,3 +135,13 @@ python tools/verify_physics.py
 - Wider A Calculate Morgan fields, micro-unit viscosity entry, small −/+ and keyboard increments, and positive-input validation.
 - Updated README and recorded implementation decisions in the plan. Optional B Calculate model-selector expansion remains deferred; its original forced-convection/manual settings are preserved.
 - Eight JavaScript modules passed syntax checks. Numerical regression, independent verification, benchmark and browser tests were not run.
+
+## 2026-10-30 · Expanded balance and extra loss in both experiments
+
+- Expanded A’s displayed convection and radiation terms to hA(Ts − Ta) and εσFA(Ts⁴ − Ta⁴), keeping the existing KaTeX renderer. Defined the radiation-surroundings assumption and symbols.
+- Set A’s default heat capacity to 6.5 J/K and default UA to 0 W/K.
+- Added B Extra loss UA per bead, default 0 W/K. A single input applies the same conductance independently to each bead, with Qextra = UA(Tb − Tg). UA already includes area; area is not multiplied again. Negative UA is rejected.
+- Included B extra loss in the shared sensor heat balance, steady-state root, RK4 derivative, slope-based step limit, inspection rate, local time constant and final output. B Calculate continues to use UA = 0 by default.
+- Added Extra loss out to both end-of-run tables; convection and radiation remain separate physical rates.
+- Updated README and model assumptions. This empirical additional path does not resolve wire geometry or a separate wire-anchor temperature.
+- Numerical tests and browser checks were not run for this update.

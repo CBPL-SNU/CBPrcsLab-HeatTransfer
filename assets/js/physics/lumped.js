@@ -4,8 +4,8 @@ import { cylinderHeat } from "./experiment-a.js";
 import { AIR_AUTO, toK } from "./constants.js";
 import { solveSensor, sensorHeat } from "./experiment-b.js";
 
-export function simulateCylinder({ V, I, ta, initial, capacity, ua, duration, model = "mcadams", air, dt = 0.5 }) {
-  if (![V, I, ta, initial, capacity, ua, duration, dt].every(Number.isFinite) || V < 0 || I < 0 || capacity <= 0 || ua < 0 || duration < 0 || dt <= 0 || Math.min(ta, initial) <= -273.15) throw new RangeError("Invalid cylinder conditions.");
+export function simulateCylinder({ V, I, ta, initial, capacity = 6.5, ua = 0, duration, model = "mcadams", air, dt = 0.5 }) {
+  if (![V, I, ta, initial, capacity = 6.5, ua = 0, duration, dt].every(Number.isFinite) || V < 0 || I < 0 || capacity <= 0 || ua < 0 || duration < 0 || dt <= 0 || Math.min(ta, initial) <= -273.15) throw new RangeError("Invalid cylinder conditions.");
   const warnings = new Set();
   const heatAt = value => {
     const heat = cylinderHeat({ tsC: value, taC: ta, model, air });
@@ -28,22 +28,22 @@ export function simulateCylinder({ V, I, ta, initial, capacity, ua, duration, mo
   const finalHeat = heatAt(finalTemp), initialHeat = heatAt(initial);
   const target = initial + 0.95 * (finalTemp - initial);
   const t95 = points.find(p => finalTemp >= initial ? p.temp >= target : p.temp <= target)?.t ?? duration;
-  return { points, finalTemp, equilibrium, steadyResidual: residual, t95, qConv: finalHeat.qConv, qRad: finalHeat.qRad,
+  return { points, finalTemp, equilibrium, steadyResidual: residual, t95, qConv: finalHeat.qConv, qRad: finalHeat.qRad, qExtra: ua * (finalTemp - ta),
     ta, duration, input, integration, warnings: [...warnings], airStart: initialHeat.airUsed, airEnd: finalHeat.airUsed };
 }
 
-export function simulateSensors({ wall, gas, velocity = 0, initial, t6Emissivity, duration = 600, names = ["T6", "T7", "T8"], samples = 600, dt = 0.1, beadProperties = {}, model = "ranz-marshall", air } = {}) {
-  if (![wall, gas, velocity, initial, duration, dt].every(Number.isFinite) || Math.min(wall, gas, initial) <= -273.15 || velocity < 0 || duration < 0 || dt <= 0 || !Number.isInteger(samples) || samples < 1) throw new RangeError("Invalid sensor transient conditions.");
-  const sensors = names.map(name => solveSensor(name, { wallC: wall, gasC: gas, velocity, t6Emissivity, material: beadProperties[name], model, air }));
+export function simulateSensors({ wall, gas, velocity = 0, initial, t6Emissivity, duration = 600, names = ["T6", "T7", "T8"], samples = 600, dt = 0.1, beadProperties = {}, model = "ranz-marshall", air, ua = 0 } = {}) {
+  if (![wall, gas, velocity, initial, duration, dt, ua].every(Number.isFinite) || Math.min(wall, gas, initial) <= -273.15 || velocity < 0 || ua < 0 || duration < 0 || dt <= 0 || !Number.isInteger(samples) || samples < 1) throw new RangeError("Invalid sensor transient conditions.");
+  const sensors = names.map(name => solveSensor(name, { wallC: wall, gasC: gas, velocity, t6Emissivity, material: beadProperties[name], model, air, ua }));
   const series = {}, integration = {}, finalResults = {}, airStart = {}, airEnd = {};
   const warnings = new Set();
   for (const sensor of sensors) {
     const heatAt = beadC => {
-      const heat = sensorHeat(sensor, { wallC: wall, gasC: gas, velocity, beadC, model, air });
+      const heat = sensorHeat(sensor, { wallC: wall, gasC: gas, velocity, beadC, model, air, ua });
       if (heat.extrapolated) warnings.add(model === "churchill" ? "Churchill: outside the recommended Pr ≥ 0.7 / Ra ≤ 10¹¹ range; results are extrapolations." : "Ranz–Marshall: Re exceeds the original low-Re range (200); results are extrapolations.");
       return heat;
     };
-    const derivative = value => { const heat = heatAt(value); return (heat.qRad - heat.qConv) / sensor.thermalCapacity; };
+    const derivative = value => { const heat = heatAt(value); return (heat.qRad - heat.qConv - heat.qExtra) / sensor.thermalCapacity; };
     // 온도 구간의 기울기로 간격 상한을 잡고, 각 단계에서 오차도 추정한다.
     let maxSlope = 0;
     const lo = Math.min(initial, wall, gas), hi = Math.max(initial, wall, gas);
@@ -60,5 +60,5 @@ export function simulateSensors({ wall, gas, velocity = 0, initial, t6Emissivity
     airStart[sensor.name] = heatAt(initial).airUsed;
     airEnd[sensor.name] = finalResults[sensor.name].airUsed;
   }
-  return { wall, gas, velocity, initial, duration, sensors, series, integration, finalResults, airStart, airEnd, warnings: [...warnings] };
+  return { wall, gas, velocity, initial, duration, ua, sensors, series, integration, finalResults, airStart, airEnd, warnings: [...warnings] };
 }
