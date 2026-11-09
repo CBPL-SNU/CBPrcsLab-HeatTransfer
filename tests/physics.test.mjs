@@ -202,6 +202,51 @@ describe("Lumped-parameter 시간응답", () => {
     assert.ok(at(5) < at(11) && at(11) < at(17), "전압에 따른 온도 순서");
   });
 
+  test("A의 열용량은 초기 기울기와 유한 시간 온도를 바꾸지만 평형은 바꾸지 않는다", () => {
+    const p = { V: 11, I: 0.25, ta: 25, initial: 25, ua: 0.006, duration: 600, dt: 0.5 };
+    const small = simulateCylinder({ ...p, capacity: 9 });
+    const large = simulateCylinder({ ...p, capacity: 18 });
+    close(small.points[0].rate, p.V * p.I / 9, 1e-12, "C=9의 초기 기울기");
+    close(large.points[0].rate, p.V * p.I / 18, 1e-12, "C=18의 초기 기울기");
+    close(large.points[0].rate, small.points[0].rate / 2, 1e-12, "열용량 두 배의 초기 기울기");
+    assert.ok(large.finalTemp < small.finalTemp, "큰 열용량의 유한 시간 온도가 낮아야 함");
+    close(large.equilibrium, small.equilibrium, 1e-9, "열용량과 무관한 평형 온도");
+  });
+
+  test("A의 추가 열손실은 시간응답과 평형을 낮추며 열수지에 반영된다", () => {
+    const p = { V: 11, I: 0.25, ta: 25, initial: 25, capacity: 18, duration: 600, dt: 0.5 };
+    const without = simulateCylinder({ ...p, ua: 0 });
+    const withLoss = simulateCylinder({ ...p, ua: 0.006 });
+    assert.ok(withLoss.finalTemp < without.finalTemp, "UA가 클 때 유한 시간 온도가 낮아야 함");
+    assert.ok(withLoss.equilibrium < without.equilibrium, "UA가 클 때 평형 온도가 낮아야 함");
+    close(withLoss.qExtra, 0.006 * (withLoss.finalTemp - p.ta), 1e-12, "마지막 시각의 추가 손실");
+    assert.equal(without.qExtra, 0);
+    const steadyHeat = cylinderHeat({ tsC: withLoss.equilibrium, taC: p.ta });
+    close(withLoss.input, steadyHeat.qConv + steadyHeat.qRad + 0.006 * (withLoss.equilibrium - p.ta), withLoss.input * 1e-7, "평형 열수지");
+
+    const hot = { ...p, initial: 40, duration: 0 };
+    const slope0 = simulateCylinder({ ...hot, ua: 0 }).points[0].rate;
+    const slopeUA = simulateCylinder({ ...hot, ua: 0.006 }).points[0].rate;
+    close(slopeUA - slope0, -0.006 * (hot.initial - hot.ta) / hot.capacity, 1e-12, "초기 온도차에서 UA의 기울기 영향");
+  });
+
+  test("A의 열용량과 UA는 명시적 잘못된 값을 거부하고 기본값을 유지한다", () => {
+    const p = { V: 11, I: 0.25, ta: 25, initial: 25, duration: 0 };
+    for (const capacity of [0, -1, NaN, Infinity, -Infinity, null, "18"]) {
+      assert.throws(() => simulateCylinder({ ...p, capacity }), RangeError, `C=${String(capacity)}`);
+    }
+    for (const ua of [-1, NaN, Infinity, -Infinity, null, "0.006"]) {
+      assert.throws(() => simulateCylinder({ ...p, ua }), RangeError, `UA=${String(ua)}`);
+    }
+    const omitted = simulateCylinder(p);
+    const explicit = simulateCylinder({ ...p, capacity: 6.5, ua: 0 });
+    assert.deepEqual(omitted, explicit, "생략한 기본값과 명시적 기본값");
+    assert.deepEqual(simulateCylinder({ ...p, capacity: undefined, ua: undefined }), explicit, "undefined에 적용한 기본값");
+    assert.equal(explicit.points.length, 1);
+    assert.equal(explicit.points[0].temp, p.initial);
+    assert.equal(explicit.qExtra, 0);
+  });
+
   test("센서 응답은 평형 온도로 수렴하고 큰 비드가 더 느리다", () => {
     const sim = simulateSensors({ wall: 120, gas: 25, velocity: 0.4, initial: 25, t6Emissivity: 0.4, duration: 3000 });
     const [t6, t7, t8] = sim.sensors;

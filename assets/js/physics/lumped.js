@@ -5,7 +5,7 @@ import { AIR_AUTO, toK } from "./constants.js";
 import { solveSensor, sensorHeat } from "./experiment-b.js";
 
 export function simulateCylinder({ V, I, ta, initial, capacity = 6.5, ua = 0, duration, model = "mcadams", air, dt = 0.5 }) {
-  if (![V, I, ta, initial, capacity = 6.5, ua = 0, duration, dt].every(Number.isFinite) || V < 0 || I < 0 || capacity <= 0 || ua < 0 || duration < 0 || dt <= 0 || Math.min(ta, initial) <= -273.15) throw new RangeError("Invalid cylinder conditions.");
+  if (![V, I, ta, initial, capacity, ua, duration, dt].every(Number.isFinite) || V < 0 || I < 0 || capacity <= 0 || ua < 0 || duration < 0 || dt <= 0 || Math.min(ta, initial) <= -273.15) throw new RangeError("Invalid cylinder conditions.");
   const warnings = new Set();
   const heatAt = value => {
     const heat = cylinderHeat({ tsC: value, taC: ta, model, air });
